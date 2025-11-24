@@ -1,0 +1,23 @@
+# Operating system files 
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows thumbnail cached files
+Thumbs.db
+ehthumbs.db
+
+# IDE | build tool dirs
+.idea/
+*.iml
+*.ipr
+*.iws
+*.vscode/
+.gradle/
+.settings/
+.project
+.classpath
+
+
+target
