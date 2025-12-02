@@ -1,0 +1,13 @@
+stages:
+  - build
+
+build_job:
+  stage: build
+  image: maven:3.9-jdk-21
+  script:
+    - mvn clean install
+    - mvn clean verify -DdisplayName=true -B || true
+  artifacts:
+    when: always
+    paths:
+      - target/surefire-reports/
