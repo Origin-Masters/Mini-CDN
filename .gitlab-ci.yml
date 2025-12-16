@@ -1,14 +1,30 @@
+# GitLab CI/CD workflow for our mini-CDN project
+
 stages:
   - build
+  - test
 
 build_job:
   stage: build
-  tags: [ "macos", "maven" ]
   image: maven:3.9-jdk-21
   script:
-    - mvn clean install
-    - mvn clean verify -DdisplayName=true -B || true
+    - mvn clean package -DskipTests
   artifacts:
     when: always
     paths:
+      - target/*.jar
+    expire_in: 1 week
+
+test_job:
+  stage: test
+  image: maven:3.9-jdk-21
+  script:
+    - echo "Running unit tests..."
+    - mvn test -B
+  artifacts:
+    when: always
+    reports:
+      junit: target/surefire-reports/TEST-*.xml
+    paths:
       - target/surefire-reports/
+  retry: 1
