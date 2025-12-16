@@ -6,6 +6,8 @@ stages:
 
 build_job:
   stage: build
+  tags: [ "macos", "maven" ]
+
   image: maven:3.9-jdk-21
   script:
     - mvn clean package -DskipTests
@@ -17,6 +19,8 @@ build_job:
 
 test_job:
   stage: test
+  tags: [ "macos", "maven" ]
+
   image: maven:3.9-jdk-21
   script:
     - echo "Running unit tests..."
