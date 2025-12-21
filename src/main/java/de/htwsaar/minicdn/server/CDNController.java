@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn;
+package de.htwsaar.minicdn.server;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
