@@ -28,11 +28,9 @@ public class OriginController {
 
     /**
      * Liefert eine Datei aus dem Origin-Verzeichnis zurück.
-     * <p>
      * Die Datei wird anhand ihres Namens aus dem lokalen Dateisystem gelesen
      * und unverändert an den Client übertragen. Existiert die Datei nicht,
      * wird ein HTTP-404-Status zurückgegeben.
-     * </p>
      *
      * @param filename Name der angeforderten Datei
      * @return HTTP-Response mit dem Dateiinhalt oder 404, falls die Datei nicht existiert
