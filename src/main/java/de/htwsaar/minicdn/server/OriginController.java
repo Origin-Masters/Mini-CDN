@@ -3,6 +3,8 @@ package de.htwsaar.minicdn.server;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +19,11 @@ import org.springframework.web.bind.annotation.*;
  * nested path segments (e.g., `images/logo.png`).</p>
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/origin")
+@Profile("origin")
 public class OriginController {
+
+    // TODO : Use Streams instead of Byte Arrays
 
     /**
      * Base directory on the filesystem where origin files are stored.
