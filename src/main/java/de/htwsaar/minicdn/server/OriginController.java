@@ -1,13 +1,11 @@
 package de.htwsaar.minicdn.server;
 
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * REST controller that serves files from the local origin storage directory.
@@ -68,8 +66,6 @@ public class OriginController {
                 .body(new ByteArrayResource(data));
     }
 
-
-
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("ok");
@@ -93,8 +89,4 @@ public class OriginController {
                 .header("Content-Type", contentType)
                 .build();
     }
-
-
-
-
 }
