@@ -74,11 +74,13 @@ public class OriginController {
                 .body(new ByteArrayResource(data));
     }
 
+    // HEALTH
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("ok");
     }
 
+    // READY
     @GetMapping("/ready")
     public ResponseEntity<String> ready() {
         return ResponseEntity.ok("ready");
