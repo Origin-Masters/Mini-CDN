@@ -46,6 +46,9 @@ public class OriginController {
      * @return `200 OK` with the file contents and headers, or `404 Not Found` if absent
      * @throws IOException if an I/O error occurs while reading the file or probing its content type
      */
+
+    // GET
+    // {path:.+} means slashes are allowed too
     @GetMapping("/files/{path:.+}")
     public ResponseEntity<?> getFile(@PathVariable("path") String path) throws IOException {
         Path file = ORIGIN_DIR.resolve(path);
@@ -76,9 +79,10 @@ public class OriginController {
         return ResponseEntity.ok("ready");
     }
 
+    // HEAD
     @RequestMapping(value = "/files/{path:.+}", method = RequestMethod.HEAD)
-    public ResponseEntity<Void> headFile(@PathVariable("path") String pathname) throws IOException {
-        Path file = ORIGIN_DIR.resolve(pathname);
+    public ResponseEntity<Void> headFile(@PathVariable("path") String path) throws IOException {
+        Path file = ORIGIN_DIR.resolve(path);
         if (!Files.exists(file)) return ResponseEntity.notFound().build();
 
         String contentType = Files.probeContentType(file);
@@ -88,5 +92,40 @@ public class OriginController {
                 .header("Content-Length", String.valueOf(Files.size(file)))
                 .header("Content-Type", contentType)
                 .build();
+    }
+
+    // PUT
+    @PutMapping("/admin/files/{path:.+}")
+    public ResponseEntity<?> putFile(@PathVariable("path") String path, @RequestBody byte[] body) throws IOException {
+        Path file = ORIGIN_DIR.resolve(path);
+
+        //  parent directories if needed
+        Files.createDirectories(file.getParent());
+
+        // file already exists ?
+        boolean isNew = !Files.exists(file);
+
+        Files.write(file, body);
+
+        if (isNew) {
+            return ResponseEntity.status(201)
+                    .header("Location", "/api/files/" + path)
+                    .build();
+        } else {
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    // DELETE
+    @DeleteMapping("/admin/files/{path:.+}")
+    public ResponseEntity<?> deleteFile(@PathVariable("path") String path) throws IOException {
+        Path file = ORIGIN_DIR.resolve(path);
+
+        if (!Files.exists(file)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Files.delete(file);
+        return ResponseEntity.noContent().build();
     }
 }
