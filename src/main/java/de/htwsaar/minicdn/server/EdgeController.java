@@ -36,8 +36,7 @@ public class EdgeController {
     public ResponseEntity<Void> headFile(@PathVariable("path") String path) {
         String url = originBaseUrl + "/api/origin/files/" + path;
 
-        ResponseEntity<Void> originResponse =
-                restTemplate.exchange(url, HttpMethod.HEAD, HttpEntity.EMPTY, Void.class);
+        ResponseEntity<Void> originResponse = restTemplate.exchange(url, HttpMethod.HEAD, HttpEntity.EMPTY, Void.class);
 
         return ResponseEntity.status(originResponse.getStatusCode())
                 .headers(originResponse.getHeaders())
@@ -55,6 +54,4 @@ public class EdgeController {
     public ResponseEntity<String> ready() {
         return ResponseEntity.ok("ready");
     }
-
-
 }
