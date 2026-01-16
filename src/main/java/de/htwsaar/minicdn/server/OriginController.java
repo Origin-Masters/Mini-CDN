@@ -1,4 +1,6 @@
 package de.htwsaar.minicdn.server;
+import de.htwsaar.minicdn.server.util.Sha256Util;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,6 +30,8 @@ public class OriginController {
      * Base directory on the filesystem where origin files are stored.
      */
     private static final Path ORIGIN_DIR = Path.of("data", "origin");
+    private static final String SHA256_HEADER = "X-Content-SHA256";
+
 
     /**
      * Retrieves a file from the origin directory and returns it as a binary HTTP response.
@@ -62,6 +66,7 @@ public class OriginController {
         }
 
         byte[] data = Files.readAllBytes(file);
+        String sha256 = Sha256Util.sha256Hex(data);
         String contentType = Files.probeContentType(file);
         if (contentType == null) {
             contentType = "application/octet-stream";
@@ -70,6 +75,7 @@ public class OriginController {
         return ResponseEntity.ok()
                 .header("Content-Length", String.valueOf(data.length))
                 .header("Content-Type", contentType)
+                .header(SHA256_HEADER, sha256)
                 .body(new ByteArrayResource(data));
     }
 
@@ -93,10 +99,13 @@ public class OriginController {
 
         String contentType = Files.probeContentType(file);
         if (contentType == null) contentType = "application/octet-stream";
+        byte[] data = Files.readAllBytes(file);
+        String sha256 = Sha256Util.sha256Hex(data);
 
         return ResponseEntity.ok()
                 .header("Content-Length", String.valueOf(Files.size(file)))
                 .header("Content-Type", contentType)
+                .header(SHA256_HEADER, sha256)
                 .build();
     }
 
