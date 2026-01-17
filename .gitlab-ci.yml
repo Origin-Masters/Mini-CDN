@@ -6,7 +6,7 @@ stages:
 
 build_job:
   stage: build
-  tags: [ "macos", "maven" ]
+  tags: [ "maven" ]
 
   image: maven:3.9-jdk-21
   script:
@@ -19,7 +19,7 @@ build_job:
 
 test_job:
   stage: test
-  tags: [ "macos", "maven" ]
+  tags: ["maven" ]
 
   image: maven:3.9-jdk-21
   script:
