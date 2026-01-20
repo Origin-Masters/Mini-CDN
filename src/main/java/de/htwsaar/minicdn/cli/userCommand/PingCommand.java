@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.cli;
+package de.htwsaar.minicdn.cli.userCommand;
 
 import java.net.URI;
 import java.net.http.HttpClient;
