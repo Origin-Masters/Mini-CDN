@@ -19,5 +19,6 @@ ehthumbs.db
 .project
 .classpath
 
+edge/src/main/java/de/htwsaar/minicdn/edge/db/
 
 target

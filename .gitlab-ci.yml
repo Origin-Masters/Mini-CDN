@@ -4,31 +4,42 @@ stages:
   - build
   - test
 
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
 build_job:
   stage: build
   tags: [ "maven" ]
-
   image: maven:3.9-jdk-21
   script:
-    - mvn clean package -DskipTests
+    - mvn clean verify -DskipTests
+  cache:
+    paths:
+      - .m2/repository/
   artifacts:
     when: always
     paths:
-      - target/*.jar
+      - origin/target/*.jar
+      - edge/target/*.jar
+      - router/target/*.jar
+      - cli/target/*.jar
     expire_in: 1 week
 
 test_job:
   stage: test
-  tags: ["maven" ]
-
+  tags: ["maven"]
   image: maven:3.9-jdk-21
   script:
     - echo "Running unit tests..."
     - mvn test -B
+  cache:
+    paths:
+      - .m2/repository/
   artifacts:
     when: always
     reports:
-      junit: target/surefire-reports/TEST-*.xml
+      junit:
+        - "*/target/surefire-reports/TEST-*.xml"
     paths:
-      - target/surefire-reports/
+      - "*/target/surefire-reports/"
   retry: 1
