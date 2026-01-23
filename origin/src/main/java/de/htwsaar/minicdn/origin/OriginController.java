@@ -28,7 +28,7 @@ public class OriginController {
     /**
      * Base directory on the filesystem where origin files are stored.
      */
-    private static final Path ORIGIN_DIR = Path.of("data", "origin");
+    private static final Path ORIGIN_DIR = Path.of("data");
 
     private static final String SHA256_HEADER = "X-Content-SHA256";
 
