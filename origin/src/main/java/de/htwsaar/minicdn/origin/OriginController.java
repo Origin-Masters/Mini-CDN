@@ -10,13 +10,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * REST controller that serves files from the local origin storage directory.
+ * REST-Controller des Origin-Servers im Mini-CDN.
  *
- * <p>This controller exposes an HTTP GET endpoint for retrieving files located under
- * `data/origin` and returns them as a binary response with appropriate HTTP headers.</p>
+ * <p>
+ * Dieser Controller stellt Dateien aus dem lokalen Origin-Verzeichnis bereit.
+ * Er fungiert als zentrale Datenquelle des CDN und wird vom Edge-Server verwendet,
+ * um Datei-Inhalte und Metadaten abzurufen.
+ * </p>
  *
- * <p>\@Note The path variable is captured with the `{path:.+}` pattern to allow dots and
- * nested path segments (e.g., `images/logo.png`).</p>
+ * <p>
+ * Für jede ausgelieferte Datei wird ein SHA-256 Hash berechnet und im HTTP-Header
+ * {@code X-Content-SHA256} mitgesendet. Dieser dient der Integritätsprüfung auf
+ * Edge-Seite.
+ * </p>
+ *
+ * <p>
+ * Der Controller ist nur aktiv, wenn das Spring-Profil {@code origin} gesetzt ist.
+ * </p>
  */
 @RestController
 @RequestMapping("/api/origin")
@@ -26,34 +36,48 @@ public class OriginController {
     // TODO : Use Streams instead of Byte Arrays
 
     /**
-     * Base directory on the filesystem where origin files are stored.
+     * Basisverzeichnis im Dateisystem, in dem die Origin-Dateien gespeichert sind.
+     *
+     * <p>
+     * Alle angeforderten Pfade werden relativ zu diesem Verzeichnis aufgelöst.
+     * </p>
      */
     private static final Path ORIGIN_DIR = Path.of("data");
 
+    /**
+     * Name des HTTP-Headers, der den SHA-256 Hash der Datei enthält.
+     */
     private static final String SHA256_HEADER = "X-Content-SHA256";
 
     /**
-     * Retrieves a file from the origin directory and returns it as a binary HTTP response.
+     * Liefert eine Datei aus dem Origin-Verzeichnis als binäre HTTP-Antwort zurück.
      *
-     * <p>Behavior:</p>
+     * <p>
+     * Der angeforderte Pfad wird relativ zu {@link #ORIGIN_DIR} aufgelöst. Existiert
+     * die Datei nicht, wird {@code 404 Not Found} zurückgegeben.
+     * </p>
+     *
+     * <p>
+     * Die komplette Datei wird in den Speicher geladen und als {@link ByteArrayResource}
+     * zurückgegeben. Die Antwort enthält folgende Header:
+     * </p>
+     *
      * <ul>
-     *   <li>Resolves the requested path relative to `data/origin`.</li>
-     *   <li>Returns HTTP `404 Not Found` if the file does not exist.</li>
-     *   <li>Reads the entire file into memory and returns it as a `ByteArrayResource`.</li>
-     *   <li>Sets `Content-Type` based on {@link Files#probeContentType(Path)} and falls back to
-     *       `application/octet-stream` when unknown.</li>
-     *   <li>Sets `Content-Length` to the number of bytes in the response body.</li>
+     *   <li>{@code Content-Length}: Größe der Datei in Bytes</li>
+     *   <li>{@code Content-Type}: ermittelt über {@link Files#probeContentType(Path)}
+     *       (Fallback: {@code application/octet-stream})</li>
+     *   <li>{@code X-Content-SHA256}: SHA-256 Hash des Datei-Inhalts</li>
      * </ul>
      *
-     * <p>\@Security Considerations: The path is resolved via {@link Path#resolve(String)} without
-     * normalization or traversal checks. Requests containing sequences like `..` could potentially
-     * access files outside the intended directory.</p>
+     * <p>
+     * Hinweis: Die Pfadvariable wird mit {@code {path:.+}} erfasst, sodass auch Punkte
+     * und Unterverzeichnisse erlaubt sind (z.B. {@code images/logo.png}).
+     * </p>
      *
-     * @param path relative path to the file inside the origin directory (may include subfolders)
-     * @return `200 OK` with the file contents and headers, or `404 Not Found` if absent
-     * @throws IOException if an I/O error occurs while reading the file or probing its content type
+     * @param path relativer Pfad der Datei innerhalb des Origin-Verzeichnisses
+     * @return {@code 200 OK} mit Dateiinhalt und Headern oder {@code 404 Not Found}
+     * @throws IOException falls ein Ein-/Ausgabefehler auftritt
      */
-
     // GET
     // {path:.+} means slashes are allowed too
     @GetMapping("/files/{path:.+}")
@@ -78,18 +102,42 @@ public class OriginController {
                 .body(new ByteArrayResource(data));
     }
 
+    /**
+     * Health-Endpunkt zur einfachen Prüfung, ob der Origin-Server läuft.
+     *
+     * @return String {@code "ok"}
+     */
     // HEALTH
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("ok");
     }
 
+    /**
+     * Ready-Endpunkt, der signalisiert, dass der Origin-Server bereit ist,
+     * Anfragen zu verarbeiten.
+     *
+     * @return String {@code "ready"}
+     */
     // READY
     @GetMapping("/ready")
     public ResponseEntity<String> ready() {
         return ResponseEntity.ok("ready");
     }
 
+    /**
+     * Behandelt HTTP-HEAD-Anfragen für Dateien im Origin-Verzeichnis.
+     *
+     * <p>
+     * Dieser Endpunkt liefert ausschließlich Metadaten (Header), ohne den eigentlichen
+     * Dateiinhalt zu übertragen. Er wird primär vom Edge-Server genutzt, um Dateigröße,
+     * Content-Type und Hash abzufragen.
+     * </p>
+     *
+     * @param path relativer Pfad der Datei
+     * @return {@code 200 OK} mit Headern oder {@code 404 Not Found}, falls die Datei nicht existiert
+     * @throws IOException falls ein Ein-/Ausgabefehler auftritt
+     */
     // HEAD
     @RequestMapping(value = "/files/{path:.+}", method = RequestMethod.HEAD)
     public ResponseEntity<Void> headFile(@PathVariable("path") String path) throws IOException {
@@ -108,6 +156,20 @@ public class OriginController {
                 .build();
     }
 
+    /**
+     * Lädt eine Datei in das Origin-Verzeichnis hoch oder ersetzt eine bestehende Datei.
+     *
+     * <p>
+     * Existiert die Datei noch nicht, wird sie angelegt und {@code 201 Created} zurückgegeben.
+     * Existiert sie bereits, wird sie überschrieben und {@code 204 No Content} geliefert.
+     * Fehlende Elternverzeichnisse werden automatisch erzeugt.
+     * </p>
+     *
+     * @param path relativer Zielpfad der Datei
+     * @param body binärer Dateiinhalt
+     * @return HTTP-Antwort mit Status über Erstellung oder Aktualisierung
+     * @throws IOException falls ein Ein-/Ausgabefehler auftritt
+     */
     // PUT
     @PutMapping("/admin/files/{path:.+}")
     public ResponseEntity<?> putFile(@PathVariable("path") String path, @RequestBody byte[] body) throws IOException {
@@ -130,6 +192,18 @@ public class OriginController {
         }
     }
 
+    /**
+     * Löscht eine Datei aus dem Origin-Verzeichnis.
+     *
+     * <p>
+     * Existiert die Datei nicht, wird {@code 404 Not Found} zurückgegeben.
+     * Andernfalls wird die Datei entfernt und {@code 204 No Content} geliefert.
+     * </p>
+     *
+     * @param path relativer Pfad der zu löschenden Datei
+     * @return HTTP-Antwort mit Erfolgs- oder Fehlerstatus
+     * @throws IOException falls ein Ein-/Ausgabefehler auftritt
+     */
     // DELETE
     @DeleteMapping("/admin/files/{path:.+}")
     public ResponseEntity<?> deleteFile(@PathVariable("path") String path) throws IOException {
