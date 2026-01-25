@@ -11,8 +11,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>test</artifactId>
-    <name>mini-cdn-test</name>
+    <artifactId>e2e</artifactId>
+    <name>mini-cdn-e2e</name>
     <packaging>jar</packaging>
 
     <dependencies>
