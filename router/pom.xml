@@ -40,7 +40,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>de.htwsaar.minicdn.router.RouterApp</mainClass>  <!-- ← für origin-app -->
+                    <mainClass>de.htwsaar.minicdn.router.RouterApp</mainClass>
                 </configuration>
             </plugin>
             <plugin>
