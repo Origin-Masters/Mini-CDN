@@ -19,7 +19,7 @@
         <module>edge</module>
         <module>router</module>
         <module>cli</module>
-        <module>tests</module>
+        <module>test</module>
     </modules>
 
     <properties>
