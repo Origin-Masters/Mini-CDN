@@ -21,7 +21,6 @@ public class AdminResourceUpdateCommand implements Runnable {
     @Override
     public void run() {
         // TODO: ResourceService.update(...)
-        System.out.printf("[ADMIN] Update resource %d (path=%s, origin=%s, ttl=%s)%n",
-                id, path, origin, cacheTtl);
+        System.out.printf("[ADMIN] Update resource %d (path=%s, origin=%s, ttl=%s)%n", id, path, origin, cacheTtl);
     }
 }

@@ -18,7 +18,6 @@ public class AdminResourceAddCommand implements Runnable {
     @Override
     public void run() {
         // TODO: ResourceService.create(...)
-        System.out.printf("[ADMIN] Add resource: path=%s, origin=%s, ttl=%d%n",
-                path, origin, cacheTtl);
+        System.out.printf("[ADMIN] Add resource: path=%s, origin=%s, ttl=%d%n", path, origin, cacheTtl);
     }
 }
