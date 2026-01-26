@@ -4,9 +4,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
-import picocli.CommandLine.Option;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 @Command(name = "ping", description = "mini-Cdn Health Check (/health)")
 public class PingCommand implements Runnable {

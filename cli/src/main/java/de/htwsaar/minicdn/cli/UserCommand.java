@@ -9,12 +9,7 @@ import picocli.CommandLine.Command;
 @Command(
         name = "user",
         description = "User operations",
-        subcommands = {
-                UserResourceCommand.class,
-                UserCacheCommand.class,
-                UserStatsCommand.class
-        }
-)
+        subcommands = {UserResourceCommand.class, UserCacheCommand.class, UserStatsCommand.class})
 public class UserCommand implements Runnable {
 
     @Override
