@@ -43,11 +43,14 @@ public class CDNController {
         this.routingIndex = new RoutingIndex();
     }
 
+
+    /* Meldet, dass der Prozess läuft*/
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("ok");
     }
 
+    /* Meldet, dass der Router bereit ist, Anfragen zu verarbeiten*/
     @GetMapping("/ready")
     public ResponseEntity<String> ready() {
         return ResponseEntity.ok("ready");
@@ -58,10 +61,14 @@ public class CDNController {
      */
     @GetMapping("/files/{path:.+}")
     public ResponseEntity<Void> routeToEdge(
-            @PathVariable("path") String path,
+            @PathVariable("path") String path,                                          //nimmt Dateinamen entgegen
             @RequestParam(value = "region", required = false) String regionQuery,
             @RequestHeader(value = "X-Client-Region", required = false) String regionHeader) {
 
+        /* 1. steht was in der URL
+           2. Steht was im Header
+           3. beides leer, region = null
+         */
         String region = (regionQuery != null && !regionQuery.isBlank()) ? regionQuery : regionHeader;
 
         if (region == null || region.isBlank()) {
