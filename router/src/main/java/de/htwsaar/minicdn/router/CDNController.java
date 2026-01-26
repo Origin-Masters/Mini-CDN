@@ -1,14 +1,21 @@
 package de.htwsaar.minicdn.router;
 
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,14 +40,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class CDNController {
 
     private final RoutingIndex routingIndex;
+    private final HttpClient httpClient;
+    private final MetricsService metricsService;
 
-    /**
-     * Repräsentiert einen Edge-Server im Netzwerk.
-     */
     public record EdgeNode(String url) {}
+
+    public record EdgeNodeStatus(String url, boolean healthy) {}
 
     public CDNController() {
         this.routingIndex = new RoutingIndex();
+        this.metricsService = new MetricsService();
+        this.httpClient =
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
     }
 
     @GetMapping("/health")
@@ -57,7 +68,7 @@ public class CDNController {
      * Routing-Logik: Wählt eine Edge-Node mittels Round-Robin aus der Region aus.
      */
     @GetMapping("/files/{path:.+}")
-    public ResponseEntity<Void> routeToEdge(
+    public ResponseEntity<?> routeToEdge(
             @PathVariable("path") String path,
             @RequestParam(value = "region", required = false) String regionQuery,
             @RequestHeader(value = "X-Client-Region", required = false) String regionHeader) {
@@ -65,52 +76,47 @@ public class CDNController {
         String region = (regionQuery != null && !regionQuery.isBlank()) ? regionQuery : regionHeader;
 
         if (region == null || region.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            metricsService.recordError();
+            // Beispiel für Fehlermeldung im Body:
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Fehler: Region fehlt. Bitte 'region' Query-Parameter oder 'X-Client-Region' Header setzen.");
         }
 
-        // Suche nach der nächsten verfügbaren Node mittels Round-Robin
+        metricsService.recordRequest(region);
         EdgeNode selectedNode = routingIndex.getNextNode(region);
 
         if (selectedNode == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            metricsService.recordError();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Fehler: Keine verfügbaren Edge-Nodes für Region '" + region + "' gefunden.");
         }
 
+        metricsService.recordNodeSelection(selectedNode.url());
         String location = selectedNode.url() + "/api/edge/files/" + path;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create(location));
-
         return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
     }
 
-    /**
-     * Interne API zur dynamischen Verwaltung der Routing-Tabelle.
-     */
     @RestController
     @RequestMapping("/api/cdn/routing")
     public class RoutingAdminApi {
 
-        /** Records für Bulk-Updates */
         public record BulkRequest(String region, String url, String action) {}
 
         public record BulkResponse(String region, String url, String status) {}
 
         @PostMapping
         public ResponseEntity<Void> addEdgeNode(
-                @RequestParam(value = "region", required = true) String region,
-                @RequestParam(value = "url", required = true) String url) {
+                @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
             routingIndex.addEdge(region, new EdgeNode(url));
             return ResponseEntity.status(HttpStatus.CREATED).build();
         }
 
-        /**
-         * Bulk-Update Methode für effiziente Verwaltung mehrerer Nodes.
-         * Erwartet ein JSON Array von BulkRequest Objekten.
-         */
         @PostMapping("/bulk")
         public ResponseEntity<List<BulkResponse>> bulkUpdate(@RequestBody List<BulkRequest> requests) {
             List<BulkResponse> results = new ArrayList<>();
-
             for (BulkRequest req : requests) {
                 String status;
                 if ("add".equalsIgnoreCase(req.action())) {
@@ -124,39 +130,102 @@ public class CDNController {
                 }
                 results.add(new BulkResponse(req.region(), req.url(), status));
             }
-
             return ResponseEntity.ok(results);
         }
 
         @DeleteMapping
-        public ResponseEntity<Void> deleteEdgeNode(
-                @RequestParam(value = "region", required = true) String region,
-                @RequestParam(value = "url", required = true) String url) {
+        public ResponseEntity<?> deleteEdgeNode(
+                @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
             boolean removed = routingIndex.removeEdge(region, new EdgeNode(url), true);
-            if (removed) {
-                return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            }
+            return removed
+                    ? ResponseEntity.ok().build()
+                    : ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
         }
 
         @GetMapping
-        public ResponseEntity<Map<String, Set<EdgeNode>>> getIndex() {
-            return ResponseEntity.ok(routingIndex.getRawIndex());
+        public ResponseEntity<Map<String, List<EdgeNodeStatus>>> getIndex(
+                @RequestParam(value = "checkHealth", defaultValue = "false") boolean checkHealth) {
+
+            Map<String, Set<EdgeNode>> rawIndex = routingIndex.getRawIndex();
+            Map<String, List<EdgeNodeStatus>> result = new ConcurrentHashMap<>();
+
+            if (!checkHealth) {
+                rawIndex.forEach((region, nodes) -> {
+                    List<EdgeNodeStatus> statuses = nodes.stream()
+                            .map(n -> new EdgeNodeStatus(n.url(), true))
+                            .collect(Collectors.toList());
+                    result.put(region, statuses);
+                });
+                return ResponseEntity.ok(result);
+            }
+
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+            rawIndex.forEach((region, nodes) -> {
+                List<EdgeNodeStatus> statuses = Collections.synchronizedList(new ArrayList<>());
+                result.put(region, statuses);
+                for (EdgeNode node : nodes) {
+                    CompletableFuture<Void> future = checkNodeHealth(node)
+                            .thenAccept(isHealthy -> statuses.add(new EdgeNodeStatus(node.url(), isHealthy)));
+                    futures.add(future);
+                }
+            });
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            return ResponseEntity.ok(result);
+        }
+
+        @GetMapping("/metrics")
+        public ResponseEntity<Map<String, Object>> getMetrics() {
+            return ResponseEntity.ok(metricsService.getSnapshot());
+        }
+
+        private CompletableFuture<Boolean> checkNodeHealth(EdgeNode node) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(node.url() + "/api/edge/health"))
+                    .timeout(Duration.ofSeconds(1))
+                    .GET()
+                    .build();
+
+            return httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> response.statusCode() == 200)
+                    .exceptionally(ex -> false);
         }
     }
 
-    /**
-     * Interne Klasse zur Verwaltung der Region-zu-EdgeNode-Zuordnung und Round-Robin Logik.
-     */
+    public static class MetricsService {
+        private final AtomicLong totalRequests = new AtomicLong(0);
+        private final AtomicLong routingErrors = new AtomicLong(0);
+        private final Map<String, AtomicLong> regionStats = new ConcurrentHashMap<>();
+        private final Map<String, AtomicLong> nodeSelectionStats = new ConcurrentHashMap<>();
+
+        public void recordRequest(String region) {
+            totalRequests.incrementAndGet();
+            regionStats.computeIfAbsent(region, k -> new AtomicLong(0)).incrementAndGet();
+        }
+
+        public void recordNodeSelection(String url) {
+            nodeSelectionStats.computeIfAbsent(url, k -> new AtomicLong(0)).incrementAndGet();
+        }
+
+        public void recordError() {
+            routingErrors.incrementAndGet();
+        }
+
+        public Map<String, Object> getSnapshot() {
+            Map<String, Object> snapshot = new java.util.HashMap<>();
+            snapshot.put("totalRequests", totalRequests.get());
+            snapshot.put("routingErrors", routingErrors.get());
+            snapshot.put("requestsByRegion", regionStats);
+            snapshot.put("selectionsByNode", nodeSelectionStats);
+            return snapshot;
+        }
+    }
+
     public static class RoutingIndex {
         private final Map<String, Set<EdgeNode>> regionToNodes = new ConcurrentHashMap<>();
-        private final Map<String, AtomicInteger> regionCounters =
-                new ConcurrentHashMap<>(); // laufende index im Set für RR
+        private final Map<String, AtomicInteger> regionCounters = new ConcurrentHashMap<>();
 
-        /**
-         * Fügt einer Region eine Edge-Node hinzu.
-         */
         public void addEdge(String region, EdgeNode node) {
             if (region != null && node != null) {
                 regionToNodes
@@ -166,35 +235,19 @@ public class CDNController {
             }
         }
 
-        /**
-         * Wählt die nächste Node für eine Region basierend auf Round-Robin aus.
-         */
         public EdgeNode getNextNode(String region) {
             Set<EdgeNode> nodes = regionToNodes.get(region);
-            if (nodes == null || nodes.isEmpty()) {
-                return null;
-            }
+            if (nodes == null || nodes.isEmpty()) return null;
 
-            // Umwandlung in Liste für indexbasierten Zugriff
             List<EdgeNode> nodeList = new ArrayList<>(nodes);
             AtomicInteger counter = regionCounters.get(region);
-
-            if (counter == null) return nodeList.get(0);
-
-            // Inkrementieren und Modulo-Operation für Round-Robin
-            int index = counter.getAndIncrement() % nodeList.size();
+            int index = Math.abs(counter.getAndIncrement() % nodeList.size());
             return nodeList.get(index);
         }
 
-        /**
-         * Entfernt eine spezifische Node aus einer Region.
-         * @return true, wenn die Node gefunden und entfernt wurde, sonst false.
-         */
         public boolean removeEdge(String region, EdgeNode node, boolean removeIfEmpty) {
             Set<EdgeNode> nodes = regionToNodes.get(region);
-            if (nodes == null) {
-                return false;
-            }
+            if (nodes == null) return false;
 
             boolean removed = nodes.remove(node);
             if (removed && nodes.isEmpty() && removeIfEmpty) {
@@ -204,16 +257,10 @@ public class CDNController {
             return removed;
         }
 
-        /**
-         * Gibt den aktuellen Status des Index zurück.
-         */
         public Map<String, Set<EdgeNode>> getRawIndex() {
             return Collections.unmodifiableMap(regionToNodes);
         }
 
-        /**
-         * Leert den gesamten Index.
-         */
         public void clear() {
             regionToNodes.clear();
             regionCounters.clear();
