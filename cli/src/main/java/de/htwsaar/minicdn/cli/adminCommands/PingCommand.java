@@ -1,15 +1,17 @@
-package de.htwsaar.minicdn.cli.userCommand;
+package de.htwsaar.minicdn.cli.adminCommands;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import picocli.CommandLine;
 
-@CommandLine.Command(name = "ping", description = "mini-Cdn Health Check (/health)")
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Command;
+
+@Command(name = "ping", description = "mini-Cdn Health Check (/health)")
 public class PingCommand implements Runnable {
 
-    @CommandLine.Option(
+    @Option(
             names = {"-h", "--host"},
             defaultValue = "http://localhost:8080",
             description = "Basis-Url des mini-CDN Server")
