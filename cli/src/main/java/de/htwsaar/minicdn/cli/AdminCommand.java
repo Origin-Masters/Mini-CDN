@@ -7,11 +7,11 @@ import picocli.CommandLine.Command;
         name = "admin",
         description = "mini-Cdn Administration",
         subcommands = {
-                AdminResourceCommand.class,
-                AdminNodeCommand.class,
-                AdminUserMgmtCommand.class,
-                AdminConfigCommand.class,
-                PingCommand.class,
-                SmokeTestCommand.class})
-public class AdminCommand {
-}
+            AdminResourceCommand.class,
+            AdminNodeCommand.class,
+            AdminUserMgmtCommand.class,
+            AdminConfigCommand.class,
+            PingCommand.class,
+            SmokeTestCommand.class
+        })
+public class AdminCommand {}

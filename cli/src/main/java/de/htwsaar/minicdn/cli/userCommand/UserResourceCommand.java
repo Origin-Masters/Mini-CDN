@@ -2,17 +2,13 @@ package de.htwsaar.minicdn.cli.userCommand;
 
 import de.htwsaar.minicdn.cli.userCommand.userResourceCommand.UserResourceListCommand;
 import de.htwsaar.minicdn.cli.userCommand.userResourceCommand.UserResourceShowCommand;
-import picocli.CommandLine.Command;
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
 @Command(
         name = "resource",
         description = "View resources owned by the current user",
-        subcommands = {
-                UserResourceListCommand.class,
-                UserResourceShowCommand.class
-        }
-)
+        subcommands = {UserResourceListCommand.class, UserResourceShowCommand.class})
 public class UserResourceCommand implements Runnable {
     @Override
     public void run() {
