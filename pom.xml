@@ -119,13 +119,6 @@
                             <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
                             <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
                         </compilerArgs>
-                        <annotationProcessorPaths>
-                            <path>
-                                <groupId>com.google.errorprone</groupId>
-                                <artifactId>error_prone_core</artifactId>
-                                <version>${error-prone.version}</version>
-                            </path>
-                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
 
@@ -227,4 +220,40 @@
 
     </build>
 
+    <!-- Profile for binding error prone plugin to maven verify phase -->
+    <!-- mvn verify will run ErrorProne -->
+    <!-- mvn install -Dfast will skip ErrorProne for fast dev checks-->
+
+    <profiles>
+        <profile>
+            <id>strict-checks</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!fast</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs combine.children="append">
+                                <arg>-XDcompilePolicy=simple</arg>
+                                <arg>-Xplugin:ErrorProne</arg>
+                            </compilerArgs>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>com.google.errorprone</groupId>
+                                    <artifactId>error_prone_core</artifactId>
+                                    <version>${error-prone.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
