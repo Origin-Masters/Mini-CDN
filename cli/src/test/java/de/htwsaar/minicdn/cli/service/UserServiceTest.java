@@ -55,4 +55,51 @@ public class UserServiceTest {
                     .forEach(f -> f.delete());
         }
     }
+
+    @Test
+    void addUser_writesIntoProjectDb_usersDb() throws Exception {
+        // This is an integration test: it touches the real project DB file.
+        Path projectDb = Path.of("data", "users.db");
+        assertTrue(Files.exists(projectDb), "Expected project DB to exist at: " + projectDb.toAbsolutePath());
+
+        String jdbcUrl = "jdbc:sqlite:" + projectDb.toAbsolutePath();
+        Integer insertedId = null;
+
+        SQLiteDataSource ds = new SQLiteDataSource();
+        ds.setUrl(jdbcUrl);
+
+        try (Connection conn = ds.getConnection()) {
+            DSLContext dsl = DSL.using(conn, SQLDialect.SQLITE);
+
+            UserService userService = new UserService(dsl);
+
+            String testName = "IT-UserServiceTest-" + System.currentTimeMillis();
+            int id = userService.addUser(testName, 1);
+            insertedId = id;
+
+            assertTrue(id > 0, "expected generated id > 0");
+
+            var rec = dsl.select(Users.USERS.ID, Users.USERS.NAME, Users.USERS.ROLE)
+                    .from(Users.USERS)
+                    .where(Users.USERS.ID.eq(id))
+                    .fetchOne();
+
+            assertNotNull(rec, "Inserted user not found in project DB");
+            assertEquals(testName, rec.get(Users.USERS.NAME));
+            assertEquals(Integer.valueOf(1), rec.get(Users.USERS.ROLE));
+        } finally {
+            // Cleanup: remove the test row so the project DB is not polluted
+            if (insertedId != null) {
+                SQLiteDataSource cleanupDs = new SQLiteDataSource();
+                cleanupDs.setUrl(jdbcUrl);
+                try (Connection cleanupConn = cleanupDs.getConnection()) {
+                    DSLContext cleanupDsl = DSL.using(cleanupConn, SQLDialect.SQLITE);
+                    cleanupDsl
+                            .deleteFrom(Users.USERS)
+                            .where(Users.USERS.ID.eq(insertedId))
+                            .execute();
+                }
+            }
+        }
+    }
 }
