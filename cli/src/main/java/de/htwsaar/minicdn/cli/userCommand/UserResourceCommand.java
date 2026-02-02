@@ -8,8 +8,8 @@ import picocli.CommandLine.Option;
         name = "resource",
         description = "View resources owned by the current user",
         subcommands = {
-                UserResourceCommand.UserResourceListCommand.class,
-                UserResourceCommand.UserResourceShowCommand.class
+            UserResourceCommand.UserResourceListCommand.class,
+            UserResourceCommand.UserResourceShowCommand.class
         })
 public class UserResourceCommand implements Runnable {
     @Override

@@ -1,15 +1,15 @@
 package de.htwsaar.minicdn.router;
 
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class CDNControllerTest {
 
@@ -30,10 +30,8 @@ class CDNControllerTest {
 
         // Wir konfigurieren MockMvc so, dass es unseren Controller und die
         // dazugehörige Admin-Schnittstelle (innere Klasse) kennt.
-        mockMvc = MockMvcBuilders.standaloneSetup(
-                cdnController,
-                cdnController.new RoutingAdminApi()
-        ).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(cdnController, cdnController.new RoutingAdminApi())
+                .build();
     }
 
     @Test
@@ -64,14 +62,11 @@ class CDNControllerTest {
     void testSuccessfulRouting() throws Exception {
         // SCHRITT 1: Wir müssen dem System erst sagen, dass es eine Edge-Node gibt.
         // Das machen wir über die Admin-API (POST-Anfrage).
-        mockMvc.perform(post("/api/cdn/routing")
-                        .param("region", "EU")
-                        .param("url", "http://edge-server-1.com"))
+        mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://edge-server-1.com"))
                 .andExpect(status().isCreated()); // Erwarte HTTP 201 (Created)
 
         // SCHRITT 2: Jetzt fragen wir eine Datei in dieser Region an.
-        mockMvc.perform(get("/api/cdn/files/video.mp4")
-                        .param("region", "EU"))
+        mockMvc.perform(get("/api/cdn/files/video.mp4").param("region", "EU"))
                 // Wir erwarten eine Umleitung (HTTP 307 Temporary Redirect).
                 .andExpect(status().isTemporaryRedirect())
                 // Die 'Location' im Header muss nun die URL der Edge-Node plus den Dateipfad enthalten.
@@ -87,7 +82,9 @@ class CDNControllerTest {
 
         // Erste Anfrage: Wir holen uns die Location, wohin umgeleitet wurde.
         String ersteLocation = mockMvc.perform(get("/api/cdn/files/test").param("region", "US"))
-                .andReturn().getResponse().getHeader("Location");
+                .andReturn()
+                .getResponse()
+                .getHeader("Location");
 
         // Zweite Anfrage: Der Controller muss jetzt den ANDEREN Server wählen.
         mockMvc.perform(get("/api/cdn/files/test").param("region", "US"))
@@ -100,7 +97,8 @@ class CDNControllerTest {
     @DisplayName("Bulk-Update: Mehrere Nodes gleichzeitig über JSON hinzufügen")
     void testBulkUpdate() throws Exception {
         // Ein JSON-String, der zwei Befehle zum Hinzufügen von Nodes enthält.
-        String jsonAnfrage = """
+        String jsonAnfrage =
+                """
             [
                 {"region": "DE", "url": "http://node-deutschland.com", "action": "add"},
                 {"region": "FR", "url": "http://node-frankreich.com", "action": "add"}
@@ -142,9 +140,7 @@ class CDNControllerTest {
         mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://weg-mit-mir.com"));
 
         // ...dann löschen (DELETE Anfrage)
-        mockMvc.perform(delete("/api/cdn/routing")
-                        .param("region", "EU")
-                        .param("url", "http://weg-mit-mir.com"))
+        mockMvc.perform(delete("/api/cdn/routing").param("region", "EU").param("url", "http://weg-mit-mir.com"))
                 .andExpect(status().isOk());
 
         // Wenn wir jetzt anfragen, darf keine Node mehr gefunden werden (HTTP 404).

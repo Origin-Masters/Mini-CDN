@@ -8,11 +8,11 @@ import picocli.CommandLine.Option;
         name = "node",
         description = "Manage edge nodes",
         subcommands = {
-                AdminNodeCommand.AdminNodeAddCommand.class,
-                AdminNodeCommand.AdminNodeUpdateCommand.class,
-                AdminNodeCommand.AdminNodeDeleteCommand.class,
-                AdminNodeCommand.AdminNodeListCommand.class,
-                AdminNodeCommand.AdminNodeStatusCommand.class
+            AdminNodeCommand.AdminNodeAddCommand.class,
+            AdminNodeCommand.AdminNodeUpdateCommand.class,
+            AdminNodeCommand.AdminNodeDeleteCommand.class,
+            AdminNodeCommand.AdminNodeListCommand.class,
+            AdminNodeCommand.AdminNodeStatusCommand.class
         })
 public class AdminNodeCommand implements Runnable {
 

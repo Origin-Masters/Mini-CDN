@@ -11,9 +11,9 @@ import picocli.CommandLine.Option;
         name = "user",
         description = "Manage system users",
         subcommands = {
-                AdminUserMgmtCommand.AdminUserAddCommand.class,
-                AdminUserMgmtCommand.AdminUserRemoveCommand.class,
-                AdminUserMgmtCommand.AdminUserListCommand.class
+            AdminUserMgmtCommand.AdminUserAddCommand.class,
+            AdminUserMgmtCommand.AdminUserRemoveCommand.class,
+            AdminUserMgmtCommand.AdminUserListCommand.class
         })
 public class AdminUserMgmtCommand implements Runnable {
     @Override
@@ -113,7 +113,8 @@ public class AdminUserMgmtCommand implements Runnable {
             // 2. Optionally reassign resources to reassignOwnerId
             // 3. Remove or deactivate the user
 
-            System.out.printf("[ADMIN] Remove user (%s), force=%s, reassignOwnerId=%s%n", target, force, reassignOwnerId);
+            System.out.printf(
+                    "[ADMIN] Remove user (%s), force=%s, reassignOwnerId=%s%n", target, force, reassignOwnerId);
         }
     }
 }

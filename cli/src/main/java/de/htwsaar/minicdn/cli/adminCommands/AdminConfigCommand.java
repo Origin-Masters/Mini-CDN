@@ -7,10 +7,7 @@ import picocli.CommandLine.Option;
 @Command(
         name = "config",
         description = "Manage global configuration",
-        subcommands = {
-                AdminConfigCommand.AdminConfigSetCommand.class,
-                AdminConfigCommand.AdminConfigShowCommand.class
-        })
+        subcommands = {AdminConfigCommand.AdminConfigSetCommand.class, AdminConfigCommand.AdminConfigShowCommand.class})
 public class AdminConfigCommand implements Runnable {
 
     @Override
