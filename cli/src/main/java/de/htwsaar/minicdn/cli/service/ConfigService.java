@@ -22,4 +22,15 @@ public class ConfigService {
     public static Map<String, String> getAll() {
         return Map.copyOf(config);
     }
+
+    // Print all configuration entries to stdout in "key=value" lines.
+    public static void show() {
+        Map<String, String> all = getAll();
+        if (all.isEmpty()) {
+            System.out.println("[ADMIN] No global configuration set");
+            return;
+        }
+        System.out.println("[ADMIN] Global configuration:");
+        all.forEach((k, v) -> System.out.printf("[ADMIN] %s=%s%n", k, v));
+    }
 }

@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.cli;
 
+import de.htwsaar.minicdn.cli.adminCommands.AdminConfigCommand;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
@@ -25,7 +26,8 @@ import picocli.CommandLine.Parameters;
         name = "admin-cli",
         mixinStandardHelpOptions = true,
         version = "1.0",
-        description = "Verwaltet die Edge-Nodes des Mini-CDN und fragt Metriken ab.")
+        description = "Verwaltet die Edge-Nodes des Mini-CDN und fragt Metriken ab.",
+        subcommands = {AdminCommand.class, AdminConfigCommand.class})
 public class AdminCli implements Callable<Integer> {
 
     @Option(

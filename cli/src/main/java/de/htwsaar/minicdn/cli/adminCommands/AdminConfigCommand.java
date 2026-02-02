@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.cli.adminCommands;
 
+import de.htwsaar.minicdn.cli.service.ConfigService;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -26,8 +27,12 @@ public class AdminConfigCommand implements Runnable {
 
         @Override
         public void run() {
-            // TODO: ConfigService.set(key, value)
-            System.out.printf("[ADMIN] Set config %s=%s%n", key, value);
+            boolean ok = ConfigService.set(key, value);
+            if (ok) {
+                System.out.printf("[ADMIN] Set config %s=%s%n", key, value);
+            } else {
+                System.out.printf("[ADMIN] Failed to set config %s%n", key);
+            }
         }
     }
 
@@ -36,7 +41,7 @@ public class AdminConfigCommand implements Runnable {
 
         @Override
         public void run() {
-            // TODO: ConfigService.show()
+            ConfigService.show();
             System.out.println("[ADMIN] Show global config");
         }
     }
