@@ -36,7 +36,7 @@ class SmokeTest extends AbstractE2E {
                 HttpResponse.BodyHandlers.discarding());
 
         try {
-            // 2) Download über Edge mit Zeitmessung
+            // 2) Download über Edge mit Zeitmessung.
             String url = EDGE_BASE + "/api/edge/files/" + fileName;
 
             long start = System.currentTimeMillis();
