@@ -5,6 +5,10 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.util.concurrent.Callable;
+
 @Command(
         name = "resource",
         description = "Manage CDN resources",
@@ -22,33 +26,55 @@ public class AdminResourceCommand implements Runnable {
         CommandLine.usage(this, System.out);
     }
 
-    @Command(name = "add", description = "Add a new resource")
-    public static class AdminResourceAddCommand implements Runnable {
+    @Command(name = "add", description = "Upload a file to the Origin server (admin API)")
+    public static class AdminResourceAddCommand implements Callable<Integer> {
 
-        @Option(names = "--path", required = true, description = "Resource path, e.g. /img/logo.png")
+        @Option(names = "--path", required = true,
+                description = "Target path on origin, e.g. docs/Lebenslauf.pdf (stored under origin's data/ directory)")
         String path;
 
-        @Option(names = "--origin", required = true, description = "Origin server URL")
+        @Option(names = "--origin", required = true,
+                description = "Origin server base URL, e.g. http://localhost:8080")
         String origin;
 
-        @Option(names = "--cache-ttl", required = true, description = "Cache time-to-live in seconds")
-        int cacheTtl;
+        @Option(names = "--file", required = true,
+                description = "Local file path to upload, e.g. /Users/.../Lebenslauf.pdf")
+        Path file;
 
         @Override
-        public void run() {
-            String server = System.getProperty("cdn.server");
-            if (server == null || server.isBlank()) {
-                server = System.getenv("CDN_SERVER");
+        public Integer call() {
+            // Validate a local file
+            if (file == null || !Files.exists(file) || !Files.isRegularFile(file)) {
+                System.err.println("[ADMIN] Local file does not exist or is not a regular file: " + file);
+                return 1;
             }
-            if (server == null || server.isBlank()) {
-                server = "http://localhost:8082";
+
+            // Normalize a path: remove leading slash and optional "origin/" or "data/" prefixes
+            String cleanPath = (path == null) ? "" : path;
+            // remove the leading slash if present
+            if (cleanPath.startsWith("/")) {
+                cleanPath = cleanPath.substring(1);
+            }
+            // remove optional "origin/" and/or "data/" prefixes
+            cleanPath = cleanPath.replaceFirst("^(origin/)?(data/)?", "");
+
+            if (cleanPath.isBlank()) {
+                System.err.println("[ADMIN] Invalid target path after normalization: " + path);
+                return 1;
             }
 
             AdminResourceService service = new AdminResourceService();
-            int rc = service.create(server, path, origin, cacheTtl);
+            int rc = service.uploadToOrigin(origin, cleanPath, file);
+
             if (rc != 0) {
-                System.err.printf("[ADMIN] Add resource failed: path=%s, origin=%s, ttl=%d%n", path, origin, cacheTtl);
+                System.err.printf("[ADMIN] Upload failed: origin=%s, path=%s, file=%s%n",
+                        origin, cleanPath, file);
+            } else {
+                System.out.printf("[ADMIN] Upload succeeded: origin=%s, path=%s, file=%s%n",
+                        origin, cleanPath, file);
             }
+
+            return rc;
         }
     }
 

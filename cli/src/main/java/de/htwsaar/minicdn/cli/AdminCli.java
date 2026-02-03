@@ -32,10 +32,7 @@ import picocli.CommandLine.Parameters;
         mixinStandardHelpOptions = true,
         version = "1.0",
         description = "Verwaltet die Edge-Nodes des Mini-CDN und fragt Metriken ab.",
-        subcommands = {AdminCommand.class,
-                AdminConfigCommand.class,
-                AdminUserMgmtCommand.class,
-                AdminResourceCommand.class})
+        subcommands = {AdminCommand.class})
 public class AdminCli implements Callable<Integer> {
 
     @Option(
