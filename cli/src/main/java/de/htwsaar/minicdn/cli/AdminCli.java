@@ -14,10 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.Callable;
-
-import de.htwsaar.minicdn.cli.adminCommands.AdminResourceCommand;
-import de.htwsaar.minicdn.cli.adminCommands.AdminUserMgmtCommand;
-import de.htwsaar.minicdn.cli.service.AdminResourceService;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -86,10 +82,10 @@ public class AdminCli implements Callable<Integer> {
     @Command(name = "bulkUpdate", description = "Führt ein Bulk-Update mittels einer JSON-Datei aus.")
     public Integer bulkUpdate(
             @Parameters(
-                    index = "0",
-                    description = "Pfad zur JSON-Datei mit den Update-Anweisungen",
-                    paramLabel = "FILE")
-            String filePath) {
+                            index = "0",
+                            description = "Pfad zur JSON-Datei mit den Update-Anweisungen",
+                            paramLabel = "FILE")
+                    String filePath) {
 
         try {
             Path path = Path.of(filePath);

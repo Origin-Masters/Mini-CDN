@@ -13,11 +13,11 @@ import java.util.concurrent.Callable;
         name = "resource",
         description = "Manage CDN resources",
         subcommands = {
-                AdminResourceCommand.AdminResourceAddCommand.class,
-                AdminResourceCommand.AdminResourceUpdateCommand.class,
-                AdminResourceCommand.AdminResourceDeleteCommand.class,
-                AdminResourceCommand.AdminResourceListCommand.class,
-                AdminResourceCommand.AdminResourceShowCommand.class
+            AdminResourceCommand.AdminResourceAddCommand.class,
+            AdminResourceCommand.AdminResourceUpdateCommand.class,
+            AdminResourceCommand.AdminResourceDeleteCommand.class,
+            AdminResourceCommand.AdminResourceListCommand.class,
+            AdminResourceCommand.AdminResourceShowCommand.class
         })
 public class AdminResourceCommand implements Runnable {
 

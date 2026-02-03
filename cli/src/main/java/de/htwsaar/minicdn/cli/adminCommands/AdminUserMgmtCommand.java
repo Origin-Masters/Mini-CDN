@@ -1,7 +1,6 @@
 package de.htwsaar.minicdn.cli.adminCommands;
 
 import de.htwsaar.minicdn.cli.service.AdminUserService;
-
 import java.sql.SQLException;
 import java.util.Map;
 import picocli.CommandLine;

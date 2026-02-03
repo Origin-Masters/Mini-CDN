@@ -15,16 +15,17 @@ public class AdminResourceService {
     private final HttpClient httpClient;
 
     public AdminResourceService() {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .build();
+        this.httpClient =
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
     }
 
     public int create(String serverUrl, String path, String origin, int cacheTtl) {
         try {
-            String targetUrl = serverUrl.endsWith("/") ? serverUrl + "api/cdn/resources" : serverUrl + "/api/cdn/resources";
+            String targetUrl =
+                    serverUrl.endsWith("/") ? serverUrl + "api/cdn/resources" : serverUrl + "/api/cdn/resources";
             // simple JSON payload; keep minimal to avoid extra deps
-            String json = String.format("{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}",
+            String json = String.format(
+                    "{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}",
                     escapeJson(path), escapeJson(origin), cacheTtl);
 
             HttpRequest request = HttpRequest.newBuilder()
@@ -89,6 +90,9 @@ public class AdminResourceService {
 
     private String escapeJson(String s) {
         if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r");
     }
 }
