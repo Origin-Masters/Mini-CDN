@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.cli.adminCommands;
 
-import de.htwsaar.minicdn.cli.service.UserService;
+import de.htwsaar.minicdn.cli.service.AdminUserService;
+
 import java.sql.SQLException;
 import java.util.Map;
 import picocli.CommandLine;
@@ -40,7 +41,7 @@ public class AdminUserMgmtCommand implements Runnable {
 
             int roleId = parseRole(role);
 
-            try (UserService svc = new UserService(jdbcUrl)) {
+            try (AdminUserService svc = new AdminUserService(jdbcUrl)) {
                 int id = svc.addUser(name, roleId);
                 if (id > 0) {
                     System.out.printf("[ADMIN] User added: id=%d name=%s role=%d%n", id, name, roleId);

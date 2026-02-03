@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.cli;
 
 import de.htwsaar.minicdn.cli.adminCommands.AdminConfigCommand;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
@@ -13,6 +14,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.Callable;
+
+import de.htwsaar.minicdn.cli.adminCommands.AdminResourceCommand;
+import de.htwsaar.minicdn.cli.adminCommands.AdminUserMgmtCommand;
+import de.htwsaar.minicdn.cli.service.AdminResourceService;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -27,7 +32,10 @@ import picocli.CommandLine.Parameters;
         mixinStandardHelpOptions = true,
         version = "1.0",
         description = "Verwaltet die Edge-Nodes des Mini-CDN und fragt Metriken ab.",
-        subcommands = {AdminCommand.class, AdminConfigCommand.class})
+        subcommands = {AdminCommand.class,
+                AdminConfigCommand.class,
+                AdminUserMgmtCommand.class,
+                AdminResourceCommand.class})
 public class AdminCli implements Callable<Integer> {
 
     @Option(
@@ -81,10 +89,10 @@ public class AdminCli implements Callable<Integer> {
     @Command(name = "bulkUpdate", description = "Führt ein Bulk-Update mittels einer JSON-Datei aus.")
     public Integer bulkUpdate(
             @Parameters(
-                            index = "0",
-                            description = "Pfad zur JSON-Datei mit den Update-Anweisungen",
-                            paramLabel = "FILE")
-                    String filePath) {
+                    index = "0",
+                    description = "Pfad zur JSON-Datei mit den Update-Anweisungen",
+                    paramLabel = "FILE")
+            String filePath) {
 
         try {
             Path path = Path.of(filePath);
@@ -117,9 +125,9 @@ public class AdminCli implements Callable<Integer> {
     @Command(name = "getEdgeIndex", description = "Zeigt die aktuelle Routing-Tabelle (JSON).")
     public Integer getEdgeIndex(
             @Option(
-                            names = {"--check-health"},
-                            description = "Führt einen aktiven Health-Check durch")
-                    boolean checkHealth) {
+                    names = {"--check-health"},
+                    description = "Führt einen aktiven Health-Check durch")
+            boolean checkHealth) {
 
         String query = checkHealth ? "?checkHealth=true" : "";
         HttpRequest request = HttpRequest.newBuilder()

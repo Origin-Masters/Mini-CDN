@@ -3,7 +3,7 @@ package de.htwsaar.minicdn.cli.service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConfigService {
+public class AdminConfigService {
     private static final Map<String, String> config = new ConcurrentHashMap<>();
 
     public static boolean set(String key, String value) {

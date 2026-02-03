@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.cli.adminCommands;
 
+import de.htwsaar.minicdn.cli.service.AdminResourceService;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -8,11 +9,11 @@ import picocli.CommandLine.Option;
         name = "resource",
         description = "Manage CDN resources",
         subcommands = {
-            AdminResourceCommand.AdminResourceAddCommand.class,
-            AdminResourceCommand.AdminResourceUpdateCommand.class,
-            AdminResourceCommand.AdminResourceDeleteCommand.class,
-            AdminResourceCommand.AdminResourceListCommand.class,
-            AdminResourceCommand.AdminResourceShowCommand.class
+                AdminResourceCommand.AdminResourceAddCommand.class,
+                AdminResourceCommand.AdminResourceUpdateCommand.class,
+                AdminResourceCommand.AdminResourceDeleteCommand.class,
+                AdminResourceCommand.AdminResourceListCommand.class,
+                AdminResourceCommand.AdminResourceShowCommand.class
         })
 public class AdminResourceCommand implements Runnable {
 
@@ -35,8 +36,19 @@ public class AdminResourceCommand implements Runnable {
 
         @Override
         public void run() {
-            // TODO: ResourceService.create(...)
-            System.out.printf("[ADMIN] Add resource: path=%s, origin=%s, ttl=%d%n", path, origin, cacheTtl);
+            String server = System.getProperty("cdn.server");
+            if (server == null || server.isBlank()) {
+                server = System.getenv("CDN_SERVER");
+            }
+            if (server == null || server.isBlank()) {
+                server = "http://localhost:8082";
+            }
+
+            AdminResourceService service = new AdminResourceService();
+            int rc = service.create(server, path, origin, cacheTtl);
+            if (rc != 0) {
+                System.err.printf("[ADMIN] Add resource failed: path=%s, origin=%s, ttl=%d%n", path, origin, cacheTtl);
+            }
         }
     }
 

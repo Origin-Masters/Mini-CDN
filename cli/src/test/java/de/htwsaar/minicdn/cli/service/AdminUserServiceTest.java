@@ -13,7 +13,7 @@ import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 import org.sqlite.SQLiteDataSource;
 
-public class UserServiceTest {
+public class AdminUserServiceTest {
 
     @Test
     void addUser() throws Exception {
@@ -33,8 +33,8 @@ public class UserServiceTest {
                         "CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, role INTEGER NOT NULL)");
 
                 // use the service
-                UserService userService = new UserService(dsl);
-                int id = userService.addUser("Alice", 1);
+                AdminUserService adminUserService = new AdminUserService(dsl);
+                int id = adminUserService.addUser("Alice", 1);
                 assertTrue(id > 0, "expected generated id > 0");
 
                 // verify via jOOQ
@@ -71,10 +71,10 @@ public class UserServiceTest {
         try (Connection conn = ds.getConnection()) {
             DSLContext dsl = DSL.using(conn, SQLDialect.SQLITE);
 
-            UserService userService = new UserService(dsl);
+            AdminUserService adminUserService = new AdminUserService(dsl);
 
-            String testName = "IT-UserServiceTest-" + System.currentTimeMillis();
-            int id = userService.addUser(testName, 1);
+            String testName = "IT-AdminUserServiceTest-" + System.currentTimeMillis();
+            int id = adminUserService.addUser(testName, 1);
             insertedId = id;
 
             assertTrue(id > 0, "expected generated id > 0");

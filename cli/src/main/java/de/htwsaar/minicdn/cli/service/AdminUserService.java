@@ -2,27 +2,29 @@ package de.htwsaar.minicdn.cli.service;
 
 import de.htwsaar.minicdn.cli.db.tables.Users;
 import de.htwsaar.minicdn.cli.db.tables.records.UsersRecord;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
 /**
- * Simple jOOQ-backed UserService.
+ * Simple jOOQ-backed AdminUserService.
  */
-public class UserService implements AutoCloseable {
+public class AdminUserService implements AutoCloseable {
     private final DSLContext dsl;
     private final Connection connection; // only set when constructed from JDBC URL
 
-    public UserService(DSLContext dsl) {
+    public AdminUserService(DSLContext dsl) {
         this.dsl = dsl;
         this.connection = null;
     }
 
-    public UserService(String jdbcUrl) throws SQLException {
+    public AdminUserService(String jdbcUrl) throws SQLException {
         this.connection = DriverManager.getConnection(jdbcUrl);
         this.dsl = DSL.using(this.connection, SQLDialect.SQLITE);
     }
@@ -31,11 +33,7 @@ public class UserService implements AutoCloseable {
      * Insert a user and return the generated id (>0) or -1 on failure.
      */
     public int addUser(String name, int role) {
-        UsersRecord rec = dsl.insertInto(Users.USERS)
-                .columns(Users.USERS.NAME, Users.USERS.ROLE)
-                .values(name, role)
-                .returning(Users.USERS.ID)
-                .fetchOne();
+        UsersRecord rec = dsl.insertInto(Users.USERS).columns(Users.USERS.NAME, Users.USERS.ROLE).values(name, role).returning(Users.USERS.ID).fetchOne();
 
         if (rec != null && rec.getValue(Users.USERS.ID) != null) {
             return rec.getValue(Users.USERS.ID);
