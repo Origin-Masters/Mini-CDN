@@ -1,16 +1,16 @@
 package de.htwsaar.minicdn.e2e;
-import org.springframework.http.MediaType;
-import org.junit.jupiter.api.*;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.*;
+import org.springframework.http.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestTemplate;
+
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class CDNIntegrationTest extends AbstractE2E {
+class CDNControllerTest extends AbstractE2E {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -49,7 +49,8 @@ class CDNIntegrationTest extends AbstractE2E {
     @DisplayName("E2E: Bulk-Update von mehreren Nodes")
     void testBulkUpdateIntegration() {
         String bulkUrl = ROUTER_BASE + "/api/cdn/routing/bulk";
-        String jsonPayload = """
+        String jsonPayload =
+                """
             [
                 {"region": "US", "url": "http://localhost:9001", "action": "add"},
                 {"region": "US", "url": "http://localhost:9002", "action": "add"}
