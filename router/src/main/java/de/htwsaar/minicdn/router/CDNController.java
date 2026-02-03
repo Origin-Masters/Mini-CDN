@@ -34,8 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
  * Zentraler CDN Controller, der Anfragen an verfügbare Edge-Nodes delegiert.
  * Implementiert Round-Robin zur Lastverteilung innerhalb einer Region.
  */
-@RestController
-@RequestMapping("/api/cdn")
+@RestController                 // Webschittstelle
+@RequestMapping("/api/cdn")  // Basis Pfad für alle Endpunkte
 @Profile("cdn")
 public class CDNController {
 
@@ -53,12 +53,13 @@ public class CDNController {
         this.httpClient =
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
     }
-
+    // Prüfen, ob der Edge Server abgestürzt ist oder noch läuft
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("ok");
     }
 
+    // Ist Edge Server bereit?
     @GetMapping("/ready")
     public ResponseEntity<String> ready() {
         return ResponseEntity.ok("ready");
@@ -70,13 +71,16 @@ public class CDNController {
     @GetMapping("/files/{path:.+}")
     public ResponseEntity<?> routeToEdge(
             @PathVariable("path") String path,
+            // schauen nach der Region des Nutzers (Query Paramater)
             @RequestParam(value = "region", required = false) String regionQuery,
+            // im HTTP-Header
             @RequestHeader(value = "X-Client-Region", required = false) String regionHeader) {
 
+        // Region mitgeben oder automatisch mitsenden
         String region = (regionQuery != null && !regionQuery.isBlank()) ? regionQuery : regionHeader;
 
         if (region == null || region.isBlank()) {
-            metricsService.recordError();
+            metricsService.recordError();   //ungültige Anfrage
             // Beispiel für Fehlermeldung im Body:
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Fehler: Region fehlt. Bitte 'region' Query-Parameter oder 'X-Client-Region' Header setzen.");
@@ -140,7 +144,7 @@ public class CDNController {
             return removed
                     ? ResponseEntity.ok().build()
                     : ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
+                    .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
         }
 
         @GetMapping
