@@ -80,8 +80,7 @@ class SmokeTest extends AbstractE2E {
             long start = System.currentTimeMillis();
 
             HttpResponse<byte[]> response = CLIENT.send(
-                    HttpRequest.newBuilder(URI.create(url)).GET().build(),
-                    HttpResponse.BodyHandlers.ofByteArray());
+                    HttpRequest.newBuilder(URI.create(url)).GET().build(), HttpResponse.BodyHandlers.ofByteArray());
 
             long timeMs = System.currentTimeMillis() - start;
             int size = response.body().length;
@@ -95,9 +94,7 @@ class SmokeTest extends AbstractE2E {
 
         } finally {
             // 3) Datei wieder löschen
-            CLIENT.send(
-                    HttpRequest.newBuilder(adminUri).DELETE().build(),
-                    HttpResponse.BodyHandlers.discarding());
+            CLIENT.send(HttpRequest.newBuilder(adminUri).DELETE().build(), HttpResponse.BodyHandlers.discarding());
         }
     }
 }

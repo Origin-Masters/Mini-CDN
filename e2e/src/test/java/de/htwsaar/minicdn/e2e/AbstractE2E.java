@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.e2e;
 import de.htwsaar.minicdn.edge.EdgeApp;
 import de.htwsaar.minicdn.origin.OriginApp;
 import de.htwsaar.minicdn.router.RouterApp;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -49,5 +50,21 @@ public abstract class AbstractE2E {
                 .profiles("cdn")
                 .properties("server.port=" + ROUTER_PORT)
                 .run();
+    }
+
+    @AfterAll
+    static void stopAppsOnce() {
+        if (edgeCtx != null) {
+            edgeCtx.close();
+            edgeCtx = null;
+        }
+        if (routerCtx != null) {
+            routerCtx.close();
+            routerCtx = null;
+        }
+        if (originCtx != null) {
+            originCtx.close();
+            originCtx = null;
+        }
     }
 }

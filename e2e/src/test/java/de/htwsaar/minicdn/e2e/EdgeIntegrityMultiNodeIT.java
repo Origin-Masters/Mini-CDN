@@ -12,14 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
-/**
- * E2E-Integrationstest:
- * Stellt sicher, dass >= 3 Edge-Server Dateien bitgenau unverändert ausliefern
- * (Validierung über X-Content-SHA256 gegenüber Origin).
- */
 class EdgeIntegrityMultiNodeIT extends AbstractE2E {
 
-    // zusätzliche Edges (neben der einen aus AbstractE2E)
     private static final int EDGE2_PORT = 8083;
     private static final int EDGE3_PORT = 8084;
 
@@ -34,14 +28,20 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
 
     @AfterAll
     static void stopExtraEdges() {
-        if (edge2Ctx != null) edge2Ctx.close();
-        if (edge3Ctx != null) edge3Ctx.close();
+        if (edge2Ctx != null) {
+            edge2Ctx.close();
+            edge2Ctx = null;
+        }
+        if (edge3Ctx != null) {
+            edge3Ctx.close();
+            edge3Ctx = null;
+        }
     }
 
     @Test
     void integrity_is_identical_on_three_edges() throws Exception {
 
-        // 1) zusätzliche Edge-Server starten
+        // 1) zusätzliche Edge-Server mit "edge"-Profil, aber überschriebenen Ports
         edge2Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
                 .properties(
@@ -49,7 +49,9 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
                         "origin.base-url=" + ORIGIN_BASE,
                         "edge.cache.ttl-ms=60000",
                         "edge.cache.max-entries=100")
-                .run();
+                // Setze als Command-Line-Args mit höchster Priorität
+                .build()
+                .run("--server.port=" + EDGE2_PORT);
 
         edge3Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
@@ -58,13 +60,14 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
                         "origin.base-url=" + ORIGIN_BASE,
                         "edge.cache.ttl-ms=60000",
                         "edge.cache.max-entries=100")
-                .run();
+                .build()
+                .run("--server.port=" + EDGE3_PORT);
 
         // 2) Testdatei im Origin anlegen
         String fileName = "integrity-" + System.currentTimeMillis() + ".bin";
         URI adminUri = URI.create(ORIGIN_BASE + "/api/origin/admin/files/" + fileName);
 
-        byte[] payload = new byte[128_000]; // ausreichend groß
+        byte[] payload = new byte[128_000];
         CLIENT.send(
                 HttpRequest.newBuilder(adminUri)
                         .PUT(HttpRequest.BodyPublishers.ofByteArray(payload))
@@ -88,17 +91,13 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
 
         } finally {
             // 6) Cleanup im Origin
-            CLIENT.send(
-                    HttpRequest.newBuilder(adminUri).DELETE().build(),
-                    HttpResponse.BodyHandlers.discarding());
+            CLIENT.send(HttpRequest.newBuilder(adminUri).DELETE().build(), HttpResponse.BodyHandlers.discarding());
         }
     }
 
     private static String fetchSha(String url) throws Exception {
-        HttpResponse<byte[]> resp =
-                CLIENT.send(
-                        HttpRequest.newBuilder(URI.create(url)).GET().build(),
-                        HttpResponse.BodyHandlers.ofByteArray());
+        HttpResponse<byte[]> resp = CLIENT.send(
+                HttpRequest.newBuilder(URI.create(url)).GET().build(), HttpResponse.BodyHandlers.ofByteArray());
 
         assertEquals(200, resp.statusCode());
         return resp.headers().firstValue(SHA_HEADER).orElseThrow();
