@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Zentraler CDN Controller, der Anfragen an verfügbare Edge-Nodes delegiert.
  * Implementiert Round-Robin zur Lastverteilung innerhalb einer Region.
  */
-@RestController // Webschittstelle
+@RestController                // Webschittstelle
 @RequestMapping("/api/cdn") // Basis Pfad für alle Endpunkte
 @Profile("cdn")
 public class CDNController {
@@ -80,25 +80,31 @@ public class CDNController {
         String region = (regionQuery != null && !regionQuery.isBlank()) ? regionQuery : regionHeader;
 
         if (region == null || region.isBlank()) {
-            metricsService.recordError(); // ungültige Anfrage
+            metricsService.recordError(); // ungültige Anfrage loggen
             // Beispiel für Fehlermeldung im Body:
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Fehler: Region fehlt. Bitte 'region' Query-Parameter oder 'X-Client-Region' Header setzen.");
         }
 
+        // Neue Anfrage für Region XY
         metricsService.recordRequest(region);
+        // Round Robin Algorithmus wird aufgerufen
         EdgeNode selectedNode = routingIndex.getNextNode(region);
 
+        // Region ist bekannt, aber aktuell ist kein Server darin angemeldet
         if (selectedNode == null) {
             metricsService.recordError();
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Fehler: Keine verfügbaren Edge-Nodes für Region '" + region + "' gefunden.");
         }
 
+        // Zähler wird hochgezählt
         metricsService.recordNodeSelection(selectedNode.url());
+        // Wegweise wird gebaut
         String location = selectedNode.url() + "/api/edge/files/" + path;
 
         HttpHeaders headers = new HttpHeaders();
+        // Ziel URL wird wird in den Header der Antwort geschrieben
         headers.setLocation(URI.create(location));
         return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
     }
@@ -111,6 +117,7 @@ public class CDNController {
 
         public record BulkResponse(String region, String url, String status) {}
 
+        // Wenn wir Kapazität in einer Region erhöhen wollen, senden wir POST-Request an diesen Endpunkt, region und url wird entgegengenommen und im RoutingIndex eingetragen
         @PostMapping
         public ResponseEntity<Void> addEdgeNode(
                 @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
@@ -118,6 +125,8 @@ public class CDNController {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         }
 
+        // Admin schickt eine Liste (JSON-Array) mit Befehlen an den Router, er geht die Liste durch und entscheidet, ob Server hinzugefügt oder gelöscht wird
+        // anstatt für jeden Server eine einzelne HTTP Anfrage zu senden, erlaubt dieser Endpunkt eine Sammel Anfrage für große Netzwerkkonfigurationen
         @PostMapping("/bulk")
         public ResponseEntity<List<BulkResponse>> bulkUpdate(@RequestBody List<BulkRequest> requests) {
             List<BulkResponse> results = new ArrayList<>();
@@ -137,6 +146,7 @@ public class CDNController {
             return ResponseEntity.ok(results);
         }
 
+        // Server aus System entfernen
         @DeleteMapping
         public ResponseEntity<?> deleteEdgeNode(
                 @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
@@ -144,14 +154,15 @@ public class CDNController {
             return removed
                     ? ResponseEntity.ok().build()
                     : ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
+                    .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
         }
 
+        // Router geht seine Liste durch und fragt (falls gewünscht) bei jedem einzelnen Edge Server, ob er noch gesund ist
         @GetMapping
         public ResponseEntity<Map<String, List<EdgeNodeStatus>>> getIndex(
                 @RequestParam(value = "checkHealth", defaultValue = "false") boolean checkHealth) {
 
-            Map<String, Set<EdgeNode>> rawIndex = routingIndex.getRawIndex();
+            Map<String, Set<EdgeNode>> rawIndex = routingIndex.getRawIndex();   // alle regestrierte Server aus dem Speicher
             Map<String, List<EdgeNodeStatus>> result = new ConcurrentHashMap<>();
 
             if (!checkHealth) {
@@ -179,36 +190,41 @@ public class CDNController {
         }
 
         @GetMapping("/metrics")
-        public ResponseEntity<Map<String, Object>> getMetrics() {
-            return ResponseEntity.ok(metricsService.getSnapshot());
+        public ResponseEntity<Map<String, Object>> getMetrics() {   // Map<String, Object> ist ein Container, der die Statistiken in Schlüssel Wert Paaren speichert
+            return ResponseEntity.ok(metricsService.getSnapshot()); // metricService nach Kopie fragen --> zurück an Admin in JSON Format
         }
 
         private CompletableFuture<Boolean> checkNodeHealth(EdgeNode node) {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(node.url() + "/api/edge/health"))
-                    .timeout(Duration.ofSeconds(1))
-                    .GET()
+                    .uri(URI.create(node.url() + "/api/edge/health"))   // Edge + Endpoint
+                    .timeout(Duration.ofSeconds(1))                     // wartet 1 sek, wenn Edge nicht antwortet --> krank/überlastet
+                    .GET()                                              // Einfache Abfrage ohne Daten zu senden
                     .build();
 
             return httpClient
+                    // Router schickt abfrage ab, wartet aber nicht blockierend drauf
                     .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    // Wenn eine Antwort kommt prüfen wir den Statuscode, falls 200 --> Server gesund
                     .thenApply(response -> response.statusCode() == 200)
+                    // Bei keiner Antwort (Verbindungsfehler/Zeitüberschreitung) --> false
                     .exceptionally(ex -> false);
         }
     }
 
     public static class MetricsService {
-        private final AtomicLong totalRequests = new AtomicLong(0);
-        private final AtomicLong routingErrors = new AtomicLong(0);
-        private final Map<String, AtomicLong> regionStats = new ConcurrentHashMap<>();
-        private final Map<String, AtomicLong> nodeSelectionStats = new ConcurrentHashMap<>();
+        private final AtomicLong totalRequests = new AtomicLong(0); //Zählt Anfragen, die den Router erreicht (Atomic: hochzählen passiert sicher)
+        private final AtomicLong routingErrors = new AtomicLong(0); // Zählt routingErrors (Region vergessen, kein Server da)
+        private final Map<String, AtomicLong> regionStats = new ConcurrentHashMap<>();  // Stats über Regionen "EU"--> 500 Anfragen
+        private final Map<String, AtomicLong> nodeSelectionStats = new ConcurrentHashMap<>();   // Wie Edges gewählt werden (Round Robin) faire Verteilung
 
         public void recordRequest(String region) {
-            totalRequests.incrementAndGet();
+            totalRequests.incrementAndGet();        // globale Zähler für alle Anfragen inkrementieren
+            //Wenn noch kein Eintrag für RegionXY vorhanden ist, wird einer erstellt und Zähler auf 0 gesetzt, dann neuen oder alten Zähler erhöhen
             regionStats.computeIfAbsent(region, k -> new AtomicLong(0)).incrementAndGet();
         }
 
         public void recordNodeSelection(String url) {
+            // Wenn es noch keinen Zähler für diesen Server gibt, falls er zum ersten mal gewählt wurde, erstelle neuen Eintrag mit 0, falls bekannt nimm bestehenden Zähler, danach erhöhen
             nodeSelectionStats.computeIfAbsent(url, k -> new AtomicLong(0)).incrementAndGet();
         }
 
@@ -227,33 +243,53 @@ public class CDNController {
     }
 
     public static class RoutingIndex {
+        // Key = Region, Value = Liste von Servern
         private final Map<String, Set<EdgeNode>> regionToNodes = new ConcurrentHashMap<>();
+        // Für jede Region wird eine Zahl gespeichert, für das Durchzählen beim Round Robin
+        // Atomic Integar, damit wird verhinder, dass Zählerstände falsch berechnet werden
+        // ConcurrentHashMap, um Exception zu vermeiden, wenn Daten gelesen und gleichzeitig verändert werden
         private final Map<String, AtomicInteger> regionCounters = new ConcurrentHashMap<>();
 
         public void addEdge(String region, EdgeNode node) {
             if (region != null && node != null) {
                 regionToNodes
+                        // Wenn Region noch nicht existiert erstelle sie neu
+                        // mit einem speziellen Speicherplatz für die Server (schnell und verhindert Fehler, wenn währed des Lesens ein neuer Server hinzugefügt wird)
                         .computeIfAbsent(region, k -> new CopyOnWriteArraySet<>())
                         .add(node);
+                // Zähler auf 0 setzen
                 regionCounters.putIfAbsent(region, new AtomicInteger(0));
             }
         }
 
         public EdgeNode getNextNode(String region) {
+            // schaut nach der angefragten region und holt die liste der server
             Set<EdgeNode> nodes = regionToNodes.get(region);
+            // falls region nicht existiert oder region existiert aber keine server vorhanden
             if (nodes == null || nodes.isEmpty()) return null;
 
+            // kopieren Server aus dem Set(ungeordnet) in eine ArrayList(numerische Liste)
             List<EdgeNode> nodeList = new ArrayList<>(nodes);
+            // holen uns den Zähler, der für Region XY zuständig ist
             AtomicInteger counter = regionCounters.get(region);
+            // nimmt die aktuelle Zahl und erhöhe sie für den nächsten Nutzer (atomare Operation), Mod um Server zu ermitteln (Round Robin)
             int index = Math.abs(counter.getAndIncrement() % nodeList.size());
+            // Gibt laufenden Server an Controller zurück
             return nodeList.get(index);
         }
 
+        // Wenn Admin Server löscht, oder wenn System erkennt, dass ein Server offline ist
         public boolean removeEdge(String region, EdgeNode node, boolean removeIfEmpty) {
+            // Gibt es Region Xy?
             Set<EdgeNode> nodes = regionToNodes.get(region);
+            // konnte nichts löschen, weil da war nichts
             if (nodes == null) return false;
 
+            // spezifischer Server dieser Region wird gelöscht
+            // true, wenn Server gefunden und gelöscht wurde, false, wenn dieser Server garnicht existierte
             boolean removed = nodes.remove(node);
+            // wurde gerade erfolgreich Server gelöscht? Ist die Region jetzt komplett leer? wenn removeIfEmpty true übergeben wurde --> ganzes Verzeichnis löschen
+            // Dann werden die Region und der dazugehörige Zähler aus dem Speicher gelöscht
             if (removed && nodes.isEmpty() && removeIfEmpty) {
                 regionToNodes.remove(region);
                 regionCounters.remove(region);
@@ -261,13 +297,61 @@ public class CDNController {
             return removed;
         }
 
+        //gibt das gesamte Verzeichnis aller Regionen und Server zurück mit nur Lesezugriff
         public Map<String, Set<EdgeNode>> getRawIndex() {
             return Collections.unmodifiableMap(regionToNodes);
         }
 
+        // Leert alle Verzeichnisse der Regionen als auch Zählerstände (Alles löschen Knopf)
         public void clear() {
             regionToNodes.clear();
             regionCounters.clear();
         }
     }
+    /**
+     * Admin-API zur Verwaltung des Cache-Status über ganze Regionen hinweg.
+     */
+    @RestController
+    @RequestMapping("/api/cdn/admin/cache")
+    public class CacheAdminApi {
+
+        @DeleteMapping("/region/{region}/files/{path:.+}")
+        public ResponseEntity<?> invalidatePath(@PathVariable String region, @PathVariable String path) {
+            return broadcast(region, "/api/edge/cache/files/" + path);
+        }
+
+        @DeleteMapping("/region/{region}/prefix")
+        public ResponseEntity<?> invalidatePrefix(@PathVariable String region, @RequestParam String value) {
+            return broadcast(region, "/api/edge/cache/prefix?value=" + value);
+        }
+
+        @DeleteMapping("/region/{region}/all")
+        public ResponseEntity<?> clearRegion(@PathVariable String region) {
+            return broadcast(region, "/api/edge/cache/all");
+        }
+
+
+        /**
+         * Sendet den Löschbefehl an alle Edge-Nodes der Region und sammelt die Statuscodes.
+         */
+        private ResponseEntity<Map<String, Object>> broadcast(String region, String endpoint) {
+            Set<EdgeNode> nodes = routingIndex.getRawIndex().get(region);
+            if (nodes == null || nodes.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Region nicht gefunden"));
+            }
+
+            // Sende Anfragen parallel und warte auf alle Ergebnisse
+            List<String> results = nodes.stream()
+                    .map(node -> httpClient.sendAsync(
+                                    HttpRequest.newBuilder().uri(URI.create(node.url() + endpoint)).DELETE().build(),
+                                    HttpResponse.BodyHandlers.ofString())
+                            .thenApply(res -> node.url() + ": " + res.statusCode())
+                            .exceptionally(ex -> node.url() + ": Fehler")
+                            .join()) // Einfaches Warten pro Node im Stream
+                    .toList();
+
+            return ResponseEntity.ok(Map.of("region", region, "results", results));
+        }
+    }
 }
+

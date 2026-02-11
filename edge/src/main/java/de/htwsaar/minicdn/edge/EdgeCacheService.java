@@ -72,13 +72,35 @@ public class EdgeCacheService {
     }
 
     /**
-     * Entfernt einen Eintrag aus dem Cache.
+     * Entfernt einen spezifischen Eintrag aus dem Cache (Invalidierung).
      *
      * @param path der Dateipfad des zu entfernenden Eintrags
+     * @return true, wenn ein Eintrag entfernt wurde, sonst false
      */
-    public void invalidate(String path) {
-        if (path == null || path.isBlank()) return;
-        cache.remove(path);
+    public boolean remove(String path) {
+        if (path == null || path.isBlank()) return false;
+        return cache.remove(path) != null;
+    }
+
+    /**
+     * Entfernt alle Einträge, die mit einem bestimmten Prefix beginnen.
+     *
+     * @param prefix der zu suchende Dateipfad-Präfix
+     * @return die Anzahl der entfernten Einträge
+     */
+    public int removeByPrefix(String prefix) {
+        if (prefix == null || prefix.isBlank()) return 0;
+
+        int before = cache.size();
+        cache.keySet().removeIf(key -> key.startsWith(prefix));
+        return before - cache.size();
+    }
+
+    /**
+     * Leert den gesamten Cache.
+     */
+    public void clear() {
+        cache.clear();
     }
 
     /**
@@ -92,12 +114,10 @@ public class EdgeCacheService {
     }
 
     /**
-     * Leert den gesamten Cache, wenn die maximale Anzahl von Einträgen erreicht ist.
-     * Verwendet eine einfache Eviction-Strategie (vollständiges Löschen statt LRU/LFU).
+     * Einfache Eviction-Strategie: Leert den Cache, wenn er voll ist.
      */
     private void evictIfFull() {
         if (maxEntries > 0 && cache.size() >= maxEntries) {
-            // Simple policy (wie vorher): alles löschen statt LRU/LFU
             cache.clear();
         }
     }
