@@ -72,7 +72,7 @@ public class AdminResourceService {
 
             HttpResponse<Void> resp = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
 
-            // OriginController: 新建 201，覆盖 204 [file:1]
+            // OriginController: putFile() returns 201 Created or 204 No Content on success
             if (resp.statusCode() == HttpURLConnection.HTTP_CREATED
                     || resp.statusCode() == HttpURLConnection.HTTP_NO_CONTENT) {
                 System.out.println("Upload OK: " + url);
