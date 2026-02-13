@@ -1,13 +1,12 @@
 package de.htwsaar.minicdn.cli.adminCommands;
 
 import de.htwsaar.minicdn.cli.service.AdminResourceService;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.Callable;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-
-import java.nio.file.Path;
-import java.nio.file.Files;
-import java.util.concurrent.Callable;
 
 @Command(
         name = "resource",
@@ -29,15 +28,18 @@ public class AdminResourceCommand implements Runnable {
     @Command(name = "add", description = "Upload a file to the Origin server (admin API)")
     public static class AdminResourceAddCommand implements Callable<Integer> {
 
-        @Option(names = "--path", required = true,
+        @Option(
+                names = "--path",
+                required = true,
                 description = "Target path on origin, e.g. docs/Lebenslauf.pdf (stored under origin's data/ directory)")
         String path;
 
-        @Option(names = "--origin", required = true,
-                description = "Origin server base URL, e.g. http://localhost:8080")
+        @Option(names = "--origin", required = true, description = "Origin server base URL, e.g. http://localhost:8080")
         String origin;
 
-        @Option(names = "--file", required = true,
+        @Option(
+                names = "--file",
+                required = true,
                 description = "Local file path to upload, e.g. /Users/.../Lebenslauf.pdf")
         Path file;
 
@@ -67,11 +69,9 @@ public class AdminResourceCommand implements Runnable {
             int rc = service.uploadToOrigin(origin, cleanPath, file);
 
             if (rc != 0) {
-                System.err.printf("[ADMIN] Upload failed: origin=%s, path=%s, file=%s%n",
-                        origin, cleanPath, file);
+                System.err.printf("[ADMIN] Upload failed: origin=%s, path=%s, file=%s%n", origin, cleanPath, file);
             } else {
-                System.out.printf("[ADMIN] Upload succeeded: origin=%s, path=%s, file=%s%n",
-                        origin, cleanPath, file);
+                System.out.printf("[ADMIN] Upload succeeded: origin=%s, path=%s, file=%s%n", origin, cleanPath, file);
             }
 
             return rc;

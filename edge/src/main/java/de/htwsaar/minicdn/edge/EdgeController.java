@@ -1,13 +1,12 @@
 package de.htwsaar.minicdn.edge;
 
 import de.htwsaar.minicdn.common.util.Sha256Util;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
 
 /**
  * REST-Controller für den Edge-Server.
@@ -189,10 +188,7 @@ public class EdgeController {
         @DeleteMapping("/files/{path:.+}")
         public ResponseEntity<Map<String, String>> invalidateFile(@PathVariable("path") String path) {
             boolean removed = edgeCacheService.remove(path);
-            return ResponseEntity.ok(Map.of(
-                    "path", path,
-                    "status", removed ? "invalidated" : "not in cache"
-            ));
+            return ResponseEntity.ok(Map.of("path", path, "status", removed ? "invalidated" : "not in cache"));
         }
 
         /**
@@ -204,8 +200,7 @@ public class EdgeController {
             int count = edgeCacheService.removeByPrefix(prefix);
             return ResponseEntity.ok(Map.of(
                     "prefix", prefix,
-                    "invalidatedCount", count
-            ));
+                    "invalidatedCount", count));
         }
 
         /**

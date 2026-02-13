@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.cli;
 
+import java.io.PrintWriter;
 import org.jline.reader.*;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.terminal.*;
@@ -10,25 +11,20 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.shell.jline3.PicocliCommands;
 
-import java.io.PrintWriter;
-
 @Command(
         name = "",
         description = "Mini-CDN Interactive Shell",
         subcommands = {
-                AdminCommand.class,
-                UserCommand.class,
-                CommandLine.HelpCommand.class  // Add a built-in help command
-        }
-)
+            AdminCommand.class,
+            UserCommand.class,
+            CommandLine.HelpCommand.class // Add a built-in help command
+        })
 public class MiniCdnCli implements Runnable {
 
     public static void main(String[] args) {
         try {
             // Create terminal
-            Terminal terminal = TerminalBuilder.builder()
-                    .system(true)
-                    .build();
+            Terminal terminal = TerminalBuilder.builder().system(true).build();
 
             // Create a CommandLine instance
             MiniCdnCli app = new MiniCdnCli();
