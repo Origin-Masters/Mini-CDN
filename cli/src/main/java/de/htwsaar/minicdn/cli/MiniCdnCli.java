@@ -3,6 +3,8 @@ package de.htwsaar.minicdn.cli;
 import org.jline.reader.*;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.terminal.*;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 import org.jline.utils.InfoCmp;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -51,10 +53,14 @@ public class MiniCdnCli implements Runnable {
             out.flush();
 
             // Main loop
-            String prompt = "minicdn> ";
             while (true) {
                 String line;
                 try {
+                    String prompt = new AttributedStringBuilder()
+                            .style(AttributedStyle.BOLD.foreground(AttributedStyle.GREEN))
+                            .append("mini cdn >> ")
+                            .toAnsi();
+
                     line = reader.readLine(prompt);
                 } catch (UserInterruptException e) {
                     // Ctrl+C
@@ -62,10 +68,6 @@ public class MiniCdnCli implements Runnable {
                 } catch (EndOfFileException e) {
                     // Ctrl+D
                     break;
-                }
-
-                if (line == null || line.trim().isEmpty()) {
-                    continue;
                 }
 
                 line = line.trim();
