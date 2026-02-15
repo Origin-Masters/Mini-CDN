@@ -1,6 +1,9 @@
 package de.htwsaar.minicdn.cli.adminCommands;
 
+import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.AdminResourceService;
+import java.io.FileNotFoundException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
@@ -20,13 +23,27 @@ import picocli.CommandLine.Option;
         })
 public class AdminResourceCommand implements Runnable {
 
+    final CliContext ctx;
+
+    public AdminResourceCommand(CliContext ctx) {
+        this.ctx = ctx;
+    }
+
     @Override
     public void run() {
-        CommandLine.usage(this, System.out);
+        new CommandLine(this).usage(ctx.out());
+        ctx.out().flush();
+    }
+
+    AdminResourceService service() {
+        return new AdminResourceService(ctx.httpClient(), ctx.defaultRequestTimeout());
     }
 
     @Command(name = "add", description = "Upload a file to the Origin server (admin API)")
     public static class AdminResourceAddCommand implements Callable<Integer> {
+
+        @CommandLine.ParentCommand
+        AdminResourceCommand parent;
 
         @Option(
                 names = "--path",
@@ -35,7 +52,7 @@ public class AdminResourceCommand implements Runnable {
         String path;
 
         @Option(names = "--origin", required = true, description = "Origin server base URL, e.g. http://localhost:8080")
-        String origin;
+        URI origin;
 
         @Option(
                 names = "--file",
@@ -44,42 +61,52 @@ public class AdminResourceCommand implements Runnable {
         Path file;
 
         @Override
-        public Integer call() {
-            // Validate a local file
+        public Integer call() throws FileNotFoundException {
+            // 1) Validate local file (so we don't fail with a cryptic IO error later)
             if (file == null || !Files.exists(file) || !Files.isRegularFile(file)) {
-                System.err.println("[ADMIN] Local file does not exist or is not a regular file: " + file);
+                parent.ctx.err().println("[ADMIN] Local file does not exist or is not a regular file: " + file);
+                parent.ctx.err().flush();
                 return 1;
             }
 
-            // Normalize a path: remove leading slash and optional "origin/" or "data/" prefixes
-            String cleanPath = (path == null) ? "" : path;
-            // remove the leading slash if present
-            if (cleanPath.startsWith("/")) {
-                cleanPath = cleanPath.substring(1);
-            }
-            // remove optional "origin/" and/or "data/" prefixes
-            cleanPath = cleanPath.replaceFirst("^(origin/)?(data/)?", "");
-
+            // 2) Compute + validate cleanPath (this was missing)
+            String cleanPath = normalizePath(path);
             if (cleanPath.isBlank()) {
-                System.err.println("[ADMIN] Invalid target path after normalization: " + path);
+                parent.ctx.err().println("[ADMIN] Invalid target path after normalization: " + path);
+                parent.ctx.err().flush();
                 return 1;
             }
 
-            AdminResourceService service = new AdminResourceService();
-            int rc = service.uploadToOrigin(origin, cleanPath, file);
+            // 3) Upload
+            var result = parent.service().uploadToOrigin(origin, cleanPath, file);
+            int rc = result.is2xx() ? 0 : 2;
 
-            if (rc != 0) {
-                System.err.printf("[ADMIN] Upload failed: origin=%s, path=%s, file=%s%n", origin, cleanPath, file);
-            } else {
-                System.out.printf("[ADMIN] Upload succeeded: origin=%s, path=%s, file=%s%n", origin, cleanPath, file);
+            if (rc == 0) {
+                parent.ctx.out().printf("[ADMIN] Upload OK: origin=%s, path=%s, file=%s%n", origin, cleanPath, file);
+                parent.ctx.out().flush();
+                return 0;
             }
 
+            parent.ctx
+                    .err()
+                    .printf(
+                            "[ADMIN] Upload failed: status=%s error=%s body=%s origin=%s path=%s file=%s%n",
+                            result.statusCode(), result.error(), result.body(), origin, cleanPath, file);
+            parent.ctx.err().flush();
             return rc;
+        }
+
+        private static String normalizePath(String raw) {
+            String clean = (raw == null) ? "" : raw.trim();
+            if (clean.startsWith("/")) clean = clean.substring(1);
+            return clean.replaceFirst("^(origin/)?(data/)?", "");
         }
     }
 
     @Command(name = "update", description = "Update resource configuration")
     public static class AdminResourceUpdateCommand implements Runnable {
+        @CommandLine.ParentCommand
+        AdminResourceCommand parent;
 
         @Option(names = "--id", required = true, description = "Resource ID")
         long id;
@@ -95,26 +122,32 @@ public class AdminResourceCommand implements Runnable {
 
         @Override
         public void run() {
-            // TODO: ResourceService.update(...)
-            System.out.printf("[ADMIN] Update resource %d (path=%s, origin=%s, ttl=%s)%n", id, path, origin, cacheTtl);
+            parent.ctx
+                    .out()
+                    .printf("[ADMIN] Update resource %d (path=%s, origin=%s, ttl=%s)%n", id, path, origin, cacheTtl);
+            parent.ctx.out().flush();
         }
     }
 
     @Command(name = "delete", description = "Delete a resource")
     public static class AdminResourceDeleteCommand implements Runnable {
+        @CommandLine.ParentCommand
+        AdminResourceCommand parent;
 
         @Option(names = "--id", required = true, description = "Resource ID")
         long id;
 
         @Override
         public void run() {
-            // TODO: ResourceService.delete(id)
-            System.out.printf("[ADMIN] Delete resource %d%n", id);
+            parent.ctx.out().printf("[ADMIN] Delete resource %d%n", id);
+            parent.ctx.out().flush();
         }
     }
 
     @Command(name = "list", description = "List resources")
     public static class AdminResourceListCommand implements Runnable {
+        @CommandLine.ParentCommand
+        AdminResourceCommand parent;
 
         @Option(names = "--page", description = "Page number", defaultValue = "1")
         int page;
@@ -124,21 +157,23 @@ public class AdminResourceCommand implements Runnable {
 
         @Override
         public void run() {
-            // TODO: ResourceService.list(page, size)
-            System.out.printf("[ADMIN] List resources page=%d size=%d%n", page, size);
+            parent.ctx.out().printf("[ADMIN] List resources page=%d size=%d%n", page, size);
+            parent.ctx.out().flush();
         }
     }
 
     @Command(name = "show", description = "Show resource details")
     public static class AdminResourceShowCommand implements Runnable {
+        @CommandLine.ParentCommand
+        AdminResourceCommand parent;
 
         @Option(names = "--id", required = true, description = "Resource ID")
         long id;
 
         @Override
         public void run() {
-            // TODO: ResourceService.show(id)
-            System.out.printf("[ADMIN] Show resource %d%n", id);
+            parent.ctx.out().printf("[ADMIN] Show resource %d%n", id);
+            parent.ctx.out().flush();
         }
     }
 }

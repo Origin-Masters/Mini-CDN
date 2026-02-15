@@ -1,98 +1,113 @@
 package de.htwsaar.minicdn.cli.service;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Objects;
 
-public class AdminResourceService {
+public final class AdminResourceService {
 
     private final HttpClient httpClient;
+    private final Duration requestTimeout;
 
-    public AdminResourceService() {
-        this.httpClient =
-                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+    public AdminResourceService(HttpClient httpClient, Duration requestTimeout) {
+        this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
+        this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
     }
 
-    public int create(String serverUrl, String path, String origin, int cacheTtl) {
-        try {
-            String targetUrl =
-                    serverUrl.endsWith("/") ? serverUrl + "api/cdn/resources" : serverUrl + "/api/cdn/resources";
-            // simple JSON payload; keep minimal to avoid extra deps
-            String json = String.format(
-                    "{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}",
-                    escapeJson(path), escapeJson(origin), cacheTtl);
+    public HttpCallResult create(URI cdnBaseUrl, String path, String origin, int cacheTtl) {
+        Objects.requireNonNull(cdnBaseUrl, "cdnBaseUrl");
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(targetUrl))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
+        URI base = ensureTrailingSlash(cdnBaseUrl);
+        URI target = base.resolve("api/cdn/resources");
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        String json = String.format(
+                "{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}", escapeJson(path), escapeJson(origin), cacheTtl);
 
-            if (response.statusCode() == HttpURLConnection.HTTP_CREATED) {
-                System.out.println("Resource created successfully:");
-                System.out.println(response.body());
-                return 0;
-            } else {
-                System.err.println("Failed to create resource: HTTP " + response.statusCode());
-                System.err.println("Details: " + response.body());
-                return 1;
-            }
-        } catch (IOException | InterruptedException e) {
-            System.err.println("Error creating resource: " + e.getMessage());
-            Thread.currentThread().interrupt();
-            return 1;
-        }
+        HttpRequest request = HttpRequest.newBuilder(target)
+                .timeout(requestTimeout)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        return sendForStringBody(request);
     }
 
     /**
-     * Upload a local file to Origin admin API. Returns 0 on success, 1 on error.
+     * Upload a local file to Origin admin API: PUT /api/origin/admin/files/{path}
      */
-    public int uploadToOrigin(String originBaseUrl, String targetPath, Path localFile) {
+    public HttpCallResult uploadToOrigin(URI originBaseUrl, String targetPath, Path localFile)
+            throws FileNotFoundException {
+        Objects.requireNonNull(originBaseUrl, "originBaseUrl");
+        Objects.requireNonNull(localFile, "localFile");
+
+        String cleanPath = stripLeadingSlash(Objects.toString(targetPath, ""));
+        if (cleanPath.isBlank()) {
+            return HttpCallResult.clientError("targetPath must not be blank");
+        }
+
+        URI base = ensureTrailingSlash(originBaseUrl);
+        URI url = base.resolve("api/origin/admin/files/" + cleanPath);
+
+        HttpRequest req = HttpRequest.newBuilder(url)
+                .timeout(requestTimeout)
+                .header("Content-Type", "application/octet-stream")
+                .PUT(HttpRequest.BodyPublishers.ofFile(localFile))
+                .build();
+
+        return sendForStringBody(req);
+    }
+
+    private HttpCallResult sendForStringBody(HttpRequest request) {
         try {
-            byte[] body = Files.readAllBytes(localFile);
-
-            String cleanPath = targetPath.startsWith("/") ? targetPath.substring(1) : targetPath;
-            String url = originBaseUrl.endsWith("/")
-                    ? originBaseUrl + "api/origin/admin/files/" + cleanPath
-                    : originBaseUrl + "/api/origin/admin/files/" + cleanPath;
-
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .header("Content-Type", "application/octet-stream")
-                    .PUT(HttpRequest.BodyPublishers.ofByteArray(body))
-                    .build();
-
-            HttpResponse<Void> resp = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
-
-            // OriginController: putFile() returns 201 Created or 204 No Content on success
-            if (resp.statusCode() == HttpURLConnection.HTTP_CREATED
-                    || resp.statusCode() == HttpURLConnection.HTTP_NO_CONTENT) {
-                System.out.println("Upload OK: " + url);
-                return 0;
-            } else {
-                System.err.println("Upload failed: HTTP " + resp.statusCode());
-                return 1;
-            }
-        } catch (IOException | InterruptedException e) {
-            System.err.println("Upload error: " + e.getMessage());
+            HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return HttpCallResult.http(resp.statusCode(), resp.body());
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return 1;
+            return HttpCallResult.ioError("interrupted");
+        } catch (IOException e) {
+            return HttpCallResult.ioError(e.getMessage());
         }
     }
 
-    private String escapeJson(String s) {
+    private static URI ensureTrailingSlash(URI uri) {
+        String s = uri.toString();
+        return URI.create(s.endsWith("/") ? s : s + "/");
+    }
+
+    private static String stripLeadingSlash(String p) {
+        if (p == null || p.isBlank()) return "";
+        return p.startsWith("/") ? p.substring(1) : p;
+    }
+
+    private static String escapeJson(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r");
+    }
+
+    public record HttpCallResult(Integer statusCode, String body, String error) {
+        public static HttpCallResult http(int statusCode, String body) {
+            return new HttpCallResult(statusCode, body, null);
+        }
+
+        public static HttpCallResult ioError(String message) {
+            return new HttpCallResult(null, null, message == null ? "io error" : message);
+        }
+
+        public static HttpCallResult clientError(String message) {
+            return new HttpCallResult(400, null, message);
+        }
+
+        public boolean is2xx() {
+            return statusCode != null && statusCode >= 200 && statusCode < 300;
+        }
     }
 }
