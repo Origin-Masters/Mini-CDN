@@ -97,6 +97,15 @@ public class EdgeCacheService {
     }
 
     /**
+     * Liefert die aktuelle Anzahl an Cache-Einträgen.
+     *
+     * @return Anzahl Einträge im In-Memory-Cache
+     */
+    public int size() {
+        return cache.size();
+    }
+
+    /**
      * Leert den gesamten Cache.
      */
     public void clear() {

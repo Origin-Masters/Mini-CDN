@@ -27,14 +27,16 @@ public class EdgeController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final EdgeCacheService edgeCacheService;
+    private final EdgeMetricsService edgeMetricsService;
 
     /**
      * Konstruktor für Dependency Injection.
      *
      * @param edgeCacheService der Cache-Service für Edge-Anfragen
      */
-    public EdgeController(EdgeCacheService edgeCacheService) {
+    public EdgeController(EdgeCacheService edgeCacheService, EdgeMetricsService edgeMetricsService) {
         this.edgeCacheService = edgeCacheService;
+        this.edgeMetricsService = edgeMetricsService;
     }
 
     /**
@@ -48,11 +50,13 @@ public class EdgeController {
     public ResponseEntity<byte[]> getFile(@PathVariable("path") String path) {
         EdgeCacheService.CacheEntry cached = edgeCacheService.getFresh(path);
         if (cached != null) {
+            edgeMetricsService.recordHit();
             return ResponseEntity.ok()
                     .headers(headersFromCacheEntry(cached, CACHE_HIT))
                     .body(cached.body());
         }
 
+        edgeMetricsService.recordMiss();
         ResponseEntity<byte[]> originResponse = restTemplate.getForEntity(originFileUrl(path), byte[].class);
 
         if (!originResponse.getStatusCode().is2xxSuccessful()) {
@@ -91,11 +95,13 @@ public class EdgeController {
     public ResponseEntity<Void> headFile(@PathVariable("path") String path) {
         EdgeCacheService.CacheEntry cached = edgeCacheService.getFresh(path);
         if (cached != null) {
+            edgeMetricsService.recordHit();
             return ResponseEntity.ok()
                     .headers(headersFromCacheEntry(cached, CACHE_HIT))
                     .build();
         }
 
+        edgeMetricsService.recordMiss();
         ResponseEntity<Void> originResponse =
                 restTemplate.exchange(originFileUrl(path), HttpMethod.HEAD, HttpEntity.EMPTY, Void.class);
 
@@ -172,6 +178,26 @@ public class EdgeController {
         return ResponseEntity.status(originResponse.getStatusCode())
                 .headers(out)
                 .body(originResponse.getBody());
+    }
+
+    /**
+     * Admin-Schnittstelle für Edge-Metriken.
+     */
+    @RestController
+    @RequestMapping("/api/edge/admin/stats")
+    public class AdminStatsApi {
+
+        /**
+         * Liefert strukturierte Laufzeitmetriken dieser Edge-Node.
+         *
+         * @param windowSec Zeitfenster in Sekunden für die exakte Request-Rate
+         * @return Snapshot der Edge-Metriken
+         */
+        @GetMapping
+        public ResponseEntity<EdgeMetricsService.EdgeStatsSnapshot> getStats(
+                @RequestParam(value = "windowSec", defaultValue = "60") int windowSec) {
+            return ResponseEntity.ok(edgeMetricsService.snapshot(windowSec, edgeCacheService.size()));
+        }
     }
 
     /**

@@ -1,0 +1,8 @@
+1771172239263:exit
+1771172314049:admin stats show --host http://localhost:8082
+1771172353766:help
+1771172366297:help --help
+1771172372795:help --help user
+1771172376039:help -h user
+1771172383271:help user
+1771173616501:admin stats show --host http://localhost:8082

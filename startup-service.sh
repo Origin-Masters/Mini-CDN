@@ -18,3 +18,4 @@ EDGE_PID=$(lsof -t -i:8081 2>/dev/null)
 
 echo -e "[ORIGIN]: 8080 (PID: $ORIGIN_PID) \n"
 echo -e "[EDGE]:   8081 (PID: $EDGE_PID) \n"
+

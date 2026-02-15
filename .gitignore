@@ -19,7 +19,6 @@ ehthumbs.db
 .project
 .classpath
 
-.minicdn.history
 
 target
 cli/data/users.db

@@ -28,10 +28,11 @@ class CDNControllerTest {
     void setUp() {
         cdnController = new CDNController();
 
-        // Wir konfigurieren MockMvc so, dass es unseren Controller und die
-        // dazugehörige Admin-Schnittstelle (innere Klasse) kennt.
-        mockMvc = MockMvcBuilders.standaloneSetup(cdnController, cdnController.new RoutingAdminApi())
-                .build();
+        mockMvc = MockMvcBuilders.standaloneSetup(
+                cdnController,
+                cdnController.new RoutingAdminApi(),
+                cdnController.new AdminStatsApi()
+        ).build();
     }
 
     @Test
@@ -131,6 +132,25 @@ class CDNControllerTest {
                 .andExpect(jsonPath("$.totalRequests", is(1)))
                 // In der Statistik für die Region "EU" sollte auch eine 1 stehen.
                 .andExpect(jsonPath("$.requestsByRegion.EU", is(1)));
+    }
+
+    @Test
+    @DisplayName("Admin-Stats: exakte RPM und aktive Clients müssen stimmen")
+    void testAdminStatsRpmAndClients() throws Exception {
+        mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://node-eu-1.com"))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/cdn/files/a.txt").param("region", "EU").param("clientId", "alice"));
+        mockMvc.perform(get("/api/cdn/files/b.txt").param("region", "EU").param("clientId", "bob"));
+        mockMvc.perform(get("/api/cdn/files/c.txt").param("region", "EU").param("clientId", "alice"));
+
+        mockMvc.perform(get("/api/cdn/admin/stats").param("windowSec", "60").param("aggregateEdge", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.router.totalRequests", is(3)))
+                .andExpect(jsonPath("$.router.requestsPerMinute", is(3)))
+                .andExpect(jsonPath("$.router.activeClients", is(2)))
+                .andExpect(jsonPath("$.router.requestsByRegion.EU", is(3)))
+                .andExpect(jsonPath("$.nodes.total", is(1)));
     }
 
     @Test
