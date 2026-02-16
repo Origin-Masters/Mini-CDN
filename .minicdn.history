@@ -6,3 +6,5 @@
 1771172376039:help -h user
 1771172383271:help user
 1771173616501:admin stats show --host http://localhost:8082
+1771240803051:admin stats show --host htttp://localhost:8082
+1771240822649:admin stats show --host http://localhost:8082
