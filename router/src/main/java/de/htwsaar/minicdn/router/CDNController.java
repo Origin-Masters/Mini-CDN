@@ -16,7 +16,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.context.annotation.Bean;
 
 /**
  * Zentraler CDN Controller, der Anfragen an verfügbare Edge-Nodes delegiert.
@@ -45,10 +43,24 @@ public class CDNController {
     private final RouterStatsService routerStatsService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Repräsentiert einen registrierten Edge-Knoten über seine Basis-URL.
+     *
+     * @param url öffentlich erreichbare URL des Edge-Knotens
+     */
     public record EdgeNode(String url) {}
 
+    /**
+     * Beschreibt den Gesundheitszustand eines Edge-Knotens.
+     *
+     * @param url URL des Edge-Knotens
+     * @param healthy {@code true}, wenn der Knoten als gesund gilt
+     */
     public record EdgeNodeStatus(String url, boolean healthy) {}
 
+    /**
+     * Erstellt den Controller mit In-Memory-Routingindex, Metrikdiensten und HTTP-Client.
+     */
     public CDNController() {
         this.routingIndex = new RoutingIndex();
         this.metricsService = new MetricsService();
@@ -57,13 +69,21 @@ public class CDNController {
         this.httpClient =
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
     }
-    // Prüfen, ob der Edge Server abgestürzt ist oder noch läuft
+    /**
+     * Einfacher Liveness-Endpunkt für Orchestrierung und Monitoring.
+     *
+     * @return immer {@code ok}
+     */
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("ok");
     }
 
-    // Ist Edge Server bereit?
+    /**
+     * Readiness-Endpunkt, der die Betriebsbereitschaft des Routers signalisiert.
+     *
+     * @return immer {@code ready}
+     */
     @GetMapping("/ready")
     public ResponseEntity<String> ready() {
         return ResponseEntity.ok("ready");
@@ -71,6 +91,13 @@ public class CDNController {
 
     /**
      * Routing-Logik: Wählt eine Edge-Node mittels Round-Robin aus der Region aus.
+     *
+     * @param path angefragter Dateipfad
+     * @param regionQuery optionale Region als Query-Parameter
+     * @param clientIdQuery optionale Client-ID als Query-Parameter
+     * @param regionHeader optionale Region aus dem Header {@code X-Client-Region}
+     * @param clientIdHeader optionale Client-ID aus dem Header {@code X-Client-Id}
+     * @return Redirect auf die gewählte Edge-URL oder eine Fehlermeldung
      */
     @GetMapping("/files/{path:.+}")
     public ResponseEntity<?> routeToEdge(
@@ -120,16 +147,40 @@ public class CDNController {
         return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
     }
 
+    /**
+     * Verwaltungs-API für die Pflege des Routingindexes.
+     */
     @RestController
     @RequestMapping("/api/cdn/routing")
     public class RoutingAdminApi {
 
+        /**
+         * Einzelanweisung für den Bulk-Endpunkt.
+         *
+         * @param region Zielregion
+         * @param url URL des Edge-Knotens
+         * @param action Aktion ({@code add} oder {@code remove})
+         */
         public record BulkRequest(String region, String url, String action) {}
 
+        /**
+         * Ergebnisdatensatz für eine verarbeitete Bulk-Anweisung.
+         *
+         * @param region betroffene Region
+         * @param url betroffene Knoten-URL
+         * @param status Verarbeitungsergebnis
+         */
         public record BulkResponse(String region, String url, String status) {}
 
         // Wenn wir Kapazität in einer Region erhöhen wollen, senden wir POST-Request an diesen Endpunkt, region und url
         // wird entgegengenommen und im RoutingIndex eingetragen
+        /**
+         * Registriert einen Edge-Knoten in einer Region.
+         *
+         * @param region Zielregion
+         * @param url URL des Edge-Knotens
+         * @return {@code 201 Created} bei Erfolg
+         */
         @PostMapping
         public ResponseEntity<Void> addEdgeNode(
                 @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
@@ -141,6 +192,12 @@ public class CDNController {
         // Server hinzugefügt oder gelöscht wird
         // anstatt für jeden Server eine einzelne HTTP Anfrage zu senden, erlaubt dieser Endpunkt eine Sammel Anfrage
         // für große Netzwerkkonfigurationen
+        /**
+         * Verarbeitet eine Liste von Add/Remove-Anweisungen in einem Request.
+         *
+         * @param requests Bulk-Anweisungen
+         * @return Ergebnisliste pro Anweisung
+         */
         @PostMapping("/bulk")
         public ResponseEntity<List<BulkResponse>> bulkUpdate(@RequestBody List<BulkRequest> requests) {
             List<BulkResponse> results = new ArrayList<>();
@@ -161,6 +218,13 @@ public class CDNController {
         }
 
         // Server aus System entfernen
+        /**
+         * Entfernt einen Edge-Knoten aus einer Region.
+         *
+         * @param region Zielregion
+         * @param url URL des zu entfernenden Knotens
+         * @return {@code 200 OK} oder {@code 404 Not Found}
+         */
         @DeleteMapping
         public ResponseEntity<?> deleteEdgeNode(
                 @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
@@ -168,11 +232,17 @@ public class CDNController {
             return removed
                     ? ResponseEntity.ok().build()
                     : ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
+                    .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
         }
 
         // Router geht seine Liste durch und fragt (falls gewünscht) bei jedem einzelnen Edge Server, ob er noch gesund
         // ist
+        /**
+         * Gibt den aktuellen Routingindex zurück und prüft optional die Knotengesundheit.
+         *
+         * @param checkHealth aktiviert aktive Health-Checks pro Knoten
+         * @return Knotenstatus nach Region gruppiert
+         */
         @GetMapping
         public ResponseEntity<Map<String, List<EdgeNodeStatus>>> getIndex(
                 @RequestParam(value = "checkHealth", defaultValue = "false") boolean checkHealth) {
@@ -205,14 +275,25 @@ public class CDNController {
             return ResponseEntity.ok(result);
         }
 
+        /**
+         * Liefert eine Momentaufnahme der Router-Metriken.
+         *
+         * @return Metriken als Schlüssel/Wert-Struktur
+         */
         @GetMapping("/metrics")
         public ResponseEntity<Map<String, Object>>
-                getMetrics() { // Map<String, Object> ist ein Container, der die Statistiken in Schlüssel Wert Paaren
+        getMetrics() { // Map<String, Object> ist ein Container, der die Statistiken in Schlüssel Wert Paaren
             // speichert
             return ResponseEntity.ok(
                     metricsService.getSnapshot()); // metricService nach Kopie fragen --> zurück an Admin in JSON Format
         }
 
+        /**
+         * Führt asynchron einen Health-Check gegen den angegebenen Edge-Knoten aus.
+         *
+         * @param node zu prüfender Knoten
+         * @return Future mit {@code true}, wenn HTTP 200 zurückgegeben wurde
+         */
         private CompletableFuture<Boolean> checkNodeHealth(EdgeNode node) {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(node.url() + "/api/edge/health")) // Edge + Endpoint
@@ -230,6 +311,13 @@ public class CDNController {
         }
     }
 
+    /**
+     * Liefert den ersten nicht-leeren String aus bevorzugtem und alternativem Wert.
+     *
+     * @param preferred bevorzugter Wert
+     * @param fallback alternativer Wert
+     * @return bereinigter String oder {@code null}, wenn beide Werte leer sind
+     */
     private String selectNonBlank(String preferred, String fallback) {
         if (preferred != null && !preferred.isBlank()) {
             return preferred.trim();
@@ -247,14 +335,20 @@ public class CDNController {
     @RequestMapping("/api/cdn/admin")
     public class AdminStatsApi {
 
+        /**
+         * Erstellt eine aggregierte Sicht auf Router- und optional Edge-Statistiken.
+         *
+         * @param windowSec Zeitfenster für gleitende Kennzahlen in Sekunden
+         * @param aggregateEdge steuert das Einsammeln von Edge-Statistiken
+         * @return kombinierter Statistik-Report
+         */
         @GetMapping("/stats")
         public ResponseEntity<Map<String, Object>> getStats(
                 @RequestParam(value = "windowSec", defaultValue = "60") int windowSec,
                 @RequestParam(value = "aggregateEdge", defaultValue = "true") boolean aggregateEdge) {
 
             int safeWindow = Math.max(1, windowSec);
-            RouterStatsService.RouterStatsSnapshot routerSnapshot =
-                    routerStatsService.snapshot(safeWindow);
+            RouterStatsService.RouterStatsSnapshot routerSnapshot = routerStatsService.snapshot(safeWindow);
 
             Map<String, List<EdgeNode>> rawIndex = routingIndex.getRawIndex();
 
@@ -272,8 +366,7 @@ public class CDNController {
                     for (EdgeNode node : nodes) {
                         try {
                             HttpRequest request = HttpRequest.newBuilder()
-                                    .uri(URI.create(node.url()
-                                            + "/api/edge/admin/stats?windowSec=" + safeWindow))
+                                    .uri(URI.create(node.url() + "/api/edge/admin/stats?windowSec=" + safeWindow))
                                     .timeout(Duration.ofSeconds(2))
                                     .GET()
                                     .build();
@@ -293,46 +386,47 @@ public class CDNController {
                             }
 
                         } catch (Exception ex) {
-                            edgeErrors.add(node.url() + " -> "
-                                    + ex.getClass().getSimpleName());
+                            edgeErrors.add(node.url() + " -> " + ex.getClass().getSimpleName());
                         }
                     }
                 }
             }
 
             double cacheHitRatio =
-                    (cacheHits + cacheMisses) == 0
-                            ? 0.0
-                            : (double) cacheHits / (cacheHits + cacheMisses);
+                    (cacheHits + cacheMisses) == 0 ? 0.0 : (double) cacheHits / (cacheHits + cacheMisses);
 
             Map<String, Object> response = new java.util.LinkedHashMap<>();
             response.put("timestamp", java.time.Instant.now().toString());
             response.put("windowSec", safeWindow);
 
-            response.put("router", Map.of(
-                    "totalRequests", routerSnapshot.totalRequests(),
-                    "requestsPerMinute", routerSnapshot.requestsPerWindow(),
-                    "routingErrors", routerSnapshot.routingErrors(),
-                    "activeClients", routerSnapshot.activeClients(),
-                    "requestsByRegion", routerSnapshot.requestsByRegion()
-            ));
+            response.put(
+                    "router",
+                    Map.of(
+                            "totalRequests", routerSnapshot.totalRequests(),
+                            "requestsPerMinute", routerSnapshot.requestsPerWindow(),
+                            "routingErrors", routerSnapshot.routingErrors(),
+                            "activeClients", routerSnapshot.activeClients(),
+                            "requestsByRegion", routerSnapshot.requestsByRegion()));
 
-            response.put("cache", Map.of(
-                    "hits", cacheHits,
-                    "misses", cacheMisses,
-                    "hitRatio", cacheHitRatio,
-                    "filesLoaded", filesCached
-            ));
+            response.put(
+                    "cache",
+                    Map.of(
+                            "hits", cacheHits,
+                            "misses", cacheMisses,
+                            "hitRatio", cacheHitRatio,
+                            "filesLoaded", filesCached));
 
-            response.put("nodes", Map.of(
-                    "total", totalNodes,
-                    "byRegion", nodesByRegion
-            ));
+            response.put(
+                    "nodes",
+                    Map.of(
+                            "total", totalNodes,
+                            "byRegion", nodesByRegion));
 
-            response.put("edgeAggregation", Map.of(
-                    "enabled", aggregateEdge,
-                    "errors", edgeErrors
-            ));
+            response.put(
+                    "edgeAggregation",
+                    Map.of(
+                            "enabled", aggregateEdge,
+                            "errors", edgeErrors));
 
             return ResponseEntity.ok(response);
         }
@@ -340,9 +434,16 @@ public class CDNController {
 
     /**
      * JSON-Payload des Edge-Stats-Endpunkts, wie er vom Router eingelesen wird.
+     *
+     * @param cacheHits Anzahl Cache-Hits
+     * @param cacheMisses Anzahl Cache-Misses
+     * @param filesCached Anzahl aktuell gecachter Dateien
      */
     public record EdgeStatsPayload(long cacheHits, long cacheMisses, long filesCached) {}
 
+    /**
+     * Verwaltet einfache Router-Metriken im Speicher.
+     */
     public static class MetricsService {
         private final AtomicLong totalRequests =
                 new AtomicLong(0); // Zählt Anfragen, die den Router erreicht (Atomic: hochzählen passiert sicher)
@@ -353,6 +454,11 @@ public class CDNController {
         private final Map<String, AtomicLong> nodeSelectionStats =
                 new ConcurrentHashMap<>(); // Wie Edges gewählt werden (Round Robin) faire Verteilung
 
+        /**
+         * Erfasst eine neue Anfrage für eine Region.
+         *
+         * @param region angefragte Region
+         */
         public void recordRequest(String region) {
             totalRequests.incrementAndGet(); // globale Zähler für alle Anfragen inkrementieren
             // Wenn noch kein Eintrag für RegionXY vorhanden ist, wird einer erstellt und Zähler auf 0 gesetzt, dann
@@ -360,16 +466,29 @@ public class CDNController {
             regionStats.computeIfAbsent(region, k -> new AtomicLong(0)).incrementAndGet();
         }
 
+        /**
+         * Erhöht den Auswahlzähler für einen Edge-Knoten.
+         *
+         * @param url URL des ausgewählten Knotens
+         */
         public void recordNodeSelection(String url) {
             // Wenn es noch keinen Zähler für diesen Server gibt, falls er zum ersten mal gewählt wurde, erstelle neuen
             // Eintrag mit 0, falls bekannt nimm bestehenden Zähler, danach erhöhen
             nodeSelectionStats.computeIfAbsent(url, k -> new AtomicLong(0)).incrementAndGet();
         }
 
+        /**
+         * Erfasst einen Routingfehler.
+         */
         public void recordError() {
             routingErrors.incrementAndGet();
         }
 
+        /**
+         * Liefert eine aktuelle Kopie aller Router-Metriken.
+         *
+         * @return Snapshot der Metrikwerte
+         */
         public Map<String, Object> getSnapshot() {
             Map<String, Object> snapshot = new java.util.HashMap<>();
             snapshot.put("totalRequests", totalRequests.get());
@@ -380,6 +499,9 @@ public class CDNController {
         }
     }
 
+    /**
+     * In-Memory-Index für Edge-Knoten je Region inklusive Round-Robin-Zählern.
+     */
     public static class RoutingIndex {
         // Key = Region, Value = Liste von Servern (O(1) Zugriff über Index möglich)
         private final Map<String, List<EdgeNode>> regionToNodes = new ConcurrentHashMap<>();
@@ -388,6 +510,12 @@ public class CDNController {
         // ConcurrentHashMap, um Exception zu vermeiden, wenn Daten gelesen und gleichzeitig verändert werden
         private final Map<String, AtomicInteger> regionCounters = new ConcurrentHashMap<>();
 
+        /**
+         * Fügt einen Knoten für eine Region hinzu, sofern er noch nicht existiert.
+         *
+         * @param region Zielregion
+         * @param node hinzuzufügender Knoten
+         */
         public void addEdge(String region, EdgeNode node) {
             if (region != null && node != null) {
                 List<EdgeNode> nodes = regionToNodes.computeIfAbsent(region, k -> new CopyOnWriteArrayList<>());
@@ -402,6 +530,12 @@ public class CDNController {
             }
         }
 
+        /**
+         * Wählt den nächsten Knoten einer Region via Round-Robin aus.
+         *
+         * @param region Zielregion
+         * @return nächster Knoten oder {@code null}, falls keiner vorhanden ist
+         */
         public EdgeNode getNextNode(String region) {
             // schaut nach der angefragten region und holt die liste der server
             List<EdgeNode> nodes = regionToNodes.get(region);
@@ -421,6 +555,14 @@ public class CDNController {
         }
 
         // Wenn Admin Server löscht, oder wenn System erkennt, dass ein Server offline ist
+        /**
+         * Entfernt einen Knoten aus einer Region.
+         *
+         * @param region Zielregion
+         * @param node zu entfernender Knoten
+         * @param removeIfEmpty entfernt die Region vollständig, wenn sie leer ist
+         * @return {@code true}, wenn der Knoten entfernt wurde
+         */
         public boolean removeEdge(String region, EdgeNode node, boolean removeIfEmpty) {
             // Gibt es Region Xy?
             List<EdgeNode> nodes = regionToNodes.get(region);
@@ -442,11 +584,19 @@ public class CDNController {
         }
 
         // gibt das gesamte Verzeichnis aller Regionen und Server zurück mit nur Lesezugriff
+        /**
+         * Gibt den unveränderlichen Blick auf den aktuellen Routingindex zurück.
+         *
+         * @return Regionen mit ihren registrierten Knoten
+         */
         public Map<String, List<EdgeNode>> getRawIndex() {
             return Collections.unmodifiableMap(regionToNodes);
         }
 
         // Leert alle Verzeichnisse der Regionen als auch Zählerstände (Alles löschen Knopf)
+        /**
+         * Löscht den kompletten Routingindex inklusive Round-Robin-Zählern.
+         */
         public void clear() {
             regionToNodes.clear();
             regionCounters.clear();
@@ -459,19 +609,36 @@ public class CDNController {
     @RequestMapping("/api/cdn/admin/cache")
     public class CacheAdminApi {
 
-        // löschen einer ganz bestimmten Datei
+        /**
+         * Invalidiert eine konkrete Datei auf allen Knoten einer Region.
+         *
+         * @param region Zielregion
+         * @param path zu löschender Dateipfad
+         * @return Aggregiertes Ergebnis der Edge-Aufrufe
+         */
         @DeleteMapping("/region/{region}/files/{path:.+}")
         public ResponseEntity<?> invalidatePath(@PathVariable String region, @PathVariable String path) {
             return broadcast(region, "/api/edge/cache/files/" + path);
         }
 
-        // Löscht alles, was mit einem bestimmten Text beginnt (z. B. alles im Ordner /css/*)
+        /**
+         * Invalidiert alle Cache-Einträge einer Region mit einem gemeinsamen Präfix.
+         *
+         * @param region Zielregion
+         * @param value Präfix der zu löschenden Einträge
+         * @return Aggregiertes Ergebnis der Edge-Aufrufe
+         */
         @DeleteMapping("/region/{region}/prefix")
         public ResponseEntity<?> invalidatePrefix(@PathVariable String region, @RequestParam String value) {
             return broadcast(region, "/api/edge/cache/prefix?value=" + value);
         }
 
-        // Löscht den kompletten Cache für die gesamte angegebene Region
+        /**
+         * Löscht den kompletten Cache aller Knoten einer Region.
+         *
+         * @param region Zielregion
+         * @return Aggregiertes Ergebnis der Edge-Aufrufe
+         */
         @DeleteMapping("/region/{region}/all")
         public ResponseEntity<?> clearRegion(@PathVariable String region) {
             return broadcast(region, "/api/edge/cache/all");
@@ -479,6 +646,10 @@ public class CDNController {
 
         /**
          * Sendet den Löschbefehl an alle Edge-Nodes der Region und sammelt die Statuscodes.
+         *
+         * @param region Zielregion
+         * @param endpoint auf den Edge-Knoten aufzurufender Invalidation-Endpunkt
+         * @return Ergebnisliste pro Edge-Knoten oder 404 bei unbekannter Region
          */
         private ResponseEntity<Map<String, Object>> broadcast(String region, String endpoint) {
             List<EdgeNode> nodes = routingIndex.getRawIndex().get(region);
