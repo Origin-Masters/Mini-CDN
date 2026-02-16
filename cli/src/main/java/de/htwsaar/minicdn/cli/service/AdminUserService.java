@@ -1,12 +1,10 @@
 package de.htwsaar.minicdn.cli.service;
 
-import de.htwsaar.minicdn.cli.db.tables.Users;
-import de.htwsaar.minicdn.cli.db.tables.records.UsersRecord;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import org.jooq.DSLContext;
-import org.jooq.Record1;
+import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
@@ -31,19 +29,32 @@ public class AdminUserService implements AutoCloseable {
      * Insert a user and return the generated id (>0) or -1 on failure.
      */
     public int addUser(String name, int role) {
-        UsersRecord rec = dsl.insertInto(Users.USERS)
-                .columns(Users.USERS.NAME, Users.USERS.ROLE)
+        // Use generic table/field references instead of generated jOOQ classes
+        int affected = dsl.insertInto(DSL.table(DSL.name("users")))
+                .columns(DSL.field(DSL.name("name")), DSL.field(DSL.name("role")))
                 .values(name, role)
-                .returning(Users.USERS.ID)
-                .fetchOne();
+                .execute();
 
-        if (rec != null && rec.getValue(Users.USERS.ID) != null) {
-            return rec.getValue(Users.USERS.ID);
+        if (affected <= 0) {
+            return -1;
         }
 
-        // fallback for sqlite if returning() is not supported
-        Record1<Integer> r = (Record1<Integer>) dsl.fetchOne("SELECT last_insert_rowid()");
-        return r != null && r.value1() != null ? r.value1() : -1;
+        // fallback for sqlite to obtain last inserted id
+        Record r = dsl.fetchOne("SELECT last_insert_rowid() AS id");
+        if (r != null) {
+            // try named retrieval first
+            Integer id = r.get("id", Integer.class);
+            if (id != null) {
+                return id;
+            }
+            // fall back to numeric retrieval and convert
+            Number n = r.get(0, Number.class);
+            if (n != null) {
+                return n.intValue();
+            }
+        }
+
+        return -1;
     }
 
     @Override
