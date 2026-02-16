@@ -2,8 +2,11 @@ package de.htwsaar.minicdn.cli.app;
 
 import de.htwsaar.minicdn.cli.AdminCommand;
 import de.htwsaar.minicdn.cli.UserCommand;
+import de.htwsaar.minicdn.cli.di.CliContext;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
+
+import java.util.Objects;
 
 /**
  * Root-Command des CLI-Kommandobaums.
@@ -19,6 +22,12 @@ import picocli.CommandLine.HelpCommand;
         mixinStandardHelpOptions = true,
         subcommands = {AdminCommand.class, UserCommand.class, HelpCommand.class})
 public final class MiniCdnRootCommand implements Runnable {
+
+    private final CliContext ctx;
+
+    public MiniCdnRootCommand(CliContext ctx) {
+        this.ctx = Objects.requireNonNull(ctx);
+    }
 
     /**
      * Default-Aktion, wenn kein Subcommand angegeben ist.

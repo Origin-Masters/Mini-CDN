@@ -42,7 +42,7 @@ public final class MiniCdnCliMain {
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build(),
                 Duration.ofSeconds(5));
 
-        CommandLine cmd = new CommandLine(new MiniCdnRootCommand(), new ContextFactory(ctx));
+        CommandLine cmd = new CommandLine(MiniCdnRootCommand.class, new ContextFactory(ctx));
 
         if (args != null && args.length > 0) {
             int rc = cmd.execute(args);
