@@ -2,11 +2,15 @@ package de.htwsaar.minicdn.cli.adminCommands;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.AdminResourceService;
+
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
+
+import de.htwsaar.minicdn.cli.util.ConsoleUtils;
+import de.htwsaar.minicdn.cli.util.PathUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -15,11 +19,11 @@ import picocli.CommandLine.Option;
         name = "resource",
         description = "Manage CDN resources",
         subcommands = {
-            AdminResourceCommand.AdminResourceAddCommand.class,
-            AdminResourceCommand.AdminResourceUpdateCommand.class,
-            AdminResourceCommand.AdminResourceDeleteCommand.class,
-            AdminResourceCommand.AdminResourceListCommand.class,
-            AdminResourceCommand.AdminResourceShowCommand.class
+                AdminResourceCommand.AdminResourceAddCommand.class,
+                AdminResourceCommand.AdminResourceUpdateCommand.class,
+                AdminResourceCommand.AdminResourceDeleteCommand.class,
+                AdminResourceCommand.AdminResourceListCommand.class,
+                AdminResourceCommand.AdminResourceShowCommand.class
         })
 public class AdminResourceCommand implements Runnable {
 
@@ -29,6 +33,7 @@ public class AdminResourceCommand implements Runnable {
         this.ctx = ctx;
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void run() {
         new CommandLine(this).usage(ctx.out());
@@ -62,18 +67,16 @@ public class AdminResourceCommand implements Runnable {
 
         @Override
         public Integer call() throws FileNotFoundException {
-            // 1) Validate local file (so we don't fail with a cryptic IO error later)
+            // 1) Validate a local file (so we don't fail with a cryptic IO error later)
             if (file == null || !Files.exists(file) || !Files.isRegularFile(file)) {
-                parent.ctx.err().println("[ADMIN] Local file does not exist or is not a regular file: " + file);
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Local file does not exist or is not a regular file: %s", file);
                 return 1;
             }
 
-            // 2) Compute + validate cleanPath (this was missing)
-            String cleanPath = normalizePath(path);
+            // 2) Compute + validate cleanPath (use shared PathUtils)
+            String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                parent.ctx.err().println("[ADMIN] Invalid target path after normalization: " + path);
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -82,24 +85,17 @@ public class AdminResourceCommand implements Runnable {
             int rc = result.is2xx() ? 0 : 2;
 
             if (rc == 0) {
-                parent.ctx.out().printf("[ADMIN] Upload OK: origin=%s, path=%s, file=%s%n", origin, cleanPath, file);
-                parent.ctx.out().flush();
+                ConsoleUtils.info(
+                        parent.ctx.out(),
+                        "[ADMIN] Upload successful: status=%s origin=%s path=%s file=%s",
+                        result.statusCode(), origin, cleanPath, file);
                 return 0;
             }
 
-            parent.ctx
-                    .err()
-                    .printf(
-                            "[ADMIN] Upload failed: status=%s error=%s body=%s origin=%s path=%s file=%s%n",
-                            result.statusCode(), result.error(), result.body(), origin, cleanPath, file);
-            parent.ctx.err().flush();
+            ConsoleUtils.error(parent.ctx.err(),
+                    "[ADMIN] Upload failed: status=%s error=%s body=%s origin=%s path=%s file=%s",
+                    result.statusCode(), result.error(), result.body(), origin, cleanPath, file);
             return rc;
-        }
-
-        private static String normalizePath(String raw) {
-            String clean = (raw == null) ? "" : raw.trim();
-            if (clean.startsWith("/")) clean = clean.substring(1);
-            return clean.replaceFirst("^(origin/)?(data/)?", "");
         }
     }
 
@@ -122,10 +118,7 @@ public class AdminResourceCommand implements Runnable {
 
         @Override
         public void run() {
-            parent.ctx
-                    .out()
-                    .printf("[ADMIN] Update resource %d (path=%s, origin=%s, ttl=%s)%n", id, path, origin, cacheTtl);
-            parent.ctx.out().flush();
+            ConsoleUtils.info(parent.ctx.out(), "[ADMIN] Update resource %d (path=%s, origin=%s, ttl=%s)", id, path, origin, cacheTtl);
         }
     }
 
@@ -139,8 +132,7 @@ public class AdminResourceCommand implements Runnable {
 
         @Override
         public void run() {
-            parent.ctx.out().printf("[ADMIN] Delete resource %d%n", id);
-            parent.ctx.out().flush();
+            ConsoleUtils.info(parent.ctx.out(), "[ADMIN] Delete resource %d", id);
         }
     }
 
@@ -157,8 +149,7 @@ public class AdminResourceCommand implements Runnable {
 
         @Override
         public void run() {
-            parent.ctx.out().printf("[ADMIN] List resources page=%d size=%d%n", page, size);
-            parent.ctx.out().flush();
+            ConsoleUtils.info(parent.ctx.out(), "[ADMIN] List resources page=%d size=%d", page, size);
         }
     }
 
@@ -167,13 +158,12 @@ public class AdminResourceCommand implements Runnable {
         @CommandLine.ParentCommand
         AdminResourceCommand parent;
 
-        @Option(names = "--id", required = true, description = "Resource ID")
+        @Option(names = "--id", required = true, description = "[ADMIN] Resource ID")
         long id;
 
         @Override
         public void run() {
-            parent.ctx.out().printf("[ADMIN] Show resource %d%n", id);
-            parent.ctx.out().flush();
+            ConsoleUtils.info(parent.ctx.out(), "[ADMIN] Show resource %d", id);
         }
     }
 }
