@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.router;
+package de.htwsaar.minicdn.router.service;
 
 import java.time.Clock;
 import java.util.Deque;
@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.stereotype.Service;
 
 /**
  * Erfasst Router-seitige Betriebsmetriken in-memory.
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>Die Implementierung ist bewusst leichtgewichtig und thread-safe. Sie eignet sich für lokale
  * Entwicklungs- und Testumgebungen, in denen keine externe Metrik-Infrastruktur vorhanden ist.
  */
+@Service
 public class RouterStatsService {
 
     private final AtomicLong totalRequests = new AtomicLong(0);

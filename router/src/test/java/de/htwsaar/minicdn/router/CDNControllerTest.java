@@ -1,9 +1,22 @@
 package de.htwsaar.minicdn.router;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.htwsaar.minicdn.router.dto.EdgeNode;
+import de.htwsaar.minicdn.router.service.EdgeHttpClient;
+import de.htwsaar.minicdn.router.service.MetricsService;
+import de.htwsaar.minicdn.router.service.RouterStatsService;
+import de.htwsaar.minicdn.router.service.RoutingIndex;
+import de.htwsaar.minicdn.router.web.AdminStatsController;
+import de.htwsaar.minicdn.router.web.CdnProbeController;
+import de.htwsaar.minicdn.router.web.CdnRoutingController;
+import de.htwsaar.minicdn.router.web.RoutingAdminController;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,84 +26,100 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 class CDNControllerTest {
 
-    // MockMvc erlaubt es uns, HTTP-Anfragen (GET, POST, etc.) zu simulieren,
-    // als ob ein Browser oder ein Client sie an unseren Server schicken würde.
     private MockMvc mockMvc;
 
-    // Die Instanz des Controllers, den wir testen wollen.
-    private CDNController cdnController;
+    private RoutingIndex routingIndex;
+    private MetricsService metricsService;
+    private RouterStatsService routerStatsService;
 
-    /**
-     * Diese Methode läuft mit @BeforeEach vor jedem einzelnen Testlauf einmal durch.
-     * So stellen wir sicher, dass jeder Test mit einer "sauberen" Umgebung startet.
-     */
+    private EdgeHttpClient edgeHttpClient; // wird gemockt, damit keine echten HTTP-Calls passieren
+    private ObjectMapper objectMapper;
+
     @BeforeEach
     void setUp() {
-        cdnController = new CDNController();
+        routingIndex = new RoutingIndex();
+        metricsService = new MetricsService();
+        routerStatsService = new RouterStatsService();
+        objectMapper = new ObjectMapper();
+
+        edgeHttpClient = mock(EdgeHttpClient.class);
+        when(edgeHttpClient.isNodeResponsive(
+                        org.mockito.ArgumentMatchers.any(EdgeNode.class),
+                        org.mockito.ArgumentMatchers.any(Duration.class)))
+                .thenReturn(true);
+
+        var probeController = new CdnProbeController();
+        var routingController = new CdnRoutingController(
+                routingIndex,
+                metricsService,
+                routerStatsService,
+                edgeHttpClient,
+                500, // ackTimeoutMs
+                3, // maxRetries
+                0 // retryIntervalMs (0 damit Tests nicht schlafen)
+                );
+        var routingAdminController = new RoutingAdminController(routingIndex, metricsService, edgeHttpClient);
+        var adminStatsController =
+                new AdminStatsController(routerStatsService, routingIndex, edgeHttpClient, objectMapper);
 
         mockMvc = MockMvcBuilders.standaloneSetup(
-                        cdnController, cdnController.new RoutingAdminApi(), cdnController.new AdminStatsApi())
+                        probeController, routingController, routingAdminController, adminStatsController)
                 .build();
     }
 
+    @Test
     @DisplayName("Prüfen, ob die Basis-Gesundheits-Check-Endpunkte antworten")
     void testHealthAndReady() throws Exception {
-        // Wir führen eine GET-Anfrage auf /api/cdn/health aus
         mockMvc.perform(get("/api/cdn/health"))
-                .andExpect(status().isOk()) // Erwarte HTTP 200 (OK)
-                .andExpect(content().string("ok")); // Erwarte den Text "ok" im Antwort-Body
+                .andExpect(status().isOk())
+                .andExpect(content().string("ok"));
 
         mockMvc.perform(get("/api/cdn/ready"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("ready"));
     }
 
+    @Test
     @DisplayName("Fehlerfall: Routing ohne Angabe einer Region")
     void testRouteWithoutRegion() throws Exception {
-        // Hier schicken wir eine Anfrage an einen Dateipfad, vergessen aber die Region.
         mockMvc.perform(get("/api/cdn/files/mein-bild.jpg"))
-                // Der Controller sollte merken, dass die Region fehlt und 400 (Bad Request) liefern.
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Region fehlt")));
     }
 
+    @Test
     @DisplayName("Erfolgsfall: Eine Datei anfragen und zur Edge-Node weitergeleitet werden")
     void testSuccessfulRouting() throws Exception {
-        // SCHRITT 1: Wir müssen dem System erst sagen, dass es eine Edge-Node gibt.
-        // Das machen wir über die Admin-API (POST-Anfrage).
         mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://edge-server-1.com"))
-                .andExpect(status().isCreated()); // Erwarte HTTP 201 (Created)
+                .andExpect(status().isCreated());
 
-        // SCHRITT 2: Jetzt fragen wir eine Datei in dieser Region an.
         mockMvc.perform(get("/api/cdn/files/video.mp4").param("region", "EU"))
-                // Wir erwarten eine Umleitung (HTTP 307 Temporary Redirect).
                 .andExpect(status().isTemporaryRedirect())
-                // Die 'Location' im Header muss nun die URL der Edge-Node plus den Dateipfad enthalten.
                 .andExpect(header().string("Location", "http://edge-server-1.com/api/edge/files/video.mp4"));
     }
 
+    @Test
     @DisplayName("Lastverteilung: Round-Robin soll zwischen zwei Nodes abwechseln")
     void testRoundRobinRouting() throws Exception {
-        // Wir registrieren zwei verschiedene Server in der gleichen Region "US".
-        mockMvc.perform(post("/api/cdn/routing").param("region", "US").param("url", "http://node-A.com"));
-        mockMvc.perform(post("/api/cdn/routing").param("region", "US").param("url", "http://node-B.com"));
+        mockMvc.perform(post("/api/cdn/routing").param("region", "US").param("url", "http://node-A.com"))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post("/api/cdn/routing").param("region", "US").param("url", "http://node-B.com"))
+                .andExpect(status().isCreated());
 
-        // Erste Anfrage: Wir holen uns die Location, wohin umgeleitet wurde.
         String ersteLocation = mockMvc.perform(get("/api/cdn/files/test").param("region", "US"))
+                .andExpect(status().isTemporaryRedirect())
                 .andReturn()
                 .getResponse()
                 .getHeader("Location");
 
-        // Zweite Anfrage: Der Controller muss jetzt den ANDEREN Server wählen.
         mockMvc.perform(get("/api/cdn/files/test").param("region", "US"))
                 .andExpect(status().isTemporaryRedirect())
-                // 'not(ersteLocation)' stellt sicher, dass es nicht wieder die gleiche URL ist.
                 .andExpect(header().string("Location", not(ersteLocation)));
     }
 
+    @Test
     @DisplayName("Bulk-Update: Mehrere Nodes gleichzeitig über JSON hinzufügen")
     void testBulkUpdate() throws Exception {
-        // Ein JSON-String, der zwei Befehle zum Hinzufügen von Nodes enthält.
         String jsonAnfrage =
                 """
             [
@@ -100,29 +129,25 @@ class CDNControllerTest {
             """;
 
         mockMvc.perform(post("/api/cdn/routing/bulk")
-                        .contentType(MediaType.APPLICATION_JSON) // Wir sagen dem Server: "Hier kommt JSON"
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonAnfrage))
                 .andExpect(status().isOk())
-                // Wir prüfen im JSON-Ergebnis, ob die Liste 2 Einträge hat.
                 .andExpect(jsonPath("$", hasSize(2)))
-                // Wir prüfen, ob der erste Eintrag den Status "added" hat.
                 .andExpect(jsonPath("$[0].status", is("added")));
     }
 
+    @Test
     @DisplayName("Metriken: Zähler müssen sich bei Anfragen erhöhen")
     void testMetrics() throws Exception {
-        // Vorbereitung: Node registrieren
-        mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://metrics-edge.com"));
+        mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://metrics-edge.com"))
+                .andExpect(status().isCreated());
 
-        // Eine Anfrage simulieren
-        mockMvc.perform(get("/api/cdn/files/datei.txt").param("region", "EU"));
+        mockMvc.perform(get("/api/cdn/files/datei.txt").param("region", "EU"))
+                .andExpect(status().isTemporaryRedirect());
 
-        // Jetzt rufen wir den Metrik-Endpunkt auf und schauen, ob die Zahlen stimmen.
         mockMvc.perform(get("/api/cdn/routing/metrics"))
                 .andExpect(status().isOk())
-                // "totalRequests" im JSON sollte jetzt 1 sein.
                 .andExpect(jsonPath("$.totalRequests", is(1)))
-                // In der Statistik für die Region "EU" sollte auch eine 1 stehen.
                 .andExpect(jsonPath("$.requestsByRegion.EU", is(1)));
     }
 
@@ -132,9 +157,12 @@ class CDNControllerTest {
         mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://node-eu-1.com"))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(get("/api/cdn/files/a.txt").param("region", "EU").param("clientId", "alice"));
-        mockMvc.perform(get("/api/cdn/files/b.txt").param("region", "EU").param("clientId", "bob"));
-        mockMvc.perform(get("/api/cdn/files/c.txt").param("region", "EU").param("clientId", "alice"));
+        mockMvc.perform(get("/api/cdn/files/a.txt").param("region", "EU").param("clientId", "alice"))
+                .andExpect(status().isTemporaryRedirect());
+        mockMvc.perform(get("/api/cdn/files/b.txt").param("region", "EU").param("clientId", "bob"))
+                .andExpect(status().isTemporaryRedirect());
+        mockMvc.perform(get("/api/cdn/files/c.txt").param("region", "EU").param("clientId", "alice"))
+                .andExpect(status().isTemporaryRedirect());
 
         mockMvc.perform(get("/api/cdn/admin/stats").param("windowSec", "60").param("aggregateEdge", "false"))
                 .andExpect(status().isOk())
@@ -145,18 +173,17 @@ class CDNControllerTest {
                 .andExpect(jsonPath("$.nodes.total", is(1)));
     }
 
-    @DisplayName("Entfernen: Eine Node löschen und prüfen, ob sie weg ist")
+    @Test
+    @DisplayName("Entfernen: Eine Node löschen und danach muss Routing fehlschlagen (keine Nodes)")
     void testDeleteNode() throws Exception {
-        // Erst hinzufügen...
-        mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://weg-mit-mir.com"));
+        mockMvc.perform(post("/api/cdn/routing").param("region", "EU").param("url", "http://weg-mit-mir.com"))
+                .andExpect(status().isCreated());
 
-        // ...dann löschen (DELETE Anfrage)
         mockMvc.perform(delete("/api/cdn/routing").param("region", "EU").param("url", "http://weg-mit-mir.com"))
                 .andExpect(status().isOk());
 
-        // Wenn wir jetzt anfragen, darf keine Node mehr gefunden werden (HTTP 404).
         mockMvc.perform(get("/api/cdn/files/test").param("region", "EU"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(containsString("Keine verfügbaren Edge-Nodes")));
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(content().string(containsString("Keine erreichbaren Knoten")));
     }
 }
