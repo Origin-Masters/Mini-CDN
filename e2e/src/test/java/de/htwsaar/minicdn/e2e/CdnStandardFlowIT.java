@@ -104,6 +104,9 @@ class CdnStandardFlowIT extends AbstractE2E {
             // Erst einen toten Port registrieren, dann die echte Edge
             registerEdgeInRouter(REGION, "http://localhost:9999");
             registerEdgeInRouter(REGION, EDGE_BASE);
+            registerEdgeInRouter(REGION, "http://localhost:7777");
+
+
 
             HttpResponse<Void> response = requestRouting(tf.fileName());
 
@@ -130,6 +133,8 @@ class CdnStandardFlowIT extends AbstractE2E {
     void delivery_guarantee_fails_when_all_nodes_dead() throws Exception {
         try {
             registerEdgeInRouter(REGION, "http://localhost:9998");
+            registerEdgeInRouter(REGION, "http://localhost:9997");
+            registerEdgeInRouter(REGION, "http://localhost:9996");
             HttpResponse<Void> response = requestRouting("any-file.txt");
             assertEquals(503, response.statusCode(), "Sollte 503 liefern, wenn kein Knoten ein Ack sendet");
         } finally {
