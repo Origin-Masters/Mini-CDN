@@ -1,7 +1,6 @@
 package de.htwsaar.minicdn.cli.util;
 
 import de.htwsaar.minicdn.cli.service.http.HttpCallResult;
-
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;

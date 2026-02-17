@@ -2,15 +2,13 @@ package de.htwsaar.minicdn.cli.adminCommands;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.AdminResourceService;
-
+import de.htwsaar.minicdn.cli.util.ConsoleUtils;
+import de.htwsaar.minicdn.cli.util.PathUtils;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
-
-import de.htwsaar.minicdn.cli.util.ConsoleUtils;
-import de.htwsaar.minicdn.cli.util.PathUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -19,11 +17,11 @@ import picocli.CommandLine.Option;
         name = "resource",
         description = "Manage CDN resources",
         subcommands = {
-                AdminResourceCommand.AdminResourceAddCommand.class,
-                AdminResourceCommand.AdminResourceUpdateCommand.class,
-                AdminResourceCommand.AdminResourceDeleteCommand.class,
-                AdminResourceCommand.AdminResourceListCommand.class,
-                AdminResourceCommand.AdminResourceShowCommand.class
+            AdminResourceCommand.AdminResourceAddCommand.class,
+            AdminResourceCommand.AdminResourceUpdateCommand.class,
+            AdminResourceCommand.AdminResourceDeleteCommand.class,
+            AdminResourceCommand.AdminResourceListCommand.class,
+            AdminResourceCommand.AdminResourceShowCommand.class
         })
 public class AdminResourceCommand implements Runnable {
 
@@ -69,14 +67,16 @@ public class AdminResourceCommand implements Runnable {
         public Integer call() throws FileNotFoundException {
             // 1) Validate a local file (so we don't fail with a cryptic IO error later)
             if (file == null || !Files.exists(file) || !Files.isRegularFile(file)) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Local file does not exist or is not a regular file: %s", file);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] Local file does not exist or is not a regular file: %s", file);
                 return 1;
             }
 
             // 2) Compute + validate cleanPath (use shared PathUtils)
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -88,13 +88,22 @@ public class AdminResourceCommand implements Runnable {
                 ConsoleUtils.info(
                         parent.ctx.out(),
                         "[ADMIN] Upload successful: status=%s origin=%s path=%s file=%s",
-                        result.statusCode(), origin, cleanPath, file);
+                        result.statusCode(),
+                        origin,
+                        cleanPath,
+                        file);
                 return 0;
             }
 
-            ConsoleUtils.error(parent.ctx.err(),
+            ConsoleUtils.error(
+                    parent.ctx.err(),
                     "[ADMIN] Upload failed: status=%s error=%s body=%s origin=%s path=%s file=%s",
-                    result.statusCode(), result.error(), result.body(), origin, cleanPath, file);
+                    result.statusCode(),
+                    result.error(),
+                    result.body(),
+                    origin,
+                    cleanPath,
+                    file);
             return rc;
         }
     }
@@ -118,7 +127,13 @@ public class AdminResourceCommand implements Runnable {
 
         @Override
         public void run() {
-            ConsoleUtils.info(parent.ctx.out(), "[ADMIN] Update resource %d (path=%s, origin=%s, ttl=%s)", id, path, origin, cacheTtl);
+            ConsoleUtils.info(
+                    parent.ctx.out(),
+                    "[ADMIN] Update resource %d (path=%s, origin=%s, ttl=%s)",
+                    id,
+                    path,
+                    origin,
+                    cacheTtl);
         }
     }
 

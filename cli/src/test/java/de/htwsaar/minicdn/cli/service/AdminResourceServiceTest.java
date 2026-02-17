@@ -4,9 +4,7 @@ import junit.framework.TestCase;
 
 public class AdminResourceServiceTest extends TestCase {
 
-    public void testCreate() {
-    }
+    public void testCreate() {}
 
-    public void testUploadToOrigin() {
-    }
+    public void testUploadToOrigin() {}
 }

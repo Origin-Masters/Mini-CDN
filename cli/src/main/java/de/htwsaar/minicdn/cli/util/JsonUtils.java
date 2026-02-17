@@ -1,7 +1,7 @@
 package de.htwsaar.minicdn.cli.util;
 
 public class JsonUtils {
-    private  JsonUtils() {}
+    private JsonUtils() {}
 
     /**
      * Simple JSON string escaper. Not a full JSON serializer, just enough to safely embed JSON strings in CLI output.

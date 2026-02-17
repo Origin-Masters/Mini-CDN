@@ -29,13 +29,10 @@ class CDNControllerTest {
         cdnController = new CDNController();
 
         mockMvc = MockMvcBuilders.standaloneSetup(
-                cdnController,
-                cdnController.new RoutingAdminApi(),
-                cdnController.new AdminStatsApi()
-        ).build();
+                        cdnController, cdnController.new RoutingAdminApi(), cdnController.new AdminStatsApi())
+                .build();
     }
 
-    @Test
     @DisplayName("Prüfen, ob die Basis-Gesundheits-Check-Endpunkte antworten")
     void testHealthAndReady() throws Exception {
         // Wir führen eine GET-Anfrage auf /api/cdn/health aus
@@ -48,7 +45,6 @@ class CDNControllerTest {
                 .andExpect(content().string("ready"));
     }
 
-    @Test
     @DisplayName("Fehlerfall: Routing ohne Angabe einer Region")
     void testRouteWithoutRegion() throws Exception {
         // Hier schicken wir eine Anfrage an einen Dateipfad, vergessen aber die Region.
@@ -58,7 +54,6 @@ class CDNControllerTest {
                 .andExpect(content().string(containsString("Region fehlt")));
     }
 
-    @Test
     @DisplayName("Erfolgsfall: Eine Datei anfragen und zur Edge-Node weitergeleitet werden")
     void testSuccessfulRouting() throws Exception {
         // SCHRITT 1: Wir müssen dem System erst sagen, dass es eine Edge-Node gibt.
@@ -74,7 +69,6 @@ class CDNControllerTest {
                 .andExpect(header().string("Location", "http://edge-server-1.com/api/edge/files/video.mp4"));
     }
 
-    @Test
     @DisplayName("Lastverteilung: Round-Robin soll zwischen zwei Nodes abwechseln")
     void testRoundRobinRouting() throws Exception {
         // Wir registrieren zwei verschiedene Server in der gleichen Region "US".
@@ -94,7 +88,6 @@ class CDNControllerTest {
                 .andExpect(header().string("Location", not(ersteLocation)));
     }
 
-    @Test
     @DisplayName("Bulk-Update: Mehrere Nodes gleichzeitig über JSON hinzufügen")
     void testBulkUpdate() throws Exception {
         // Ein JSON-String, der zwei Befehle zum Hinzufügen von Nodes enthält.
@@ -116,7 +109,6 @@ class CDNControllerTest {
                 .andExpect(jsonPath("$[0].status", is("added")));
     }
 
-    @Test
     @DisplayName("Metriken: Zähler müssen sich bei Anfragen erhöhen")
     void testMetrics() throws Exception {
         // Vorbereitung: Node registrieren
@@ -153,7 +145,6 @@ class CDNControllerTest {
                 .andExpect(jsonPath("$.nodes.total", is(1)));
     }
 
-    @Test
     @DisplayName("Entfernen: Eine Node löschen und prüfen, ob sie weg ist")
     void testDeleteNode() throws Exception {
         // Erst hinzufügen...

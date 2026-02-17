@@ -16,6 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,16 @@ public class CDNController {
     private final MetricsService metricsService;
     private final RouterStatsService routerStatsService;
     private final ObjectMapper objectMapper;
+
+    // --- Konfigurationsparameter für NFA-S3 (Zustellgarantie) ---
+    @Value("${cdn.delivery.ack-timeout-ms:500}")
+    private long ackTimeoutMs;
+
+    @Value("${cdn.delivery.max-retries:3}")
+    private int maxRetries;
+
+    @Value("${cdn.delivery.retry-interval-ms:100}")
+    private long retryIntervalMs;
 
     /**
      * Repräsentiert einen registrierten Edge-Knoten über seine Basis-URL.
@@ -125,26 +136,49 @@ public class CDNController {
         // Neue Anfrage für Region XY
         metricsService.recordRequest(region);
         routerStatsService.recordRequest(region, clientId);
-        // Round Robin Algorithmus wird aufgerufen
-        EdgeNode selectedNode = routingIndex.getNextNode(region);
 
-        // Region ist bekannt, aber aktuell ist kein Server darin angemeldet
-        if (selectedNode == null) {
-            metricsService.recordError();
-            routerStatsService.recordError();
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Fehler: Keine verfügbaren Edge-Nodes für Region '" + region + "' gefunden.");
+        // NFA-S3: Implementierung der Resend-Logik bei fehlendem "Acknowledgement" (Health-Check)
+        int attempts = 0;
+        int maxAllowedAttempts = Math.min(maxRetries, routingIndex.getNodeCount(region));
+
+        while (attempts < maxAllowedAttempts) {
+            EdgeNode selectedNode = routingIndex.getNextNode(region);
+
+            if (selectedNode == null) {
+                break;
+            }
+
+            // Simuliere Ack-Prüfung (Zustellgarantie-Check)
+            if (isNodeResponsive(selectedNode)) {
+                metricsService.recordNodeSelection(selectedNode.url());
+                String location = selectedNode.url() + "/api/edge/files/" + path;
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setLocation(URI.create(location));
+                // Wir fügen Metadaten hinzu, um die Nachricht eindeutig zu identifizieren (NFA-S3 Aufgabe 1)
+                headers.set("X-CDN-Message-ID", java.util.UUID.randomUUID().toString());
+                headers.set("X-CDN-Retry-Count", String.valueOf(attempts));
+
+                return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
+            } else {
+                // Knoten reagiert nicht -> Als "nicht zugestellt" markieren & Retry einleiten
+                attempts++;
+
+                // Kurzes Intervall warten vor dem nächsten Versuch (konfigurierbar)
+                try {
+                    Thread.sleep(retryIntervalMs);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
 
-        // Zähler wird hochgezählt
-        metricsService.recordNodeSelection(selectedNode.url());
-        // Wegweise wird gebaut
-        String location = selectedNode.url() + "/api/edge/files/" + path;
+        metricsService.recordError();
+        routerStatsService.recordError();
 
-        HttpHeaders headers = new HttpHeaders();
-        // Ziel URL wird wird in den Header der Antwort geschrieben
-        headers.setLocation(URI.create(location));
-        return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Fehler: Zustellgarantie konnte nicht erfüllt werden. Keine erreichbaren Knoten in Region '"
+                        + region + "'.");
     }
 
     /**
@@ -232,7 +266,7 @@ public class CDNController {
             return removed
                     ? ResponseEntity.ok().build()
                     : ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
+                            .body("Knoten " + url + " in Region " + region + " nicht gefunden.");
         }
 
         // Router geht seine Liste durch und fragt (falls gewünscht) bei jedem einzelnen Edge Server, ob er noch gesund
@@ -282,7 +316,7 @@ public class CDNController {
          */
         @GetMapping("/metrics")
         public ResponseEntity<Map<String, Object>>
-        getMetrics() { // Map<String, Object> ist ein Container, der die Statistiken in Schlüssel Wert Paaren
+                getMetrics() { // Map<String, Object> ist ein Container, der die Statistiken in Schlüssel Wert Paaren
             // speichert
             return ResponseEntity.ok(
                     metricsService.getSnapshot()); // metricService nach Kopie fragen --> zurück an Admin in JSON Format
@@ -601,6 +635,11 @@ public class CDNController {
             regionToNodes.clear();
             regionCounters.clear();
         }
+
+        public int getNodeCount(String region) {
+            List<EdgeNode> nodes = regionToNodes.get(region);
+            return nodes != null ? nodes.size() : 0;
+        }
     }
     /**
      * Admin-API zur Verwaltung des Cache-Status über ganze Regionen hinweg.
@@ -676,6 +715,25 @@ public class CDNController {
                     .toList();
 
             return ResponseEntity.ok(Map.of("region", region, "results", results));
+        }
+    }
+
+    /**
+     * Hilfsmethode zur Überprüfung der Erreichbarkeit (Acknowledgement Handling).
+     */
+    private boolean isNodeResponsive(EdgeNode node) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(node.url() + "/api/edge/health"))
+                    .timeout(Duration.ofMillis(ackTimeoutMs))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() == 200;
+        } catch (Exception e) {
+            // Bei Timeout oder Connection Refused gilt das Ack als ausbleibend
+            return false;
         }
     }
 }
