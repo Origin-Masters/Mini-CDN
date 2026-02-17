@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.cli.service;
 
 import de.htwsaar.minicdn.cli.service.http.HttpCallResult;
+import de.htwsaar.minicdn.cli.util.HttpUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
@@ -43,7 +44,7 @@ public final class AdminResourceService {
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
 
-        return sendForStringBody(request);
+        return HttpUtils.sendForStringBody(httpClient, request);
     }
 
     /**
@@ -68,22 +69,6 @@ public final class AdminResourceService {
                 .PUT(HttpRequest.BodyPublishers.ofFile(localFile))
                 .build();
 
-        return sendForStringBody(req);
+        return HttpUtils.sendForStringBody(httpClient, req);
     }
-
-    /**
-     * Helper to send a request and return the response body as string, or an error message.
-     */
-    private HttpCallResult sendForStringBody(HttpRequest request) {
-        try {
-            HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return HttpCallResult.http(resp.statusCode(), resp.body());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return HttpCallResult.ioError("interrupted");
-        } catch (IOException e) {
-            return HttpCallResult.ioError(e.getMessage());
-        }
-    }
-
 }
