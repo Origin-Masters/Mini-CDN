@@ -1,5 +1,10 @@
 package de.htwsaar.minicdn.cli.service;
 
+import de.htwsaar.minicdn.cli.service.http.HttpCallResult;
+import de.htwsaar.minicdn.cli.util.JsonUtils;
+import de.htwsaar.minicdn.cli.util.PathUtils;
+import de.htwsaar.minicdn.cli.util.UriUtils;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -20,14 +25,17 @@ public final class AdminResourceService {
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
     }
 
+    /**
+     * Create a new CDN resource via admin API: POST /api/cdn/resources
+     */
     public HttpCallResult create(URI cdnBaseUrl, String path, String origin, int cacheTtl) {
         Objects.requireNonNull(cdnBaseUrl, "cdnBaseUrl");
 
-        URI base = ensureTrailingSlash(cdnBaseUrl);
+        URI base = UriUtils.ensureTrailingSlash(cdnBaseUrl);
         URI target = base.resolve("api/cdn/resources");
 
         String json = String.format(
-                "{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}", escapeJson(path), escapeJson(origin), cacheTtl);
+                "{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}", JsonUtils.escapeJson(path), JsonUtils.escapeJson(origin), cacheTtl);
 
         HttpRequest request = HttpRequest.newBuilder(target)
                 .timeout(requestTimeout)
@@ -46,12 +54,12 @@ public final class AdminResourceService {
         Objects.requireNonNull(originBaseUrl, "originBaseUrl");
         Objects.requireNonNull(localFile, "localFile");
 
-        String cleanPath = stripLeadingSlash(Objects.toString(targetPath, ""));
+        String cleanPath = PathUtils.stripLeadingSlash(Objects.toString(targetPath, ""));
         if (cleanPath.isBlank()) {
             return HttpCallResult.clientError("targetPath must not be blank");
         }
 
-        URI base = ensureTrailingSlash(originBaseUrl);
+        URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve("api/origin/admin/files/" + cleanPath);
 
         HttpRequest req = HttpRequest.newBuilder(url)
@@ -63,6 +71,9 @@ public final class AdminResourceService {
         return sendForStringBody(req);
     }
 
+    /**
+     * Helper to send a request and return the response body as string, or an error message.
+     */
     private HttpCallResult sendForStringBody(HttpRequest request) {
         try {
             HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -75,39 +86,4 @@ public final class AdminResourceService {
         }
     }
 
-    private static URI ensureTrailingSlash(URI uri) {
-        String s = uri.toString();
-        return URI.create(s.endsWith("/") ? s : s + "/");
-    }
-
-    private static String stripLeadingSlash(String p) {
-        if (p == null || p.isBlank()) return "";
-        return p.startsWith("/") ? p.substring(1) : p;
-    }
-
-    private static String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r");
-    }
-
-    public record HttpCallResult(Integer statusCode, String body, String error) {
-        public static HttpCallResult http(int statusCode, String body) {
-            return new HttpCallResult(statusCode, body, null);
-        }
-
-        public static HttpCallResult ioError(String message) {
-            return new HttpCallResult(null, null, message == null ? "io error" : message);
-        }
-
-        public static HttpCallResult clientError(String message) {
-            return new HttpCallResult(400, null, message);
-        }
-
-        public boolean is2xx() {
-            return statusCode != null && statusCode >= 200 && statusCode < 300;
-        }
-    }
 }
