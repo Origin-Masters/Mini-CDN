@@ -92,6 +92,51 @@ class CdnStandardFlowIT extends AbstractE2E {
         }
     }
 
+    /**
+     * NFA-S3 Zustellgarantie (Fault-Injection)
+     * Router muss einen toten Knoten überspringen und den nächsten funktionierenden wählen.
+     */
+    @Test
+    void delivery_guarantee_retry_on_node_failure() throws Exception {
+        TestFile tf = createOriginFile("Retry Test Content");
+
+        try {
+            // Erst einen toten Port registrieren, dann die echte Edge
+            registerEdgeInRouter(REGION, "http://localhost:9999");
+            registerEdgeInRouter(REGION, EDGE_BASE);
+
+            HttpResponse<Void> response = requestRouting(tf.fileName());
+
+            assertEquals(307, response.statusCode(), "Router muss trotz totem Knoten erfolgreich umleiten");
+            String location = response.headers().firstValue("location").orElse("");
+            assertTrue(location.startsWith(EDGE_BASE), "Redirect muss auf die funktionierende Node zeigen");
+
+            // Metadaten prüfen (NFA-S3 Aufgabe 1)
+            assertTrue(response.headers().firstValue("X-CDN-Message-ID").isPresent(), "Message-ID fehlt");
+            assertTrue(response.headers().firstValue("X-CDN-Retry-Count").isPresent(), "Retry-Count fehlt");
+
+        } finally {
+            cleanupOriginFile(tf.originAdminFileUri());
+            unregisterEdge(REGION, "http://localhost:9999");
+            unregisterEdge(REGION, EDGE_BASE);
+        }
+    }
+
+    /**
+     *  NFA-S3 Abbruchbedingung
+     * Wenn gar kein Knoten antwortet, muss ein Fehler (503) kommen.
+     */
+    @Test
+    void delivery_guarantee_fails_when_all_nodes_dead() throws Exception {
+        try {
+            registerEdgeInRouter(REGION, "http://localhost:9998");
+            HttpResponse<Void> response = requestRouting("any-file.txt");
+            assertEquals(503, response.statusCode(), "Sollte 503 liefern, wenn kein Knoten ein Ack sendet");
+        } finally {
+            unregisterEdge(REGION, "http://localhost:9998");
+        }
+    }
+
     // ---------- Hilfsmethoden ----------
 
     private record TestFile(String fileName, URI originAdminFileUri) {}
@@ -123,6 +168,12 @@ class CdnStandardFlowIT extends AbstractE2E {
 
         HttpResponse<Void> addEdgeResp = NO_REDIRECT_CLIENT.send(addEdgeReq, HttpResponse.BodyHandlers.discarding());
         assertEquals(201, addEdgeResp.statusCode());
+    }
+
+    private static void registerEdgeInRouter(String region, String url) throws Exception {
+        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
+        CLIENT.send(HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.noBody()).build(),
+                HttpResponse.BodyHandlers.discarding());
     }
 
     private static void cleanupRouterEdgeRegistration() throws Exception {
@@ -167,5 +218,16 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static URI uri(String s) {
         return URI.create(s);
+    }
+
+    private static void unregisterEdge(String region, String url) throws Exception {
+        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
+        CLIENT.send(HttpRequest.newBuilder(uri).DELETE().build(), HttpResponse.BodyHandlers.discarding());
+    }
+
+    private static HttpResponse<Void> requestRouting(String fileName) throws Exception {
+        URI routeUri = URI.create(ROUTER_BASE + "/api/cdn/files/" + fileName + "?region=" + REGION);
+        return NO_REDIRECT_CLIENT.send(HttpRequest.newBuilder(routeUri).GET().build(),
+                HttpResponse.BodyHandlers.discarding());
     }
 }

@@ -3,10 +3,9 @@ package de.htwsaar.minicdn.cli.app;
 import de.htwsaar.minicdn.cli.AdminCommand;
 import de.htwsaar.minicdn.cli.UserCommand;
 import de.htwsaar.minicdn.cli.di.CliContext;
+import java.util.Objects;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
-
-import java.util.Objects;
 
 /**
  * Root-Command des CLI-Kommandobaums.

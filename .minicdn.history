@@ -8,3 +8,15 @@
 1771173616501:admin stats show --host http://localhost:8082
 1771240803051:admin stats show --host htttp://localhost:8082
 1771240822649:admin stats show --host http://localhost:8082
+1771345000913:help
+1771345063539:help admin
+1771345073811:stats
+1771345081042:admin stats
+1771345139782:admin stats show --host http://localhost:8082
+1771345258862:admin stats show --host https://localhost8082 --json
+1771345369489:help user
+1771345389621:help admin
+1771345394731:help
+1771345426339:help admin config
+1771345437486:help admin config node
+1771345470693:help admin config node node

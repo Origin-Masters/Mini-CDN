@@ -5,13 +5,10 @@ import de.htwsaar.minicdn.cli.util.HttpUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
-
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
@@ -36,7 +33,8 @@ public final class AdminResourceService {
         URI target = base.resolve("api/cdn/resources");
 
         String json = String.format(
-                "{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}", JsonUtils.escapeJson(path), JsonUtils.escapeJson(origin), cacheTtl);
+                "{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}",
+                JsonUtils.escapeJson(path), JsonUtils.escapeJson(origin), cacheTtl);
 
         HttpRequest request = HttpRequest.newBuilder(target)
                 .timeout(requestTimeout)
