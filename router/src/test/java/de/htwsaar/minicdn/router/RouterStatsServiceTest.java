@@ -2,6 +2,7 @@ package de.htwsaar.minicdn.router;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import de.htwsaar.minicdn.router.service.RouterStatsService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;

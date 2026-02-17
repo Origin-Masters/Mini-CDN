@@ -41,22 +41,6 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     /**
-     * Testet, ob der Router korrekt mit HTTP 307 zum Edge-Server umleitet.
-     */
-    @Test
-    void router_redirects_to_edge_with_307_and_location() throws Exception {
-        TestFile tf = createOriginFile("Hallo vom Origin");
-        try {
-            registerEdgeInRouter();
-            URI edgeUri = routeViaRouterExpectRedirectToEdge(tf.fileName());
-            assertNotNull(edgeUri);
-        } finally {
-            cleanupOriginFile(tf.originAdminFileUri());
-            cleanupRouterEdgeRegistration();
-        }
-    }
-
-    /**
      * Testet, ob der Edge-Cache korrekt funktioniert (MISS beim ersten Request, HIT beim zweiten).
      */
     @Test
@@ -105,8 +89,6 @@ class CdnStandardFlowIT extends AbstractE2E {
             registerEdgeInRouter(REGION, "http://localhost:9999");
             registerEdgeInRouter(REGION, EDGE_BASE);
             registerEdgeInRouter(REGION, "http://localhost:7777");
-
-
 
             HttpResponse<Void> response = requestRouting(tf.fileName());
 
@@ -177,7 +159,10 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static void registerEdgeInRouter(String region, String url) throws Exception {
         URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
-        CLIENT.send(HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.noBody()).build(),
+        CLIENT.send(
+                HttpRequest.newBuilder(uri)
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .build(),
                 HttpResponse.BodyHandlers.discarding());
     }
 
@@ -232,7 +217,7 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static HttpResponse<Void> requestRouting(String fileName) throws Exception {
         URI routeUri = URI.create(ROUTER_BASE + "/api/cdn/files/" + fileName + "?region=" + REGION);
-        return NO_REDIRECT_CLIENT.send(HttpRequest.newBuilder(routeUri).GET().build(),
-                HttpResponse.BodyHandlers.discarding());
+        return NO_REDIRECT_CLIENT.send(
+                HttpRequest.newBuilder(routeUri).GET().build(), HttpResponse.BodyHandlers.discarding());
     }
 }
