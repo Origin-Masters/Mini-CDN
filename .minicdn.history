@@ -20,3 +20,8 @@
 1771345426339:help admin config
 1771345437486:help admin config node
 1771345470693:help admin config node node
+1771426025076:user file
+1771426121905:user file download docs/hello.txt -o ./hello.txt -H http://localhost:8080 --overwrite
+1771426229147:user file download data/test.txt -o ./hello.txt -H http://localhost:8080 --overwrite
+1771427219944:user file download test.txt -o ./downloads/test.txt -H http://localhost:8082 -r EU --overwrite
+1771427623650:user file download test.txt -o ./downloads/test.txt -r EU --overwrite

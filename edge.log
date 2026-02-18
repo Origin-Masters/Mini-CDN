@@ -1,14 +1,13 @@
-[INFO] Scanning for projects...
-[INFO] 
-[INFO] ----------------------< de.htwsaar.minicdn:edge >-----------------------
-[INFO] Building mini-cdn-edge 1.0-SNAPSHOT
-[INFO]   from pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO] 
-[INFO] >>> spring-boot:3.2.5:run (default-cli) > test-compile @ edge >>>
-[INFO] 
-[INFO] --- jooq-codegen:3.20.10:generate (jooq-codegen) @ edge ---
-[INFO] 
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----------------------< [0;36mde.htwsaar.minicdn:edge[0;1m >-----------------------[m
+[[1;34mINFO[m] [1mBuilding mini-cdn-edge 1.0-SNAPSHOT[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m>>> [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[0;1m > [0;1mtest-compile[m @ [36medge[0;1m >>>[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mjooq-codegen-maven:3.20.10:generate[m [1m(jooq-codegen)[m @ [36medge[0;1m ---[m
+[[1;34mINFO[m] 
                                       
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -28,160 +27,157 @@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  Thank you for using jOOQ 3.20.10 (Build date: 2025-12-05T08:57:46Z)
                                       
-[INFO] 
+[[1;34mINFO[m] 
 
-jOOQ tip of the day: You can use Table<R> references as SelectField<R> to project nested TableRecords in any query: https://blog.jooq.org/projecting-type-safe-nested-tablerecords-with-jooq-3-17/
+jOOQ tip of the day: Don't want tips? Use the -Dorg.jooq.no-tips=true system property
 
-[INFO] No <inputCatalog/> was provided. Generating ALL available catalogs instead.
-[INFO] No <inputSchema/> was provided. Generating ALL available schemata instead.
-[INFO] License parameters       
-[INFO] ----------------------------------------------------------
-[INFO]   Thank you for using jOOQ and jOOQ's code generator
-[INFO]                          
-[INFO] Database parameters      
-[INFO] ----------------------------------------------------------
-[INFO]   dialect                : SQLITE
-[INFO]   URL                    : jdbc:sqlite:/Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/data/edge-cache.db
-[INFO]   target dir             : /Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/src/main/java
-[INFO]   target package         : de.htwsaar.minicdn.edge.db
-[INFO]   includes               : [.*]
-[INFO]   excludes               : []
-[INFO]   includeExcludeColumns  : false
-[INFO] ----------------------------------------------------------
-[INFO]                          
-[INFO] JavaGenerator parameters 
-[INFO] ----------------------------------------------------------
-[INFO] annotations              
-[INFO]   generated              : false
-[INFO]   JPA                    : false
-[INFO]   JPA version            : 
-[INFO]   validation             : false
-[INFO]   spring                 : false
-[INFO] comments                 
-[INFO]   comments               : true
-[INFO]   on attributes          : true
-[INFO]   on catalogs            : true
-[INFO]   on columns             : true
-[INFO]   on embeddables         : true
-[INFO]   on keys                : true
-[INFO]   on links               : true
-[INFO]   on packages            : true
-[INFO]   on parameters          : true
-[INFO]   on queues              : true
-[INFO]   on routines            : true
-[INFO]   on schemas             : true
-[INFO]   on sequences           : true
-[INFO]   on tables              : true
-[INFO]   on udts                : true
-[INFO] sources                  
-[INFO]   sources                : true
-[INFO]   sources on views       : true
-[INFO] global references        
-[INFO]   global references      : true
-[INFO]   catalogs               : true
-[INFO]   domains                : true
-[INFO]   indexes                : true
-[INFO]   keys                   : true
-[INFO]   links                  : true
-[INFO]   queues                 : true
-[INFO]   routines               : true
-[INFO]   schemas                : true
-[INFO]   sequences              : true
-[INFO]   tables                 : true
-[INFO]   udts                   : true
-[INFO] object types             
-[INFO]   daos                   : false
-[INFO]   indexes                : true
-[INFO]   instance fields        : true
-[INFO]   interfaces             : false
-[INFO]   interfaces (immutable) : false
-[INFO]   javadoc                : true
-[INFO]   keys                   : true
-[INFO]   links                  : true
-[INFO]   pojos                  : false
-[INFO]   pojos (immutable)      : false
-[INFO]   queues                 : true
-[INFO]   records                : true
-[INFO]   routines               : true
-[INFO]   sequences              : true
-[INFO]   sequenceFlags          : true
-[INFO]   table-valued functions : true
-[INFO]   tables                 : true
-[INFO]   udts                   : true
-[INFO]   relations              : true
-[INFO] other                    
-[INFO]   deprecated code        : true
-[INFO] ----------------------------------------------------------
-[INFO]                          
-[INFO] Generation remarks       
-[INFO] ----------------------------------------------------------
-[INFO]                          
-[INFO] ----------------------------------------------------------
-[INFO] Generating catalogs      : Total: 1
-[INFO] ARRAYs fetched           : 0 (0 included, 0 excluded)
-[INFO] Domains fetched          : 0 (0 included, 0 excluded)
-[INFO] Version                  : Database version is supported by dialect SQLITE: 3.45.1
-[INFO] Tables fetched           : 1 (1 included, 0 excluded)
-[INFO] Embeddables fetched      : 0 (0 included, 0 excluded)
-[INFO] Enums fetched            : 0 (0 included, 0 excluded)
-[INFO] Packages fetched         : 0 (0 included, 0 excluded)
-[INFO] Routines fetched         : 0 (0 included, 0 excluded)
-[INFO] Sequences fetched        : 0 (0 included, 0 excluded)
-[INFO] No schema version is applied for catalog . Regenerating.
-[INFO]                          
-[INFO] Generating catalog       : DefaultCatalog.java
-[INFO] ==========================================================
-[INFO] Comments fetched         : 0 (0 included, 0 excluded)
-[INFO] Generating schemata      : Total: 1
-[INFO] No schema version is applied for schema . Regenerating.
-[INFO] Generating schema        : DefaultSchema.java
-[INFO] ----------------------------------------------------------
-[INFO] UDTs fetched             : 0 (0 included, 0 excluded)
-[INFO] Generating tables        
-[INFO] Generating table         : CacheEntries.java [input=cache_entries, pk=pk_cache_entries]
-[INFO] Indexes fetched          : 2 (2 included, 0 excluded)
-[INFO] Tables generated         : Total: 206.111ms
-[INFO] Generating table records 
-[INFO] Generating record        : CacheEntriesRecord.java
-[INFO] Table records generated  : Total: 220.227ms, +14.115ms
-[INFO] Generating table references
-[INFO] Table refs generated     : Total: 220.82ms, +0.593ms
-[INFO] Generating Keys          
-[INFO] Keys generated           : Total: 221.457ms, +0.636ms
-[INFO] Generating Indexes       
-[INFO] Indexes generated        : Total: 222.01ms, +0.553ms
-[INFO] Generation finished:     : Total: 222.079ms, +0.069ms
-[INFO]                          
-[INFO] Affected files: 7        
-[INFO] Modified files: 0        
-[INFO] No modified files        : This code generation run has not produced any file modifications.
-This means, the schema has not changed, and no other parameters (jOOQ version, driver version, database version,
-and any configuration elements) have changed either.
-
-In automated builds, it is recommended to prevent unnecessary code generation runs. This run took: 208.411ms
-Possible means to prevent this:
-- Use manual code generation and check in generated sources: https://www.jooq.org/doc/latest/manual/code-generation/codegen-version-control/
-- Use schema version providers: https://www.jooq.org/doc/latest/manual/code-generation/codegen-advanced/codegen-config-database/codegen-database-version-providers/
-- Use gradle tasks and inputs: https://docs.gradle.org/current/userguide/incremental_build.html
-[INFO] Removing excess files    
-[INFO] 
-[INFO] --- resources:3.3.1:resources (default-resources) @ edge ---
-[INFO] Copying 2 resources from src/main/resources to target/classes
-[INFO] 
-[INFO] --- compiler:3.14.1:compile (default-compile) @ edge ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ edge ---
-[INFO] skip non existing resourceDirectory /Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/src/test/resources
-[INFO] 
-[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ edge ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] <<< spring-boot:3.2.5:run (default-cli) < test-compile @ edge <<<
-[INFO] 
-[INFO] 
-[INFO] --- spring-boot:3.2.5:run (default-cli) @ edge ---
-[INFO] Attaching agents: []
+[[1;34mINFO[m] No <inputCatalog/> was provided. Generating ALL available catalogs instead.
+[[1;34mINFO[m] No <inputSchema/> was provided. Generating ALL available schemata instead.
+[[1;34mINFO[m] License parameters       
+[[1;34mINFO[m] ----------------------------------------------------------
+[[1;34mINFO[m]   Thank you for using jOOQ and jOOQ's code generator
+[[1;34mINFO[m]                          
+[[1;34mINFO[m] Database parameters      
+[[1;34mINFO[m] ----------------------------------------------------------
+[[1;34mINFO[m]   dialect                : SQLITE
+[[1;34mINFO[m]   URL                    : jdbc:sqlite:/home/valle/Desktop/New Folder/gruppe-08-mini-cdn/edge/data/edge-cache.db
+[[1;34mINFO[m]   target dir             : /home/valle/Desktop/New Folder/gruppe-08-mini-cdn/edge/src/main/java
+[[1;34mINFO[m]   target package         : de.htwsaar.minicdn.edge.db
+[[1;34mINFO[m]   includes               : [.*]
+[[1;34mINFO[m]   excludes               : []
+[[1;34mINFO[m]   includeExcludeColumns  : false
+[[1;34mINFO[m] ----------------------------------------------------------
+[[1;34mINFO[m]                          
+[[1;34mINFO[m] JavaGenerator parameters 
+[[1;34mINFO[m] ----------------------------------------------------------
+[[1;34mINFO[m] annotations              
+[[1;34mINFO[m]   generated              : false
+[[1;34mINFO[m]   JPA                    : false
+[[1;34mINFO[m]   JPA version            : 
+[[1;34mINFO[m]   validation             : false
+[[1;34mINFO[m]   spring                 : false
+[[1;34mINFO[m] comments                 
+[[1;34mINFO[m]   comments               : true
+[[1;34mINFO[m]   on attributes          : true
+[[1;34mINFO[m]   on catalogs            : true
+[[1;34mINFO[m]   on columns             : true
+[[1;34mINFO[m]   on embeddables         : true
+[[1;34mINFO[m]   on keys                : true
+[[1;34mINFO[m]   on links               : true
+[[1;34mINFO[m]   on packages            : true
+[[1;34mINFO[m]   on parameters          : true
+[[1;34mINFO[m]   on queues              : true
+[[1;34mINFO[m]   on routines            : true
+[[1;34mINFO[m]   on schemas             : true
+[[1;34mINFO[m]   on sequences           : true
+[[1;34mINFO[m]   on tables              : true
+[[1;34mINFO[m]   on udts                : true
+[[1;34mINFO[m] sources                  
+[[1;34mINFO[m]   sources                : true
+[[1;34mINFO[m]   sources on views       : true
+[[1;34mINFO[m] global references        
+[[1;34mINFO[m]   global references      : true
+[[1;34mINFO[m]   catalogs               : true
+[[1;34mINFO[m]   domains                : true
+[[1;34mINFO[m]   indexes                : true
+[[1;34mINFO[m]   keys                   : true
+[[1;34mINFO[m]   links                  : true
+[[1;34mINFO[m]   queues                 : true
+[[1;34mINFO[m]   routines               : true
+[[1;34mINFO[m]   schemas                : true
+[[1;34mINFO[m]   sequences              : true
+[[1;34mINFO[m]   tables                 : true
+[[1;34mINFO[m]   udts                   : true
+[[1;34mINFO[m] object types             
+[[1;34mINFO[m]   daos                   : false
+[[1;34mINFO[m]   indexes                : true
+[[1;34mINFO[m]   instance fields        : true
+[[1;34mINFO[m]   interfaces             : false
+[[1;34mINFO[m]   interfaces (immutable) : false
+[[1;34mINFO[m]   javadoc                : true
+[[1;34mINFO[m]   keys                   : true
+[[1;34mINFO[m]   links                  : true
+[[1;34mINFO[m]   pojos                  : false
+[[1;34mINFO[m]   pojos (immutable)      : false
+[[1;34mINFO[m]   queues                 : true
+[[1;34mINFO[m]   records                : true
+[[1;34mINFO[m]   routines               : true
+[[1;34mINFO[m]   sequences              : true
+[[1;34mINFO[m]   sequenceFlags          : true
+[[1;34mINFO[m]   table-valued functions : true
+[[1;34mINFO[m]   tables                 : true
+[[1;34mINFO[m]   udts                   : true
+[[1;34mINFO[m]   relations              : true
+[[1;34mINFO[m] other                    
+[[1;34mINFO[m]   deprecated code        : true
+[[1;34mINFO[m] ----------------------------------------------------------
+[[1;34mINFO[m]                          
+[[1;34mINFO[m] Generation remarks       
+[[1;34mINFO[m] ----------------------------------------------------------
+[[1;34mINFO[m]                          
+[[1;34mINFO[m] ----------------------------------------------------------
+[[1;34mINFO[m] Generating catalogs      : Total: 1
+[[1;34mINFO[m] ARRAYs fetched           : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] Domains fetched          : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] Version                  : Database version is supported by dialect SQLITE: 3.45.1
+[[1;34mINFO[m] Tables fetched           : 1 (1 included, 0 excluded)
+[[1;34mINFO[m] Embeddables fetched      : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] Enums fetched            : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] Packages fetched         : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] Routines fetched         : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] Sequences fetched        : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] No schema version is applied for catalog . Regenerating.
+[[1;34mINFO[m]                          
+[[1;34mINFO[m] Generating catalog       : DefaultCatalog.java
+[[1;34mINFO[m] ==========================================================
+[[1;34mINFO[m] Comments fetched         : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] Generating schemata      : Total: 1
+[[1;34mINFO[m] No schema version is applied for schema . Regenerating.
+[[1;34mINFO[m] Generating schema        : DefaultSchema.java
+[[1;34mINFO[m] ----------------------------------------------------------
+[[1;34mINFO[m] UDTs fetched             : 0 (0 included, 0 excluded)
+[[1;34mINFO[m] Generating tables        
+[[1;34mINFO[m] Generating table         : CacheEntries.java [input=cache_entries, pk=pk_cache_entries]
+[[1;34mINFO[m] Indexes fetched          : 2 (2 included, 0 excluded)
+[[1;34mINFO[m] Tables generated         : Total: 274.541ms
+[[1;34mINFO[m] Generating table records 
+[[1;34mINFO[m] Generating record        : CacheEntriesRecord.java
+[[1;34mINFO[m] Table records generated  : Total: 298.292ms, +23.75ms
+[[1;34mINFO[m] Generating table references
+[[1;34mINFO[m] Table refs generated     : Total: 299.511ms, +1.219ms
+[[1;34mINFO[m] Generating Keys          
+[[1;34mINFO[m] Keys generated           : Total: 301.164ms, +1.652ms
+[[1;34mINFO[m] Generating Indexes       
+[[1;34mINFO[m] Indexes generated        : Total: 302.138ms, +0.974ms
+[[1;34mINFO[m] Generation finished:     : Total: 302.297ms, +0.159ms
+[[1;34mINFO[m]                          
+[[1;34mINFO[m] Affected files: 7        
+[[1;34mINFO[m] Modified files: 7        
+[[1;34mINFO[m] Removing excess files    
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36medge[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 2 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.1:compile[m [1m(default-compile)[m @ [36medge[0;1m ---[m
+[[1;34mINFO[m] Recompiling the module because of [1mchanged source code[m.
+[[1;34mINFO[m] Compiling 11 source files with javac [forked debug target 21] to target/classes
+[[1;33mWARNING[m] Unable to autodetect 'javac' path, using 'javac' from the environment.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36medge[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] skip non existing resourceDirectory /home/valle/Desktop/New Folder/gruppe-08-mini-cdn/edge/src/test/resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.1:testCompile[m [1m(default-testCompile)[m @ [36medge[0;1m ---[m
+[[1;34mINFO[m] Recompiling the module because of [1mchanged dependency[m.
+[[1;34mINFO[m] Compiling 1 source file with javac [forked debug target 21] to target/test-classes
+[[1;33mWARNING[m] Unable to autodetect 'javac' path, using 'javac' from the environment.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m<<< [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36medge[0;1m <<<[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[m @ [36medge[0;1m ---[m
+[[1;34mINFO[m] Attaching agents: []
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -191,27 +187,30 @@ Possible means to prevent this:
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-02-17 17:14:40,476","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 57778 (/Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/target/classes started by sophiasarkhovska in /Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge)"}
-{"timestamp":"2026-02-17 17:14:40,477","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-02-17 17:14:40,694","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8081 (http)"}
-{"timestamp":"2026-02-17 17:14:40,697","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8081"]"}
-{"timestamp":"2026-02-17 17:14:40,697","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-02-17 17:14:40,697","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-02-17 17:14:40,710","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-02-17 17:14:40,711","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 220 ms"}
-{"timestamp":"2026-02-17 17:14:40,795","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8081"]"}
-{"timestamp":"2026-02-17 17:14:40,804","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8081 (http) with context path ''"}
-{"timestamp":"2026-02-17 17:14:40,806","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.444 seconds (process running for 0.533)"}
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  15:26 min
-[INFO] Finished at: 2026-02-17T17:30:05+01:00
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.5:run (default-cli) on project edge: Process terminated with exit code: 143 -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+{"timestamp":"2026-02-18 16:05:53,218","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 152448 (/home/valle/Desktop/New Folder/gruppe-08-mini-cdn/edge/target/classes started by valle in /home/valle/Desktop/New Folder/gruppe-08-mini-cdn/edge)"}
+{"timestamp":"2026-02-18 16:05:53,225","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-02-18 16:05:54,184","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8081 (http)"}
+{"timestamp":"2026-02-18 16:05:54,192","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8081"]"}
+{"timestamp":"2026-02-18 16:05:54,194","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-02-18 16:05:54,194","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-02-18 16:05:54,230","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-02-18 16:05:54,232","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 941 ms"}
+{"timestamp":"2026-02-18 16:05:54,529","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8081"]"}
+{"timestamp":"2026-02-18 16:05:54,539","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8081 (http) with context path ''"}
+{"timestamp":"2026-02-18 16:05:54,545","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.797 seconds (process running for 2.05)"}
+{"timestamp":"2026-02-18 16:06:05,972","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-02-18 16:06:05,972","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-02-18 16:06:05,973","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;31mBUILD FAILURE[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  11:04 min
+[[1;34mINFO[m] Finished at: 2026-02-18T16:16:52+01:00
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;31mERROR[m] Failed to execute goal [32morg.springframework.boot:spring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[m on project [36medge[m: [1;31mProcess terminated with exit code: 143[m -> [1m[Help 1][m
+[[1;31mERROR[m] 
+[[1;31mERROR[m] To see the full stack trace of the errors, re-run Maven with the [1m-e[m switch.
+[[1;31mERROR[m] Re-run Maven using the [1m-X[m switch to enable full debug logging.
+[[1;31mERROR[m] 
+[[1;31mERROR[m] For more information about the errors and possible solutions, please read the following articles:
+[[1;31mERROR[m] [1m[Help 1][m http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
