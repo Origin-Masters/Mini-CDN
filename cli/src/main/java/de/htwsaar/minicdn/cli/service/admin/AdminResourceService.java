@@ -1,6 +1,6 @@
-package de.htwsaar.minicdn.cli.service;
+package de.htwsaar.minicdn.cli.service.admin;
 
-import de.htwsaar.minicdn.cli.service.http.HttpCallResult;
+import de.htwsaar.minicdn.cli.dto.HttpCallResult;
 import de.htwsaar.minicdn.cli.util.HttpUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;

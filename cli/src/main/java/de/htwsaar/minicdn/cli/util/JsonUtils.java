@@ -1,6 +1,6 @@
 package de.htwsaar.minicdn.cli.util;
 
-public class JsonUtils {
+public final class JsonUtils {
     private JsonUtils() {}
 
     /**

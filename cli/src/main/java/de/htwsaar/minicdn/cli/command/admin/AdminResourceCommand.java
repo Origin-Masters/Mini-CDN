@@ -1,18 +1,27 @@
-package de.htwsaar.minicdn.cli.adminCommands;
+package de.htwsaar.minicdn.cli.command.admin;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
-import de.htwsaar.minicdn.cli.service.AdminResourceService;
+import de.htwsaar.minicdn.cli.service.admin.AdminResourceService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.concurrent.Callable;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
+import picocli.CommandLine.Spec;
 
+/**
+ * Admin-Command zur Verwaltung von CDN-Ressourcen.
+ *
+ * <p>Ohne Subcommand wird die Usage angezeigt.
+ * Die eigentlichen Aktionen sind (teilweise) noch Stubs bzw. delegieren an Services.
+ */
 @Command(
         name = "resource",
         description = "Manage CDN resources",
@@ -23,56 +32,66 @@ import picocli.CommandLine.Option;
             AdminResourceCommand.AdminResourceListCommand.class,
             AdminResourceCommand.AdminResourceShowCommand.class
         })
-public class AdminResourceCommand implements Runnable {
+public final class AdminResourceCommand implements Runnable {
 
-    final CliContext ctx;
+    private final CliContext ctx;
 
+    @Spec
+    private CommandSpec spec;
+
+    /**
+     * Konstruktor für Constructor Injection via {@code ContextFactory}.
+     *
+     * @param ctx CLI-Kontext (Output, HTTP-Client, Timeouts, ...)
+     */
     public AdminResourceCommand(CliContext ctx) {
-        this.ctx = ctx;
+        this.ctx = Objects.requireNonNull(ctx, "ctx");
     }
 
-    @SuppressWarnings("resource")
     @Override
     public void run() {
-        new CommandLine(this).usage(ctx.out());
+        spec.commandLine().usage(ctx.out());
         ctx.out().flush();
     }
 
-    AdminResourceService service() {
+    /**
+     * Erstellt den Service für Admin-Resource-Operationen.
+     *
+     * <p>Hinweis: Aktuell wird pro Aufruf eine neue Instanz erstellt (leichtgewichtig).
+     */
+    private AdminResourceService service() {
         return new AdminResourceService(ctx.httpClient(), ctx.defaultRequestTimeout());
     }
 
     @Command(name = "add", description = "Upload a file to the Origin server (admin API)")
-    public static class AdminResourceAddCommand implements Callable<Integer> {
+    public static final class AdminResourceAddCommand implements Callable<Integer> {
 
-        @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+        @ParentCommand
+        private AdminResourceCommand parent;
 
         @Option(
                 names = "--path",
                 required = true,
                 description = "Target path on origin, e.g. docs/Lebenslauf.pdf (stored under origin's data/ directory)")
-        String path;
+        private String path;
 
         @Option(names = "--origin", required = true, description = "Origin server base URL, e.g. http://localhost:8080")
-        URI origin;
+        private URI origin;
 
         @Option(
                 names = "--file",
                 required = true,
                 description = "Local file path to upload, e.g. /Users/.../Lebenslauf.pdf")
-        Path file;
+        private Path file;
 
         @Override
         public Integer call() throws FileNotFoundException {
-            // 1) Validate a local file (so we don't fail with a cryptic IO error later)
             if (file == null || !Files.exists(file) || !Files.isRegularFile(file)) {
                 ConsoleUtils.error(
                         parent.ctx.err(), "[ADMIN] Local file does not exist or is not a regular file: %s", file);
                 return 1;
             }
 
-            // 2) Compute + validate cleanPath (use shared PathUtils)
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
                 ConsoleUtils.error(
@@ -80,7 +99,6 @@ public class AdminResourceCommand implements Runnable {
                 return 1;
             }
 
-            // 3) Upload
             var result = parent.service().uploadToOrigin(origin, cleanPath, file);
             int rc = result.is2xx() ? 0 : 2;
 
@@ -109,21 +127,22 @@ public class AdminResourceCommand implements Runnable {
     }
 
     @Command(name = "update", description = "Update resource configuration")
-    public static class AdminResourceUpdateCommand implements Runnable {
-        @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+    public static final class AdminResourceUpdateCommand implements Runnable {
+
+        @ParentCommand
+        private AdminResourceCommand parent;
 
         @Option(names = "--id", required = true, description = "Resource ID")
-        long id;
+        private long id;
 
         @Option(names = "--path", description = "New path (optional)")
-        String path;
+        private String path;
 
         @Option(names = "--origin", description = "New origin URL (optional)")
-        String origin;
+        private String origin;
 
         @Option(names = "--cache-ttl", description = "New cache TTL in seconds (optional)")
-        Integer cacheTtl;
+        private Integer cacheTtl;
 
         @Override
         public void run() {
@@ -138,12 +157,13 @@ public class AdminResourceCommand implements Runnable {
     }
 
     @Command(name = "delete", description = "Delete a resource")
-    public static class AdminResourceDeleteCommand implements Runnable {
-        @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+    public static final class AdminResourceDeleteCommand implements Runnable {
+
+        @ParentCommand
+        private AdminResourceCommand parent;
 
         @Option(names = "--id", required = true, description = "Resource ID")
-        long id;
+        private long id;
 
         @Override
         public void run() {
@@ -152,15 +172,16 @@ public class AdminResourceCommand implements Runnable {
     }
 
     @Command(name = "list", description = "List resources")
-    public static class AdminResourceListCommand implements Runnable {
-        @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+    public static final class AdminResourceListCommand implements Runnable {
+
+        @ParentCommand
+        private AdminResourceCommand parent;
 
         @Option(names = "--page", description = "Page number", defaultValue = "1")
-        int page;
+        private int page;
 
         @Option(names = "--size", description = "Page size", defaultValue = "20")
-        int size;
+        private int size;
 
         @Override
         public void run() {
@@ -169,12 +190,13 @@ public class AdminResourceCommand implements Runnable {
     }
 
     @Command(name = "show", description = "Show resource details")
-    public static class AdminResourceShowCommand implements Runnable {
-        @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+    public static final class AdminResourceShowCommand implements Runnable {
+
+        @ParentCommand
+        private AdminResourceCommand parent;
 
         @Option(names = "--id", required = true, description = "[ADMIN] Resource ID")
-        long id;
+        private long id;
 
         @Override
         public void run() {

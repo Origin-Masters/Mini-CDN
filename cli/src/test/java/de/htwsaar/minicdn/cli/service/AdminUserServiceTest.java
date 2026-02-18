@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.cli.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import de.htwsaar.minicdn.cli.db.tables.Users;
+import de.htwsaar.minicdn.cli.service.admin.AdminUserService;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;

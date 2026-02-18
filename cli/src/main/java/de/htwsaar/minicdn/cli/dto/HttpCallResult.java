@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.cli.service.http;
+package de.htwsaar.minicdn.cli.dto;
 
 /**
  * Result of an HTTP call, encapsulating status code, response body, and any error message.
