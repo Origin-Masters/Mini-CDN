@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.cli.app;
 
+import de.htwsaar.minicdn.cli.command.root.MiniCdnRootCommand;
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.di.ContextFactory;
 import de.htwsaar.minicdn.cli.shell.MiniCdnInteractiveShell;

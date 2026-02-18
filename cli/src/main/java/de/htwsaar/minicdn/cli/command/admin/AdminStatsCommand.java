@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.cli.adminCommands;
+package de.htwsaar.minicdn.cli.command.admin;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,9 +9,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.concurrent.Callable;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 
 /**
  * Admin-Command zum Abruf von Router/Edge-Statistiken über die Admin-API.
@@ -24,11 +25,26 @@ import picocli.CommandLine.Option;
         description = "Show Mini-CDN runtime statistics",
         mixinStandardHelpOptions = true,
         subcommands = {AdminStatsCommand.AdminStatsShowCommand.class})
-public class AdminStatsCommand implements Runnable {
+public final class AdminStatsCommand implements Runnable {
+
+    private final CliContext ctx;
+
+    @Spec
+    private CommandSpec spec;
+
+    /**
+     * Konstruktor für Constructor Injection via {@code ContextFactory}.
+     *
+     * @param ctx CLI-Kontext (Output, HTTP-Client, Timeouts, ...)
+     */
+    public AdminStatsCommand(CliContext ctx) {
+        this.ctx = Objects.requireNonNull(ctx, "ctx");
+    }
 
     @Override
     public void run() {
-        CommandLine.usage(this, System.out);
+        spec.commandLine().usage(ctx.out());
+        ctx.out().flush();
     }
 
     /**
@@ -50,25 +66,25 @@ public class AdminStatsCommand implements Runnable {
                 names = {"-H", "--host"},
                 defaultValue = "http://localhost:8080",
                 description = "Basis-URL des Routers, z.B. http://localhost:8080")
-        URI host;
+        private URI host;
 
         @Option(
                 names = "--window-sec",
                 defaultValue = "60",
                 description = "Zeitfenster in Sekunden für exakte Requests/Minute (min. 1)")
-        int windowSec;
+        private int windowSec;
 
         @Option(
                 names = "--aggregate-edge",
                 defaultValue = "true",
                 description = "Edge-Metriken aggregieren (true/false)")
-        boolean aggregateEdge;
+        private boolean aggregateEdge;
 
         @Option(
                 names = "--json",
                 defaultValue = "false",
                 description = "Vollständige JSON-Antwort pretty-printed ausgeben")
-        boolean printJson;
+        private boolean printJson;
 
         public AdminStatsShowCommand(CliContext ctx) {
             this.ctx = Objects.requireNonNull(ctx, "ctx");
@@ -79,9 +95,10 @@ public class AdminStatsCommand implements Runnable {
             PrintWriter out = ctx.out();
             PrintWriter err = ctx.err();
 
+            URI effectiveHost = Objects.requireNonNull(host, "host");
             int safeWindow = Math.max(1, windowSec);
 
-            URI base = ensureTrailingSlash(host);
+            URI base = ensureTrailingSlash(effectiveHost);
             URI url = base.resolve("api/cdn/admin/stats?windowSec=" + safeWindow + "&aggregateEdge=" + aggregateEdge);
 
             try {

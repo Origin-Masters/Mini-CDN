@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.cli.service;
+package de.htwsaar.minicdn.cli.service.admin;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,7 +11,7 @@ import org.jooq.impl.DSL;
 /**
  * Simple jOOQ-backed AdminUserService.
  */
-public class AdminUserService implements AutoCloseable {
+public final class AdminUserService implements AutoCloseable {
     private final DSLContext dsl;
     private final Connection connection; // only set when constructed from JDBC URL
 
