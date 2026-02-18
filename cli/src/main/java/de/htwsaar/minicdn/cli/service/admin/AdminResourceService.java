@@ -6,9 +6,12 @@ import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
@@ -21,28 +24,6 @@ public final class AdminResourceService {
     public AdminResourceService(HttpClient httpClient, Duration requestTimeout) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
-    }
-
-    /**
-     * Create a new CDN resource via admin API: POST /api/cdn/resources
-     */
-    public HttpCallResult create(URI cdnBaseUrl, String path, String origin, int cacheTtl) {
-        Objects.requireNonNull(cdnBaseUrl, "cdnBaseUrl");
-
-        URI base = UriUtils.ensureTrailingSlash(cdnBaseUrl);
-        URI target = base.resolve("api/cdn/resources");
-
-        String json = String.format(
-                "{\"path\":\"%s\",\"origin\":\"%s\",\"cacheTtl\":%d}",
-                JsonUtils.escapeJson(path), JsonUtils.escapeJson(origin), cacheTtl);
-
-        HttpRequest request = HttpRequest.newBuilder(target)
-                .timeout(requestTimeout)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
-
-        return HttpUtils.sendForStringBody(httpClient, request);
     }
 
     /**
@@ -68,5 +49,103 @@ public final class AdminResourceService {
                 .build();
 
         return HttpUtils.sendForStringBody(httpClient, req);
+    }
+
+    /**
+     * List file metadata JSON: GET /api/origin/files?page=...&size=...
+     */
+    public HttpCallResult listOriginFiles(URI originBaseUrl, int page, int size) {
+        Objects.requireNonNull(originBaseUrl, "originBaseUrl");
+        if (page < 1) return HttpCallResult.clientError("page must be >= 1");
+        if (size <= 0) return HttpCallResult.clientError("size must be > 0");
+
+        URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
+        URI url = base.resolve(String.format("api/origin/files?page=%d&size=%d", page, size));
+
+        HttpRequest req = HttpRequest.newBuilder(url)
+                .timeout(requestTimeout)
+                .GET()
+                .build();
+
+        return HttpUtils.sendForStringBody(httpClient, req);
+    }
+
+    /**
+     * Show file metadata via HEAD: HEAD /api/origin/files/{path}
+     *
+     * Returns JSON string in body.
+     */
+    public HttpCallResult showOriginFile(URI originBaseUrl, String targetPath) {
+        Objects.requireNonNull(originBaseUrl, "originBaseUrl");
+
+        String cleanPath = PathUtils.stripLeadingSlash(Objects.toString(targetPath, ""));
+        if (cleanPath.isBlank()) return HttpCallResult.clientError("path must not be blank");
+
+        URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
+        URI url = base.resolve("api/origin/files/" + cleanPath);
+
+        HttpRequest req = HttpRequest.newBuilder(url)
+                .timeout(requestTimeout)
+                .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        try {
+            HttpResponse<Void> resp = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
+
+            String len = resp.headers().firstValue("Content-Length").orElse(null);
+            String type = resp.headers().firstValue("Content-Type").orElse(null);
+            String sha = resp.headers().firstValue("X-Content-SHA256").orElse(null);
+
+            String json = String.format(
+                    "{\"path\":\"%s\",\"size\":%s,\"contentType\":%s,\"sha256\":%s}",
+                    JsonUtils.escapeJson(cleanPath),
+                    len == null ? "null" : len,
+                    type == null ? "null" : "\"" + JsonUtils.escapeJson(type) + "\"",
+                    sha == null ? "null" : "\"" + JsonUtils.escapeJson(sha) + "\""
+            );
+
+            return HttpCallResult.http(resp.statusCode(), json);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return HttpCallResult.ioError("interrupted");
+        } catch (IOException e) {
+            return HttpCallResult.ioError(e.getMessage());
+        }
+    }
+
+    /**
+     * Download file content (binary-safe): GET /api/origin/files/{path}
+     */
+    public HttpCallResult downloadOriginFile(URI originBaseUrl, String targetPath, Path localTargetFile) {
+        Objects.requireNonNull(originBaseUrl, "originBaseUrl");
+        Objects.requireNonNull(localTargetFile, "localTargetFile");
+
+        String cleanPath = PathUtils.stripLeadingSlash(Objects.toString(targetPath, ""));
+        if (cleanPath.isBlank()) return HttpCallResult.clientError("path must not be blank");
+
+        try {
+            Path parent = localTargetFile.getParent();
+            if (parent != null) Files.createDirectories(parent);
+        } catch (IOException e) {
+            return HttpCallResult.ioError("failed to create output directory: " + e.getMessage());
+        }
+
+        URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
+        URI url = base.resolve("api/origin/files/" + cleanPath);
+
+        HttpRequest req = HttpRequest.newBuilder(url)
+                .timeout(requestTimeout)
+                .GET()
+                .build();
+
+        try {
+            HttpResponse<Path> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofFile(localTargetFile));
+            return HttpCallResult.http(resp.statusCode(), String.valueOf(resp.body()));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return HttpCallResult.ioError("interrupted");
+        } catch (IOException e) {
+            return HttpCallResult.ioError(e.getMessage());
+        }
     }
 }
