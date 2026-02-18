@@ -34,30 +34,17 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-02-18 16:05:49,269","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.origin.OriginApp","message":"Starting OriginApp using Java 21.0.10 with PID 152088 (/home/valle/Desktop/New Folder/gruppe-08-mini-cdn/origin/target/classes started by valle in /home/valle/Desktop/New Folder/gruppe-08-mini-cdn/origin)"}
-{"timestamp":"2026-02-18 16:05:49,270","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.origin.OriginApp","message":"The following 1 profile is active: "origin""}
-{"timestamp":"2026-02-18 16:05:49,751","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8080 (http)"}
-{"timestamp":"2026-02-18 16:05:49,756","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8080"]"}
-{"timestamp":"2026-02-18 16:05:49,757","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-02-18 16:05:49,757","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-02-18 16:05:49,778","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-02-18 16:05:49,779","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 484 ms"}
-{"timestamp":"2026-02-18 16:05:49,926","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8080"]"}
-{"timestamp":"2026-02-18 16:05:49,933","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8080 (http) with context path ''"}
-{"timestamp":"2026-02-18 16:05:49,937","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.origin.OriginApp","message":"Started OriginApp in 0.863 seconds (process running for 1.007)"}
-{"timestamp":"2026-02-18 16:06:05,918","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-02-18 16:06:05,918","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-02-18 16:06:05,919","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] [1;31mBUILD FAILURE[m
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  11:04 min
-[[1;34mINFO[m] Finished at: 2026-02-18T16:16:52+01:00
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;31mERROR[m] Failed to execute goal [32morg.springframework.boot:spring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[m on project [36morigin[m: [1;31mProcess terminated with exit code: 143[m -> [1m[Help 1][m
-[[1;31mERROR[m] 
-[[1;31mERROR[m] To see the full stack trace of the errors, re-run Maven with the [1m-e[m switch.
-[[1;31mERROR[m] Re-run Maven using the [1m-X[m switch to enable full debug logging.
-[[1;31mERROR[m] 
-[[1;31mERROR[m] For more information about the errors and possible solutions, please read the following articles:
-[[1;31mERROR[m] [1m[Help 1][m http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+{"timestamp":"2026-02-18 18:37:50,548","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.origin.OriginApp","message":"Starting OriginApp using Java 21.0.10 with PID 183658 (/home/valle/Desktop/New Folder/gruppe-08-mini-cdn/origin/target/classes started by valle in /home/valle/Desktop/New Folder/gruppe-08-mini-cdn/origin)"}
+{"timestamp":"2026-02-18 18:37:50,548","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.origin.OriginApp","message":"The following 1 profile is active: "origin""}
+{"timestamp":"2026-02-18 18:37:50,838","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8080 (http)"}
+{"timestamp":"2026-02-18 18:37:50,842","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8080"]"}
+{"timestamp":"2026-02-18 18:37:50,843","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-02-18 18:37:50,843","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-02-18 18:37:50,858","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-02-18 18:37:50,859","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 283 ms"}
+{"timestamp":"2026-02-18 18:37:50,967","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8080"]"}
+{"timestamp":"2026-02-18 18:37:50,974","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8080 (http) with context path ''"}
+{"timestamp":"2026-02-18 18:37:50,978","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.origin.OriginApp","message":"Started OriginApp in 0.579 seconds (process running for 0.693)"}
+{"timestamp":"2026-02-18 18:38:48,499","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-02-18 18:38:48,499","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-02-18 18:38:48,500","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
