@@ -25,3 +25,18 @@
 1771426229147:user file download data/test.txt -o ./hello.txt -H http://localhost:8080 --overwrite
 1771427219944:user file download test.txt -o ./downloads/test.txt -H http://localhost:8082 -r EU --overwrite
 1771427623650:user file download test.txt -o ./downloads/test.txt -r EU --overwrite
+1771436309304:d
+1771436328336:user file download test.txt -o ./downloads/test.txt -r EU --overwrite
+1771437063059:@DeleteMapping("{instanceId}")
+1771437063072:public ResponseEntity<?> delete(
+1771437080306:user file download test.txt -o ./downloads/test.txt -r EU --overwrite
+1771437166146:edge-190189
+1771437176770:user file download test.txt -o ./downloads/test.txt -r EU --overwrite
+1771446952337:admin edge managed -H
+1771446956172:admin edge managed -H http://localhost:8082
+1771446987564:admin edge start -H http://localhost:8082 --region EU --port 8089 --origin http://localhost:8080
+1771446997287:admin edge managed -H http://localhost:8082
+1771447660881:user file download test.txt -o ./downloads/test.txt -r EU --overwrite
+1771447813688:admin edge stop -H http://localhost:8082 edge-197277 --force
+1771447823735:admin edge managed -H http://localhost:8082
+1771447834835:user file download test.txt -o ./downloads/test.txt -r EU --overwrite
