@@ -21,14 +21,14 @@ import picocli.CommandLine.Option;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-                "  minicdn admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf",
-                "  minicdn admin file list --origin http://localhost:8080 --page 1 --size 20",
-                "  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
+            "  minicdn admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf",
+            "  minicdn admin file list --origin http://localhost:8080 --page 1 --size 20",
+            "  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
         },
         subcommands = {
-                AdminResourceCommand.AdminResourceAddCommand.class,
-                AdminResourceCommand.AdminResourceListCommand.class,
-                AdminResourceCommand.AdminResourceShowCommand.class
+            AdminResourceCommand.AdminResourceAddCommand.class,
+            AdminResourceCommand.AdminResourceListCommand.class,
+            AdminResourceCommand.AdminResourceShowCommand.class
         })
 public class AdminResourceCommand implements Runnable {
 
@@ -54,7 +54,7 @@ public class AdminResourceCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf"
+                "  minicdn admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf"
             })
     public static class AdminResourceAddCommand implements Callable<Integer> {
 
@@ -130,8 +130,8 @@ public class AdminResourceCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin file list --origin http://localhost:8080",
-                    "  minicdn admin file list --origin http://localhost:8080 --page 2 --size 50"
+                "  minicdn admin file list --origin http://localhost:8080",
+                "  minicdn admin file list --origin http://localhost:8080 --page 2 --size 50"
             })
     public static class AdminResourceListCommand implements Callable<Integer> {
 
@@ -193,9 +193,7 @@ public class AdminResourceCommand implements Runnable {
             description = "Show a file on Origin",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {
-                    "  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
-            })
+            footer = {"  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"})
     public static class AdminResourceShowCommand implements Callable<Integer> {
 
         @CommandLine.ParentCommand
@@ -262,7 +260,7 @@ public class AdminResourceCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin file download --origin http://localhost:8080 --path docs/Lebenslauf.pdf --out ./downloads/Lebenslauf.pdf"
+                "  minicdn admin file download --origin http://localhost:8080 --path docs/Lebenslauf.pdf --out ./downloads/Lebenslauf.pdf"
             })
     public static class AdminResourceDownloadCommand implements Callable<Integer> {
 

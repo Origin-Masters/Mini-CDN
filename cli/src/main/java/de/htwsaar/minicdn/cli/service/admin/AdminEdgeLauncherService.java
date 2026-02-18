@@ -59,14 +59,13 @@ public final class AdminEdgeLauncherService {
         URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
         URI url = base.resolve("api/cdn/admin/edges/start");
 
-        String json =
-                "{"
-                        + "\"region\":\"" + JsonUtils.escapeJson(region.trim()) + "\","
-                        + "\"port\":" + port + ","
-                        + "\"originBaseUrl\":\"" + JsonUtils.escapeJson(originBaseUrl.toString()) + "\","
-                        + "\"autoRegister\":" + autoRegister + ","
-                        + "\"waitUntilReady\":" + waitUntilReady
-                        + "}";
+        String json = "{"
+                + "\"region\":\"" + JsonUtils.escapeJson(region.trim()) + "\","
+                + "\"port\":" + port + ","
+                + "\"originBaseUrl\":\"" + JsonUtils.escapeJson(originBaseUrl.toString()) + "\","
+                + "\"autoRegister\":" + autoRegister + ","
+                + "\"waitUntilReady\":" + waitUntilReady
+                + "}";
 
         HttpRequest req = HttpRequest.newBuilder(url)
                 .timeout(requestTimeout)
@@ -97,10 +96,8 @@ public final class AdminEdgeLauncherService {
         URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
         URI url = base.resolve("api/cdn/admin/edges/" + trimmed + "?deregister=" + deregister);
 
-        HttpRequest req = HttpRequest.newBuilder(url)
-                .timeout(requestTimeout)
-                .DELETE()
-                .build();
+        HttpRequest req =
+                HttpRequest.newBuilder(url).timeout(requestTimeout).DELETE().build();
 
         return HttpUtils.sendForStringBody(httpClient, req);
     }
@@ -117,10 +114,8 @@ public final class AdminEdgeLauncherService {
         URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
         URI url = base.resolve("api/cdn/admin/edges/managed");
 
-        HttpRequest req = HttpRequest.newBuilder(url)
-                .timeout(requestTimeout)
-                .GET()
-                .build();
+        HttpRequest req =
+                HttpRequest.newBuilder(url).timeout(requestTimeout).GET().build();
 
         return HttpUtils.sendForStringBody(httpClient, req);
     }
