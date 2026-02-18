@@ -63,10 +63,8 @@ public final class AdminResourceService {
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve(String.format("api/origin/files?page=%d&size=%d", page, size));
 
-        HttpRequest req = HttpRequest.newBuilder(url)
-                .timeout(requestTimeout)
-                .GET()
-                .build();
+        HttpRequest req =
+                HttpRequest.newBuilder(url).timeout(requestTimeout).GET().build();
 
         return HttpUtils.sendForStringBody(httpClient, req);
     }
@@ -100,8 +98,7 @@ public final class AdminResourceService {
                     JsonUtils.escapeJson(cleanPath),
                     len == null ? "null" : len,
                     type == null ? "null" : "\"" + JsonUtils.escapeJson(type) + "\"",
-                    sha == null ? "null" : "\"" + JsonUtils.escapeJson(sha) + "\""
-            );
+                    sha == null ? "null" : "\"" + JsonUtils.escapeJson(sha) + "\"");
 
             return HttpCallResult.http(resp.statusCode(), json);
         } catch (InterruptedException e) {
@@ -132,10 +129,8 @@ public final class AdminResourceService {
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve("api/origin/files/" + cleanPath);
 
-        HttpRequest req = HttpRequest.newBuilder(url)
-                .timeout(requestTimeout)
-                .GET()
-                .build();
+        HttpRequest req =
+                HttpRequest.newBuilder(url).timeout(requestTimeout).GET().build();
 
         try {
             HttpResponse<Path> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofFile(localTargetFile));

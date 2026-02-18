@@ -20,7 +20,16 @@ import picocli.CommandLine.Option;
  * - 2: HTTP non-2xx
  * - 1: Exception/Netzwerkfehler
  */
-@Command(name = "ping", description = "Health check", mixinStandardHelpOptions = true)
+@Command(
+        name = "ping",
+        description = "Health check",
+        mixinStandardHelpOptions = true,
+        footerHeading = "%nBeispiele:%n",
+        footer = {
+            "  minicdn admin ping",
+            "  minicdn admin ping -H http://localhost:8082 -p api/cdn/health",
+            "  minicdn admin ping -H http://localhost:8080 -p api/origin/health"
+        })
 public final class PingCommand implements Callable<Integer> {
 
     private final CliContext ctx;
@@ -32,12 +41,14 @@ public final class PingCommand implements Callable<Integer> {
     @Option(
             names = {"-H", "--host"},
             defaultValue = "http://localhost:8080",
+            paramLabel = "BASE_URL",
             description = "Base URL, e.g. http://localhost:8080/api/origin")
     private URI host;
 
     @Option(
             names = {"-p", "--path"},
             defaultValue = "health",
+            paramLabel = "PATH",
             description = "Path relative to host, default: health (no leading slash)")
     private String path;
 

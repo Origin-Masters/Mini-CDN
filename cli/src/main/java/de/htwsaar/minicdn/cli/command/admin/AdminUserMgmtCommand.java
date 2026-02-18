@@ -19,6 +19,13 @@ import picocli.CommandLine.Spec;
 @Command(
         name = "user",
         description = "Manage system users",
+        mixinStandardHelpOptions = true,
+        footerHeading = "%nBeispiele:%n",
+        footer = {
+            "  minicdn admin user add --name alice --role ADMIN",
+            "  minicdn admin user list --role USER --page 1 --size 20",
+            "  minicdn admin user remove --id 42 --force"
+        },
         subcommands = {
             AdminUserMgmtCommand.AdminUserAddCommand.class,
             AdminUserMgmtCommand.AdminUserRemoveCommand.class,
@@ -46,7 +53,15 @@ public final class AdminUserMgmtCommand implements Runnable {
         ctx.out().flush();
     }
 
-    @Command(name = "add", description = "Create a new user")
+    @Command(
+            name = "add",
+            description = "Create a new user",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  minicdn admin user add --name alice --role ADMIN",
+                "  minicdn admin user add --name bob --role USER"
+            })
     public static final class AdminUserAddCommand implements Runnable {
 
         private static final Map<String, Integer> ROLE_MAP = Map.of("ADMIN", 1, "USER", 2);
@@ -54,10 +69,10 @@ public final class AdminUserMgmtCommand implements Runnable {
         @ParentCommand
         private AdminUserMgmtCommand parent;
 
-        @Option(names = "--name", required = true, description = "User name")
+        @Option(names = "--name", required = true, paramLabel = "NAME", description = "User name")
         private String name;
 
-        @Option(names = "--role", required = true, description = "Role, e.g. ADMIN or USER")
+        @Option(names = "--role", required = true, paramLabel = "ROLE", description = "Role, e.g. ADMIN or USER")
         private String role;
 
         @Override
@@ -80,11 +95,6 @@ public final class AdminUserMgmtCommand implements Runnable {
             }
         }
 
-        /**
-         * Liest die JDBC-URL aus der Umgebung.
-         *
-         * <p>Unterstützt zwei Keys, weil im Repo unterschiedliche Varianten vorkommen.
-         */
         private String resolveJdbcUrl() {
             String jdbcUrl = System.getenv("MINICDN_JDBC_URL");
             if (jdbcUrl == null || jdbcUrl.isBlank()) {
@@ -113,13 +123,18 @@ public final class AdminUserMgmtCommand implements Runnable {
         }
     }
 
-    @Command(name = "list", description = "List users in the system")
+    @Command(
+            name = "list",
+            description = "List users in the system",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {"  minicdn admin user list", "  minicdn admin user list --role ADMIN --page 1 --size 50"})
     public static final class AdminUserListCommand implements Runnable {
 
         @ParentCommand
         private AdminUserMgmtCommand parent;
 
-        @Option(names = "--role", description = "Filter by role, e.g. ADMIN or USER")
+        @Option(names = "--role", paramLabel = "ROLE", description = "Filter by role, e.g. ADMIN or USER")
         private String role;
 
         @Option(names = "--page", description = "Page number", defaultValue = "1")
@@ -136,7 +151,15 @@ public final class AdminUserMgmtCommand implements Runnable {
         }
     }
 
-    @Command(name = "remove", description = "Remove an existing user from the system")
+    @Command(
+            name = "remove",
+            description = "Remove an existing user from the system",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  minicdn admin user remove --id 42 --force",
+                "  minicdn admin user remove --name alice --force --reassign-owner 1"
+            })
     public static final class AdminUserRemoveCommand implements Runnable {
 
         @ParentCommand

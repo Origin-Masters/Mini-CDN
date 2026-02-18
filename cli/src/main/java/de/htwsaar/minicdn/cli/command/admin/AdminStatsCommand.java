@@ -24,6 +24,12 @@ import picocli.CommandLine.Spec;
         name = "stats",
         description = "Show Mini-CDN runtime statistics",
         mixinStandardHelpOptions = true,
+        footerHeading = "%nBeispiele:%n",
+        footer = {
+            "  minicdn admin stats show -H http://localhost:8080",
+            "  minicdn admin stats show -H http://localhost:8080 --window-sec 120 --aggregate-edge=false",
+            "  minicdn admin stats show -H http://localhost:8080 --json"
+        },
         subcommands = {AdminStatsCommand.AdminStatsShowCommand.class})
 public final class AdminStatsCommand implements Runnable {
 
@@ -55,7 +61,17 @@ public final class AdminStatsCommand implements Runnable {
      * - 2: HTTP-Fehlerstatus (non-2xx)
      * - 1: Exception/Netzwerkfehler
      */
-    @Command(name = "show", description = "Fetch and display structured stats from the router")
+    @Command(
+            name = "show",
+            description = "Fetch and display structured stats from the router",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  minicdn admin stats show -H http://localhost:8080",
+                "  minicdn admin stats show -H http://localhost:8080 --window-sec 10",
+                "  minicdn admin stats show -H http://localhost:8080 --aggregate-edge=false",
+                "  minicdn admin stats show -H http://localhost:8080 --json"
+            })
     public static final class AdminStatsShowCommand implements Callable<Integer> {
 
         private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -65,18 +81,21 @@ public final class AdminStatsCommand implements Runnable {
         @Option(
                 names = {"-H", "--host"},
                 defaultValue = "http://localhost:8080",
+                paramLabel = "ROUTER_URL",
                 description = "Basis-URL des Routers, z.B. http://localhost:8080")
         private URI host;
 
         @Option(
                 names = "--window-sec",
                 defaultValue = "60",
+                paramLabel = "SECONDS",
                 description = "Zeitfenster in Sekunden für exakte Requests/Minute (min. 1)")
         private int windowSec;
 
         @Option(
                 names = "--aggregate-edge",
                 defaultValue = "true",
+                paramLabel = "true|false",
                 description = "Edge-Metriken aggregieren (true/false)")
         private boolean aggregateEdge;
 
