@@ -5,6 +5,7 @@ import de.htwsaar.minicdn.cli.util.HttpUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -27,7 +28,7 @@ public final class AdminResourceService {
     }
 
     /**
-     * Upload a local file to Origin admin API: PUT /api/origin/admin/files/{path}
+     * Lade eine lokale Datei auf den Origin-Server hoch (Admin-API): PUT /api/origin/admin/files/{path}
      */
     public HttpCallResult uploadToOrigin(URI originBaseUrl, String targetPath, Path localFile)
             throws FileNotFoundException {
@@ -52,7 +53,7 @@ public final class AdminResourceService {
     }
 
     /**
-     * List file metadata JSON: GET /api/origin/files?page=...&size=...
+     * Liste alle Dateien auf dem Origin-Server auf (Admin-API): GET /api/origin/files?page={page}&size={size}
      */
     public HttpCallResult listOriginFiles(URI originBaseUrl, int page, int size) {
         Objects.requireNonNull(originBaseUrl, "originBaseUrl");
@@ -71,9 +72,7 @@ public final class AdminResourceService {
     }
 
     /**
-     * Show file metadata via HEAD: HEAD /api/origin/files/{path}
-     *
-     * Returns JSON string in body.
+     * Zeige Metadaten einer Datei auf dem Origin-Server an (Admin-API): HEAD /api/origin/files/{path}
      */
     public HttpCallResult showOriginFile(URI originBaseUrl, String targetPath) {
         Objects.requireNonNull(originBaseUrl, "originBaseUrl");
@@ -114,7 +113,7 @@ public final class AdminResourceService {
     }
 
     /**
-     * Download file content (binary-safe): GET /api/origin/files/{path}
+     * Lade eine Datei vom Origin-Server herunter und speichere sie lokal (Admin-API): GET /api/origin/files/{path}
      */
     public HttpCallResult downloadOriginFile(URI originBaseUrl, String targetPath, Path localTargetFile) {
         Objects.requireNonNull(originBaseUrl, "originBaseUrl");

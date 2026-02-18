@@ -1,12 +1,14 @@
 package de.htwsaar.minicdn.origin;
 
 import de.htwsaar.minicdn.common.util.Sha256Util;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
@@ -52,9 +54,27 @@ public class OriginController {
      */
     private static final String SHA256_HEADER = "X-Content-SHA256";
 
-    public record FileMeta(String path, long size, String lastModified, String contentType) {}
+    /**
+     * Repräsentiert die Metadaten einer Datei im Origin-Verzeichnis.
+     *
+     * @param path         relativer Pfad der Datei
+     * @param size         Größe der Datei in Bytes
+     * @param lastModified ISO-8601 formatierter Zeitstempel der letzten Änderung
+     * @param contentType  ermittelter Content-Type der Datei
+     */
+    public record FileMeta(String path, long size, String lastModified, String contentType) {
+    }
 
-    public record FileListResponse(int page, int size, int total, List<FileMeta> items) {}
+    /**
+     * Repräsentiert die Antwortstruktur für die Auflistung von Dateien mit Paginierung.
+     *
+     * @param page  aktueller Seitenindex (beginnend bei 1)
+     * @param size  Anzahl der Einträge pro Seite
+     * @param total Gesamtanzahl der verfügbaren Dateien
+     * @param items Liste der Dateimetadaten für die aktuelle Seite
+     */
+    public record FileListResponse(int page, int size, int total, List<FileMeta> items) {
+    }
 
     /**
      * Liefert eine Datei aus dem Origin-Verzeichnis als binäre HTTP-Antwort zurück.
@@ -225,9 +245,18 @@ public class OriginController {
     }
 
     /**
-     * List files with metadata (JSON).
+     * Listet Dateien im Origin-Verzeichnis mit Paginierung auf.
+     *
      * <p>
-     * GET /api/origin/files?page=1&size=20
+     * Liefert für jede Datei Metadaten (Pfad, Größe, letzter Änderungszeitpunkt, Content-Type).
+     * Falls das Basisverzeichnis nicht existiert, wird eine leere Ergebnismenge zurückgegeben.
+     * Ungültige Anfrageparameter (z.\,B. {@code page < 1} oder {@code size <= 0}) führen zu {@code 400 Bad Request}.
+     * </p>
+     *
+     * @param page Seitenindex, beginnend bei 1
+     * @param size Anzahl der Einträge pro Seite
+     * @return {@code 200 OK} mit einer {@link FileListResponse} (page, size, total, items)
+     * @throws IOException falls ein Ein-/Ausgabefehler auftritt
      */
     @GetMapping("/files")
     public ResponseEntity<FileListResponse> listFiles(

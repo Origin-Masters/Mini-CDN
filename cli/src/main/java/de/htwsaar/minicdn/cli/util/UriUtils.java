@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * URI helpers for CLI input validation and normalization.
+ * Hilfsfunktionen zur Normalisierung und Validierung von URIs, z. B. Sicherstellen eines abschließenden Slash oder Parsen von HTTP-URIs aus Strings.
  */
 public final class UriUtils {
     private UriUtils() {}
