@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.cli.util;
 
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
+
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -9,11 +10,13 @@ import java.util.Objects;
 
 public final class HttpUtils {
 
-    private HttpUtils() {}
+    private HttpUtils() {
+    }
 
     /**
-     * Helper to send an HTTP request and return the response body as string.
-     * Errors are captured in the HttpCallResult. Error field.
+     * Hilfsfunktion zum Senden eines HTTP-Requests und Erfassen des Statuscodes und der Antwort als String.
+     * Behandelt InterruptedException und IOException und gibt ein HttpCallResult zurück,
+     * das entweder den Statuscode und die Antwort oder eine Fehlermeldung enthält.
      */
     public static HttpCallResult sendForStringBody(HttpClient httpClient, HttpRequest request) {
         Objects.requireNonNull(httpClient, "httpClient");

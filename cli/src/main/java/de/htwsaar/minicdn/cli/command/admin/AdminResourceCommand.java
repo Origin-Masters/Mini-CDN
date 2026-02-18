@@ -4,12 +4,15 @@ import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
 import de.htwsaar.minicdn.cli.service.admin.AdminResourceService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
+import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
+
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -19,9 +22,9 @@ import picocli.CommandLine.Option;
         aliases = {"resource"},
         description = "Manage files on Origin (file-model: resource == file)",
         subcommands = {
-            AdminResourceCommand.AdminResourceAddCommand.class,
-            AdminResourceCommand.AdminResourceListCommand.class,
-            AdminResourceCommand.AdminResourceShowCommand.class
+                AdminResourceCommand.AdminResourceAddCommand.class,
+                AdminResourceCommand.AdminResourceListCommand.class,
+                AdminResourceCommand.AdminResourceShowCommand.class
         })
 public class AdminResourceCommand implements Runnable {
 
@@ -138,7 +141,7 @@ public class AdminResourceCommand implements Runnable {
 
                 String body = result.body();
                 if (body != null && !body.isBlank()) {
-                    out.println(body);
+                    out.println(JsonUtils.formatJson(body));
                     out.flush();
                 }
                 return 0;
@@ -191,7 +194,7 @@ public class AdminResourceCommand implements Runnable {
 
                 String body = result.body();
                 if (body != null && !body.isBlank()) {
-                    out.println(body);
+                    out.println(JsonUtils.formatJson(body));
                     out.flush();
                 }
                 return 0;
