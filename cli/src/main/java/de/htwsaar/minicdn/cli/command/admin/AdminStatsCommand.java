@@ -26,9 +26,9 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-                "  minicdn admin stats show -H http://localhost:8080",
-                "  minicdn admin stats show -H http://localhost:8080 --window-sec 120 --aggregate-edge=false",
-                "  minicdn admin stats show -H http://localhost:8080 --json"
+            "  minicdn admin stats show -H http://localhost:8080",
+            "  minicdn admin stats show -H http://localhost:8080 --window-sec 120 --aggregate-edge=false",
+            "  minicdn admin stats show -H http://localhost:8080 --json"
         },
         subcommands = {AdminStatsCommand.AdminStatsShowCommand.class})
 public final class AdminStatsCommand implements Runnable {
@@ -67,10 +67,10 @@ public final class AdminStatsCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin stats show -H http://localhost:8080",
-                    "  minicdn admin stats show -H http://localhost:8080 --window-sec 10",
-                    "  minicdn admin stats show -H http://localhost:8080 --aggregate-edge=false",
-                    "  minicdn admin stats show -H http://localhost:8080 --json"
+                "  minicdn admin stats show -H http://localhost:8080",
+                "  minicdn admin stats show -H http://localhost:8080 --window-sec 10",
+                "  minicdn admin stats show -H http://localhost:8080 --aggregate-edge=false",
+                "  minicdn admin stats show -H http://localhost:8080 --json"
             })
     public static final class AdminStatsShowCommand implements Callable<Integer> {
 

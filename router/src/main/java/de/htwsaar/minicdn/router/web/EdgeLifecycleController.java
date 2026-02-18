@@ -4,8 +4,8 @@ import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.service.RoutingIndex;
 import de.htwsaar.minicdn.router.util.UrlUtil;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -127,7 +127,8 @@ public class EdgeLifecycleController {
                 ManagedEdge existingManaged = findManagedByPort(port);
                 if (existingManaged != null) {
                     return ResponseEntity.status(HttpStatus.CONFLICT)
-                            .body("Port " + port + " ist bereits durch managed Edge belegt: " + existingManaged.instanceId());
+                            .body("Port " + port + " ist bereits durch managed Edge belegt: "
+                                    + existingManaged.instanceId());
                 }
 
                 if (!isTcpPortAvailable(port)) {
@@ -136,13 +137,13 @@ public class EdgeLifecycleController {
                 }
 
                 Process p = new ProcessBuilder(
-                        "java",
-                        "-jar",
-                        edgeJarPath.toString(),
-                        "--spring.profiles.active=edge",
-                        "--server.port=" + port,
-                        "--origin.base-url=" + req.originBaseUrl(),
-                        "--edge.region=" + region)
+                                "java",
+                                "-jar",
+                                edgeJarPath.toString(),
+                                "--spring.profiles.active=edge",
+                                "--server.port=" + port,
+                                "--origin.base-url=" + req.originBaseUrl(),
+                                "--edge.region=" + region)
                         .inheritIO()
                         .start();
 
@@ -270,7 +271,8 @@ public class EdgeLifecycleController {
         while (System.currentTimeMillis() < deadline) {
             if (!p.isAlive()) {
                 int exitCode = p.exitValue();
-                throw new IllegalStateException("Edge-Prozess ist während des Startups gestorben! Exit-Code: " + exitCode);
+                throw new IllegalStateException(
+                        "Edge-Prozess ist während des Startups gestorben! Exit-Code: " + exitCode);
             }
 
             try {

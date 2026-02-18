@@ -22,14 +22,14 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-                "  minicdn admin user add --name alice --role ADMIN",
-                "  minicdn admin user list --role USER --page 1 --size 20",
-                "  minicdn admin user remove --id 42 --force"
+            "  minicdn admin user add --name alice --role ADMIN",
+            "  minicdn admin user list --role USER --page 1 --size 20",
+            "  minicdn admin user remove --id 42 --force"
         },
         subcommands = {
-                AdminUserMgmtCommand.AdminUserAddCommand.class,
-                AdminUserMgmtCommand.AdminUserRemoveCommand.class,
-                AdminUserMgmtCommand.AdminUserListCommand.class
+            AdminUserMgmtCommand.AdminUserAddCommand.class,
+            AdminUserMgmtCommand.AdminUserRemoveCommand.class,
+            AdminUserMgmtCommand.AdminUserListCommand.class
         })
 public final class AdminUserMgmtCommand implements Runnable {
 
@@ -59,8 +59,8 @@ public final class AdminUserMgmtCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin user add --name alice --role ADMIN",
-                    "  minicdn admin user add --name bob --role USER"
+                "  minicdn admin user add --name alice --role ADMIN",
+                "  minicdn admin user add --name bob --role USER"
             })
     public static final class AdminUserAddCommand implements Runnable {
 
@@ -128,10 +128,7 @@ public final class AdminUserMgmtCommand implements Runnable {
             description = "List users in the system",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {
-                    "  minicdn admin user list",
-                    "  minicdn admin user list --role ADMIN --page 1 --size 50"
-            })
+            footer = {"  minicdn admin user list", "  minicdn admin user list --role ADMIN --page 1 --size 50"})
     public static final class AdminUserListCommand implements Runnable {
 
         @ParentCommand
@@ -160,8 +157,8 @@ public final class AdminUserMgmtCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin user remove --id 42 --force",
-                    "  minicdn admin user remove --name alice --force --reassign-owner 1"
+                "  minicdn admin user remove --id 42 --force",
+                "  minicdn admin user remove --name alice --force --reassign-owner 1"
             })
     public static final class AdminUserRemoveCommand implements Runnable {
 

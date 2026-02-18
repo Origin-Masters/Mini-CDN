@@ -26,14 +26,14 @@ import picocli.CommandLine.Spec;
         commandListHeading = "%nUnterbefehle:%n",
         footerHeading = "%nBeispiele:%n",
         footer = {
-                "  minicdn admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready",
-                "  minicdn admin edge managed -H http://localhost:8082",
-                "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force"
+            "  minicdn admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready",
+            "  minicdn admin edge managed -H http://localhost:8082",
+            "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force"
         },
         subcommands = {
-                AdminEdgeCommand.AdminEdgeStartCommand.class,
-                AdminEdgeCommand.AdminEdgeStopCommand.class,
-                AdminEdgeCommand.AdminEdgeManagedCommand.class
+            AdminEdgeCommand.AdminEdgeStartCommand.class,
+            AdminEdgeCommand.AdminEdgeStopCommand.class,
+            AdminEdgeCommand.AdminEdgeManagedCommand.class
         })
 public final class AdminEdgeCommand implements Runnable {
 
@@ -62,8 +62,8 @@ public final class AdminEdgeCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --auto-register=true --wait-ready",
-                    "  minicdn admin edge start --region US --port 8083 --origin http://localhost:8080 --auto-register=false"
+                "  minicdn admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --auto-register=true --wait-ready",
+                "  minicdn admin edge start --region US --port 8083 --origin http://localhost:8080 --auto-register=false"
             })
     public static final class AdminEdgeStartCommand implements Callable<Integer> {
 
@@ -111,7 +111,8 @@ public final class AdminEdgeCommand implements Runnable {
                 names = "--wait-ready",
                 defaultValue = "false",
                 paramLabel = "true|false",
-                description = "If true, router waits until the edge is ready before returning (default: ${DEFAULT-VALUE}).")
+                description =
+                        "If true, router waits until the edge is ready before returning (default: ${DEFAULT-VALUE}).")
         private boolean waitReady;
 
         @Option(
@@ -136,8 +137,8 @@ public final class AdminEdgeCommand implements Runnable {
             }
 
             try {
-                HttpCallResult result = parent.service()
-                        .startEdge(host, region, port, originBaseUrl, autoRegister, waitReady);
+                HttpCallResult result =
+                        parent.service().startEdge(host, region, port, originBaseUrl, autoRegister, waitReady);
 
                 if (result.error() != null) {
                     ConsoleUtils.error(parent.ctx.err(), "EDGE start failed: %s", result.error());
@@ -164,9 +165,13 @@ public final class AdminEdgeCommand implements Runnable {
                 long pid = n.path("pid").asLong(-1);
                 String r = n.path("region").asText("n/a");
 
-                ConsoleUtils.info(parent.ctx.out(),
+                ConsoleUtils.info(
+                        parent.ctx.out(),
                         "EDGE started instanceId=%s url=%s pid=%d region=%s",
-                        instanceId, url, pid, r);
+                        instanceId,
+                        url,
+                        pid,
+                        r);
                 return 0;
 
             } catch (Exception ex) {
@@ -182,8 +187,8 @@ public final class AdminEdgeCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force",
-                    "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force --deregister=false"
+                "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force",
+                "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force --deregister=false"
             })
     public static final class AdminEdgeStopCommand implements Callable<Integer> {
 
@@ -219,8 +224,8 @@ public final class AdminEdgeCommand implements Runnable {
         @Override
         public Integer call() {
             if (!force) {
-                ConsoleUtils.error(parent.ctx.err(),
-                        "EDGE stop is destructive. Re-run with --force. instanceId=%s", instanceId);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "EDGE stop is destructive. Re-run with --force. instanceId=%s", instanceId);
                 return 3;
             }
 
@@ -234,15 +239,20 @@ public final class AdminEdgeCommand implements Runnable {
 
                 int sc = Objects.requireNonNull(result.statusCode(), "statusCode");
                 if (sc >= 200 && sc < 300) {
-                    ConsoleUtils.info(parent.ctx.out(),
+                    ConsoleUtils.info(
+                            parent.ctx.out(),
                             "EDGE stopped instanceId=%s deregister=%s (HTTP %d)",
-                            instanceId, deregister, sc);
+                            instanceId,
+                            deregister,
+                            sc);
                     return 0;
                 }
 
-                ConsoleUtils.error(parent.ctx.err(),
+                ConsoleUtils.error(
+                        parent.ctx.err(),
                         "EDGE stop rejected: HTTP %d, body=%s",
-                        sc, Objects.toString(result.body(), ""));
+                        sc,
+                        Objects.toString(result.body(), ""));
                 return 2;
 
             } catch (Exception ex) {
@@ -258,8 +268,8 @@ public final class AdminEdgeCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin edge managed -H http://localhost:8082",
-                    "  minicdn admin edge managed -H http://localhost:8082 --json"
+                "  minicdn admin edge managed -H http://localhost:8082",
+                "  minicdn admin edge managed -H http://localhost:8082 --json"
             })
     public static final class AdminEdgeManagedCommand implements Callable<Integer> {
 
