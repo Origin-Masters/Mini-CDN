@@ -21,6 +21,13 @@ import picocli.CommandLine.Option;
         name = "file",
         aliases = {"resource"},
         description = "Manage files on Origin (file-model: resource == file)",
+        mixinStandardHelpOptions = true,
+        footerHeading = "%nBeispiele:%n",
+        footer = {
+            "  minicdn admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf",
+            "  minicdn admin file list --origin http://localhost:8080 --page 1 --size 20",
+            "  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
+        },
         subcommands = {
                 AdminResourceCommand.AdminResourceAddCommand.class,
                 AdminResourceCommand.AdminResourceListCommand.class,
@@ -46,7 +53,12 @@ public class AdminResourceCommand implements Runnable {
     @Command(
             name = "upload",
             aliases = {"add"},
-            description = "Upload a file to the Origin server (admin API)")
+            description = "Upload a file to the Origin server (admin API)",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  minicdn admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf"
+            })
     public static class AdminResourceAddCommand implements Callable<Integer> {
 
         @CommandLine.ParentCommand
@@ -55,15 +67,21 @@ public class AdminResourceCommand implements Runnable {
         @Option(
                 names = "--path",
                 required = true,
+                paramLabel = "REMOTE_PATH",
                 description = "Target path on origin, e.g. docs/Lebenslauf.pdf (stored under origin's data/ directory)")
         String path;
 
-        @Option(names = "--origin", required = true, description = "Origin server base URL, e.g. http://localhost:8080")
+        @Option(
+                names = "--origin",
+                required = true,
+                paramLabel = "ORIGIN_URL",
+                description = "Origin server base URL, e.g. http://localhost:8080")
         URI origin;
 
         @Option(
                 names = "--file",
                 required = true,
+                paramLabel = "LOCAL_FILE",
                 description = "Local file path to upload, e.g. /Users/.../Lebenslauf.pdf")
         Path file;
 
@@ -109,12 +127,25 @@ public class AdminResourceCommand implements Runnable {
         }
     }
 
-    @Command(name = "list", description = "List files on Origin")
+    @Command(
+            name = "list",
+            description = "List files on Origin",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  minicdn admin file list --origin http://localhost:8080",
+                "  minicdn admin file list --origin http://localhost:8080 --page 2 --size 50"
+            })
     public static class AdminResourceListCommand implements Callable<Integer> {
+
         @CommandLine.ParentCommand
         AdminResourceCommand parent;
 
-        @Option(names = "--origin", required = true, description = "Origin server base URL, e.g. http://localhost:8080")
+        @Option(
+                names = "--origin",
+                required = true,
+                paramLabel = "ORIGIN_URL",
+                description = "Origin server base URL, e.g. http://localhost:8080")
         URI origin;
 
         @Option(names = "--page", description = "Page number (>= 1)", defaultValue = "1")
@@ -160,15 +191,29 @@ public class AdminResourceCommand implements Runnable {
         }
     }
 
-    @Command(name = "show", description = "Show a file on Origin")
+    @Command(
+            name = "show",
+            description = "Show a file on Origin",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {"  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"})
     public static class AdminResourceShowCommand implements Callable<Integer> {
+
         @CommandLine.ParentCommand
         AdminResourceCommand parent;
 
-        @Option(names = "--origin", required = true, description = "Origin server base URL, e.g. http://localhost:8080")
+        @Option(
+                names = "--origin",
+                required = true,
+                paramLabel = "ORIGIN_URL",
+                description = "Origin server base URL, e.g. http://localhost:8080")
         URI origin;
 
-        @Option(names = "--path", required = true, description = "File path on origin, e.g. docs/Lebenslauf.pdf")
+        @Option(
+                names = "--path",
+                required = true,
+                paramLabel = "REMOTE_PATH",
+                description = "File path on origin, e.g. docs/Lebenslauf.pdf")
         String path;
 
         @Override
@@ -212,20 +257,37 @@ public class AdminResourceCommand implements Runnable {
         }
     }
 
-    @Command(name = "download", description = "Download a file from Origin to a local path (binary-safe)")
+    @Command(
+            name = "download",
+            description = "Download a file from Origin to a local path (binary-safe)",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  minicdn admin file download --origin http://localhost:8080 --path docs/Lebenslauf.pdf --out ./downloads/Lebenslauf.pdf"
+            })
     public static class AdminResourceDownloadCommand implements Callable<Integer> {
+
         @CommandLine.ParentCommand
         AdminResourceCommand parent;
 
-        @Option(names = "--origin", required = true, description = "Origin server base URL, e.g. http://localhost:8080")
+        @Option(
+                names = "--origin",
+                required = true,
+                paramLabel = "ORIGIN_URL",
+                description = "Origin server base URL, e.g. http://localhost:8080")
         URI origin;
 
-        @Option(names = "--path", required = true, description = "File path on origin, e.g. docs/Lebenslauf.pdf")
+        @Option(
+                names = "--path",
+                required = true,
+                paramLabel = "REMOTE_PATH",
+                description = "File path on origin, e.g. docs/Lebenslauf.pdf")
         String path;
 
         @Option(
                 names = "--out",
                 required = true,
+                paramLabel = "OUT_FILE",
                 description = "Local output file path, e.g. ./downloads/Lebenslauf.pdf")
         Path outFile;
 

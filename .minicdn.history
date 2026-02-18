@@ -40,3 +40,7 @@
 1771447813688:admin edge stop -H http://localhost:8082 edge-197277 --force
 1771447823735:admin edge managed -H http://localhost:8082
 1771447834835:user file download test.txt -o ./downloads/test.txt -r EU --overwrite
+1771450447877:minicdn admin edge
+1771450454713:minicdn admin edge --help
+1771450465162:admin edge --help
+1771454810333:admin edge -v
