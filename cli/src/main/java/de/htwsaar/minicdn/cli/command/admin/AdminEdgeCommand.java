@@ -16,14 +16,20 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
-/**
- * Admin-Commands zum Starten/Stoppen und Auflisten von managed Edge-Instanzen über den Router.
- *
- * <p>Ohne Subcommand wird die Usage angezeigt.</p>
- */
 @Command(
         name = "edge",
-        description = "Manage edge instances via router (start/stop/managed)",
+        description = "Start/stop/list managed edge instances via the router admin API.",
+        mixinStandardHelpOptions = true,
+        descriptionHeading = "%nBeschreibung:%n",
+        parameterListHeading = "%nParameter:%n",
+        optionListHeading = "%nOptionen:%n",
+        commandListHeading = "%nUnterbefehle:%n",
+        footerHeading = "%nBeispiele:%n",
+        footer = {
+                "  minicdn admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready",
+                "  minicdn admin edge managed -H http://localhost:8082",
+                "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force"
+        },
         subcommands = {
                 AdminEdgeCommand.AdminEdgeStartCommand.class,
                 AdminEdgeCommand.AdminEdgeStopCommand.class,
@@ -36,11 +42,6 @@ public final class AdminEdgeCommand implements Runnable {
     @Spec
     private CommandSpec spec;
 
-    /**
-     * Konstruktor für Constructor Injection via {@code ContextFactory}.
-     *
-     * @param ctx CLI-Kontext (Output, HTTP-Client, Timeouts, ...)
-     */
     public AdminEdgeCommand(CliContext ctx) {
         this.ctx = Objects.requireNonNull(ctx, "ctx");
     }
@@ -55,7 +56,15 @@ public final class AdminEdgeCommand implements Runnable {
         return new AdminEdgeLauncherService(ctx.httpClient(), ctx.defaultRequestTimeout());
     }
 
-    @Command(name = "start", description = "Start a managed edge instance via router", mixinStandardHelpOptions = true)
+    @Command(
+            name = "start",
+            description = "Start a managed edge process via router (POST /api/cdn/admin/edges/start).",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                    "  minicdn admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --auto-register=true --wait-ready",
+                    "  minicdn admin edge start --region US --port 8083 --origin http://localhost:8080 --auto-register=false"
+            })
     public static final class AdminEdgeStartCommand implements Callable<Integer> {
 
         private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -63,29 +72,52 @@ public final class AdminEdgeCommand implements Runnable {
         @ParentCommand
         private AdminEdgeCommand parent;
 
-        @Option(names = {"-H", "--host"}, defaultValue = "http://localhost:8080",
-                description = "Router base URL, e.g. http://localhost:8080")
+        @Option(
+                names = {"-H", "--host"},
+                defaultValue = "http://localhost:8082",
+                paramLabel = "ROUTER_URL",
+                description = "Router base URL (default: ${DEFAULT-VALUE}). Example: http://localhost:8082")
         private URI host;
 
-        @Option(names = "--region", required = true, description = "Target region, e.g. EU")
+        @Option(
+                names = "--region",
+                required = true,
+                paramLabel = "REGION",
+                description = "Target region to register the edge under. Example: EU")
         private String region;
 
-        @Option(names = "--port", required = true, description = "Edge HTTP port (1..65535)")
+        @Option(
+                names = "--port",
+                required = true,
+                paramLabel = "PORT",
+                description = "TCP port for the edge HTTP server (1..65535). Example: 8081")
         private int port;
 
-        @Option(names = "--origin", required = true, description = "Origin base URL, e.g. http://localhost:8080")
+        @Option(
+                names = "--origin",
+                required = true,
+                paramLabel = "ORIGIN_URL",
+                description = "Origin base URL passed to the edge. Example: http://localhost:8080")
         private URI originBaseUrl;
 
-        @Option(names = "--auto-register", defaultValue = "true",
-                description = "Register edge in routing index after successful start (true/false)")
+        @Option(
+                names = "--auto-register",
+                defaultValue = "true",
+                paramLabel = "true|false",
+                description = "If true, router registers the edge in its routing index (default: ${DEFAULT-VALUE}).")
         private boolean autoRegister;
 
-        @Option(names = "--wait-ready", defaultValue = "false",
-                description = "Wait until the edge reports readiness (true/false)")
+        @Option(
+                names = "--wait-ready",
+                defaultValue = "false",
+                paramLabel = "true|false",
+                description = "If true, router waits until the edge is ready before returning (default: ${DEFAULT-VALUE}).")
         private boolean waitReady;
 
-        @Option(names = "--json", defaultValue = "false",
-                description = "Print raw JSON response body")
+        @Option(
+                names = "--json",
+                defaultValue = "false",
+                description = "Print raw JSON response body (default: ${DEFAULT-VALUE}).")
         private boolean printJson;
 
         @Override
@@ -144,25 +176,44 @@ public final class AdminEdgeCommand implements Runnable {
         }
     }
 
-    @Command(name = "stop", description = "Stop a managed edge instance via router", mixinStandardHelpOptions = true)
+    @Command(
+            name = "stop",
+            description = "Stop a managed edge process via router (DELETE /api/cdn/admin/edges/{instanceId}).",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                    "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force",
+                    "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force --deregister=false"
+            })
     public static final class AdminEdgeStopCommand implements Callable<Integer> {
 
         @ParentCommand
         private AdminEdgeCommand parent;
 
-        @Option(names = {"-H", "--host"}, defaultValue = "http://localhost:8080",
-                description = "Router base URL, e.g. http://localhost:8080")
+        @Option(
+                names = {"-H", "--host"},
+                defaultValue = "http://localhost:8082",
+                paramLabel = "ROUTER_URL",
+                description = "Router base URL (default: ${DEFAULT-VALUE}). Example: http://localhost:8082")
         private URI host;
 
-        @Parameters(index = "0", paramLabel = "instanceId", description = "Managed instanceId, e.g. edge-12345")
+        @Parameters(
+                index = "0",
+                paramLabel = "INSTANCE_ID",
+                description = "Managed instance id as returned by 'edge start'/'edge managed'. Example: edge-12345")
         private String instanceId;
 
-        @Option(names = "--deregister", defaultValue = "true",
-                description = "Deregister edge from routing index (true/false)")
+        @Option(
+                names = "--deregister",
+                defaultValue = "true",
+                paramLabel = "true|false",
+                description = "If true, router removes the edge from its routing index (default: ${DEFAULT-VALUE}).")
         private boolean deregister;
 
-        @Option(names = "--force", defaultValue = "false",
-                description = "Actually perform the stop (safety switch)")
+        @Option(
+                names = "--force",
+                defaultValue = "false",
+                description = "Safety switch: required to actually stop the process (default: ${DEFAULT-VALUE}).")
         private boolean force;
 
         @Override
@@ -201,7 +252,15 @@ public final class AdminEdgeCommand implements Runnable {
         }
     }
 
-    @Command(name = "managed", description = "List managed edges via router", mixinStandardHelpOptions = true)
+    @Command(
+            name = "managed",
+            description = "List all edges managed by the router (GET /api/cdn/admin/edges/managed).",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                    "  minicdn admin edge managed -H http://localhost:8082",
+                    "  minicdn admin edge managed -H http://localhost:8082 --json"
+            })
     public static final class AdminEdgeManagedCommand implements Callable<Integer> {
 
         private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -209,12 +268,17 @@ public final class AdminEdgeCommand implements Runnable {
         @ParentCommand
         private AdminEdgeCommand parent;
 
-        @Option(names = {"-H", "--host"}, defaultValue = "http://localhost:8080",
-                description = "Router base URL, e.g. http://localhost:8080")
+        @Option(
+                names = {"-H", "--host"},
+                defaultValue = "http://localhost:8082",
+                paramLabel = "ROUTER_URL",
+                description = "Router base URL (default: ${DEFAULT-VALUE}). Example: http://localhost:8082")
         private URI host;
 
-        @Option(names = "--json", defaultValue = "false",
-                description = "Print raw JSON response body")
+        @Option(
+                names = "--json",
+                defaultValue = "false",
+                description = "Print raw JSON response body (default: ${DEFAULT-VALUE}).")
         private boolean printJson;
 
         @Override
