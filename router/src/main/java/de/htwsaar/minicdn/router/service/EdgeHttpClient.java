@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.router.service;
 
+import de.htwsaar.minicdn.common.logging.TraceIdFilter;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.util.UrlUtil;
 import java.net.URI;
@@ -8,6 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,9 +36,9 @@ public class EdgeHttpClient {
      */
     public boolean isNodeResponsive(EdgeNode node, Duration timeout) {
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(resolve(node, "api/edge/health"))
-                    .timeout(timeout)
+            HttpRequest request = withCurrentTraceId(HttpRequest.newBuilder()
+                            .uri(resolve(node, "api/edge/health"))
+                            .timeout(timeout))
                     .GET()
                     .build();
 
@@ -55,9 +57,9 @@ public class EdgeHttpClient {
      * @return Future mit {@code true}, wenn HTTP 200 zurückgegeben wurde
      */
     public CompletableFuture<Boolean> checkNodeHealth(EdgeNode node, Duration timeout) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(resolve(node, "api/edge/health"))
-                .timeout(timeout)
+        HttpRequest request = withCurrentTraceId(HttpRequest.newBuilder()
+                        .uri(resolve(node, "api/edge/health"))
+                        .timeout(timeout))
                 .GET()
                 .build();
 
@@ -76,9 +78,9 @@ public class EdgeHttpClient {
      * @return HTTP Response als String-Body
      */
     public HttpResponse<String> fetchEdgeAdminStats(EdgeNode node, int windowSec, Duration timeout) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(resolve(node, "api/edge/admin/stats?windowSec=" + windowSec))
-                .timeout(timeout)
+        HttpRequest request = withCurrentTraceId(HttpRequest.newBuilder()
+                        .uri(resolve(node, "api/edge/admin/stats?windowSec=" + windowSec))
+                        .timeout(timeout))
                 .GET()
                 .build();
 
@@ -93,8 +95,9 @@ public class EdgeHttpClient {
      * @return Future der HTTP Response
      */
     public CompletableFuture<HttpResponse<String>> sendDelete(EdgeNode node, String endpoint) {
-        HttpRequest request =
-                HttpRequest.newBuilder().uri(resolve(node, endpoint)).DELETE().build();
+        HttpRequest request = withCurrentTraceId(HttpRequest.newBuilder().uri(resolve(node, endpoint)))
+                .DELETE()
+                .build();
 
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
     }
@@ -113,5 +116,21 @@ public class EdgeHttpClient {
     private static URI resolve(EdgeNode node, String pathOrPathAndQuery) {
         URI base = URI.create(UrlUtil.ensureTrailingSlash(node.url()));
         return base.resolve(UrlUtil.stripLeadingSlash(pathOrPathAndQuery));
+    }
+
+    /**
+     * Ergänzt den aus der aktuellen Request-Verarbeitung stammenden Trace-Header.
+     *
+     * <p>Ist keine Trace-ID im MDC vorhanden (z. B. Background-Task), bleibt der Builder unverändert.</p>
+     *
+     * @param builder Request-Builder für einen Edge-Aufruf
+     * @return derselbe Builder, optional mit {@code X-Trace-Id}-Header
+     */
+    private static HttpRequest.Builder withCurrentTraceId(HttpRequest.Builder builder) {
+        String traceId = MDC.get(TraceIdFilter.TRACE_ID_KEY);
+        if (traceId == null || traceId.isBlank()) {
+            return builder;
+        }
+        return builder.header(TraceIdFilter.TRACE_ID_HEADER, traceId);
     }
 }

@@ -36,6 +36,10 @@ public class TraceIdFilter extends OncePerRequestFilter {
         // Trace-ID im Logging-Kontext ablegen
         MDC.put(TRACE_ID_KEY, traceId);
 
+        // Dieselbe Trace-ID im Response-Header zurückgeben, damit Clients/andere Services
+        // Folgeaufrufe mit identischer ID korrelieren können.
+        response.setHeader(TRACE_ID_HEADER, traceId);
+
         try {
             filterChain.doFilter(request, response);
         } finally {
