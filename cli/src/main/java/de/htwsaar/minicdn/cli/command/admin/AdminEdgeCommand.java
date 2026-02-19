@@ -33,7 +33,8 @@ import picocli.CommandLine.Spec;
         subcommands = {
             AdminEdgeCommand.AdminEdgeStartCommand.class,
             AdminEdgeCommand.AdminEdgeStopCommand.class,
-            AdminEdgeCommand.AdminEdgeManagedCommand.class
+            AdminEdgeCommand.AdminEdgeManagedCommand.class,
+            AdminEdgeCommand.AdminEdgeAutoStartCommand.class
         })
 public final class AdminEdgeCommand implements Runnable {
 
@@ -334,6 +335,146 @@ public final class AdminEdgeCommand implements Runnable {
 
             } catch (Exception ex) {
                 ConsoleUtils.error(parent.ctx.err(), "EDGE managed failed: %s", ex.getMessage());
+                return 1;
+            }
+        }
+    }
+
+    @Command(
+            name = "auto-start",
+            description =
+                    "Start multiple managed edge processes via router with auto port allocation (POST /api/cdn/admin/edges/start/auto).",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  minicdn admin edge auto-start -H http://localhost:8082 --region EU --count 3 --origin http://localhost:8080 --auto-register=true --wait-ready",
+                "  minicdn admin edge auto-start --region US --count 10 --origin http://localhost:8080 --auto-register=false",
+                "  minicdn admin edge auto-start -H http://localhost:8082 --region EU --count 2 --origin http://localhost:8080 --json"
+            })
+    public static final class AdminEdgeAutoStartCommand implements Callable<Integer> {
+
+        private static final ObjectMapper MAPPER = new ObjectMapper();
+
+        @ParentCommand
+        private AdminEdgeCommand parent;
+
+        @Option(
+                names = {"-H", "--host"},
+                defaultValue = "http://localhost:8082",
+                paramLabel = "ROUTER_URL",
+                description = "Router base URL (default: ${DEFAULT-VALUE}). Example: http://localhost:8082")
+        private URI host;
+
+        @Option(
+                names = "--region",
+                required = true,
+                paramLabel = "REGION",
+                description = "Target region to register the edges under. Example: EU")
+        private String region;
+
+        @Option(
+                names = "--count",
+                required = true,
+                paramLabel = "COUNT",
+                description = "Number of edge processes to start (must be > 0). Example: 3")
+        private int count;
+
+        @Option(
+                names = "--origin",
+                required = true,
+                paramLabel = "ORIGIN_URL",
+                description = "Origin base URL passed to the edges. Example: http://localhost:8080")
+        private URI originBaseUrl;
+
+        @Option(
+                names = "--auto-register",
+                defaultValue = "true",
+                paramLabel = "true|false",
+                description = "If true, router registers the edges in its routing index (default: ${DEFAULT-VALUE}).")
+        private boolean autoRegister;
+
+        @Option(
+                names = "--wait-ready",
+                defaultValue = "false",
+                paramLabel = "true|false",
+                description =
+                        "If true, router waits until each edge is ready before returning (default: ${DEFAULT-VALUE}).")
+        private boolean waitReady;
+
+        @Option(
+                names = "--json",
+                defaultValue = "false",
+                description = "Print raw JSON response body (default: ${DEFAULT-VALUE}).")
+        private boolean printJson;
+
+        @Override
+        public Integer call() {
+            if (region == null || region.isBlank()) {
+                ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start region must not be blank");
+                return 3;
+            }
+            if (count <= 0) {
+                ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start invalid --count: %d (expected > 0)", count);
+                return 3;
+            }
+            if (originBaseUrl == null || originBaseUrl.getScheme() == null) {
+                ConsoleUtils.error(
+                        parent.ctx.err(), "EDGE auto-start invalid --origin (must be an absolute http/https URI)");
+                return 3;
+            }
+
+            try {
+                HttpCallResult result =
+                        parent.service().startEdgesAuto(host, region, count, originBaseUrl, autoRegister, waitReady);
+
+                if (result.error() != null) {
+                    ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start failed: %s", result.error());
+                    return 1;
+                }
+
+                int sc = Objects.requireNonNull(result.statusCode(), "statusCode");
+                String body = Objects.toString(result.body(), "");
+
+                if (sc < 200 || sc >= 300) {
+                    ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start rejected: HTTP %d, body=%s", sc, body);
+                    return 2;
+                }
+
+                if (printJson) {
+                    parent.ctx.out().println(body);
+                    parent.ctx.out().flush();
+                    return 0;
+                }
+
+                JsonNode root = MAPPER.readTree(body);
+                String r = root.path("region").asText("n/a");
+                int requested = root.path("requested").asInt(-1);
+                int started = root.path("started").asInt(-1);
+
+                ConsoleUtils.info(
+                        parent.ctx.out(),
+                        "EDGE auto-start done region=%s requested=%d started=%d",
+                        r,
+                        requested,
+                        started);
+
+                JsonNode edges = root.path("edges");
+                if (edges.isArray() && !edges.isEmpty()) {
+                    parent.ctx.out().println("Started edges:");
+                    for (JsonNode e : edges) {
+                        String id = e.path("instanceId").asText("n/a");
+                        String url = e.path("url").asText("n/a");
+                        long pid = e.path("pid").asLong(-1);
+                        String er = e.path("region").asText("n/a");
+                        parent.ctx.out().printf("- %s region=%s url=%s pid=%d%n", id, er, url, pid);
+                    }
+                    parent.ctx.out().flush();
+                }
+
+                return 0;
+
+            } catch (Exception ex) {
+                ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start failed: %s", ex.getMessage());
                 return 1;
             }
         }

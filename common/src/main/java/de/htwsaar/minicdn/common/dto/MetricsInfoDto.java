@@ -6,5 +6,4 @@ public record MetricsInfoDto(
         long totalRequests,
         long routingErrors,
         Map<String, Long> requestsByRegion,
-        Map<String, Long> selectionsByNode
-) {}
+        Map<String, Long> selectionsByNode) {}

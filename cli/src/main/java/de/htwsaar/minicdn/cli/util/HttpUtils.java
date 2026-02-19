@@ -1,7 +1,6 @@
 package de.htwsaar.minicdn.cli.util;
 
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
-
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -10,8 +9,7 @@ import java.util.Objects;
 
 public final class HttpUtils {
 
-    private HttpUtils() {
-    }
+    private HttpUtils() {}
 
     /**
      * Hilfsfunktion zum Senden eines HTTP-Requests und Erfassen des Statuscodes und der Antwort als String.
