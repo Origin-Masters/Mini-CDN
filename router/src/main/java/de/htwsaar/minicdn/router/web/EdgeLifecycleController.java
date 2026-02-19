@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.router.web;
 
+import de.htwsaar.minicdn.common.logging.TraceIdFilter;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.service.RoutingIndex;
 import de.htwsaar.minicdn.router.util.UrlUtil;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -478,8 +480,8 @@ public class EdgeLifecycleController {
             }
 
             try {
-                HttpRequest req = HttpRequest.newBuilder(ready)
-                        .timeout(Duration.ofSeconds(1))
+                HttpRequest req = withCurrentTraceId(
+                                HttpRequest.newBuilder(ready).timeout(Duration.ofSeconds(1)))
                         .GET()
                         .build();
                 HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
@@ -567,5 +569,21 @@ public class EdgeLifecycleController {
                 p.destroyForcibly();
             }
         }
+    }
+
+    /**
+     * Ergänzt den aktuellen Trace-Header für interne HTTP-Aufrufe.
+     *
+     * <p>Damit bleiben Startup-/Readiness-Checks in derselben Anfragekette korrelierbar.</p>
+     *
+     * @param builder Request-Builder für einen internen Aufruf
+     * @return derselbe Builder, optional mit {@code X-Trace-Id}
+     */
+    private static HttpRequest.Builder withCurrentTraceId(HttpRequest.Builder builder) {
+        String traceId = MDC.get(TraceIdFilter.TRACE_ID_KEY);
+        if (traceId == null || traceId.isBlank()) {
+            return builder;
+        }
+        return builder.header(TraceIdFilter.TRACE_ID_HEADER, traceId);
     }
 }
