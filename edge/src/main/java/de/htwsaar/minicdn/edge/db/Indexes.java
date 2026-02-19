@@ -3,30 +3,25 @@
  */
 package de.htwsaar.minicdn.edge.db;
 
+
 import de.htwsaar.minicdn.edge.db.tables.CacheEntries;
+
 import org.jooq.Index;
 import org.jooq.OrderField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.Internal;
 
+
 /**
  * A class modelling indexes of tables in the default schema.
  */
-@SuppressWarnings({"all", "unchecked", "rawtypes", "this-escape"})
+@SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class Indexes {
 
     // -------------------------------------------------------------------------
     // INDEX definitions
     // -------------------------------------------------------------------------
 
-    public static final Index IDX_CACHE_EXPIRES = Internal.createIndex(
-            DSL.name("idx_cache_expires"),
-            CacheEntries.CACHE_ENTRIES,
-            new OrderField[] {CacheEntries.CACHE_ENTRIES.EXPIRES_TS},
-            false);
-    public static final Index IDX_CACHE_LAST_ACCESS = Internal.createIndex(
-            DSL.name("idx_cache_last_access"),
-            CacheEntries.CACHE_ENTRIES,
-            new OrderField[] {CacheEntries.CACHE_ENTRIES.LAST_ACCESS_TS},
-            false);
+    public static final Index IDX_CACHE_EXPIRES = Internal.createIndex(DSL.name("idx_cache_expires"), CacheEntries.CACHE_ENTRIES, new OrderField[] { CacheEntries.CACHE_ENTRIES.EXPIRES_TS }, false);
+    public static final Index IDX_CACHE_LAST_ACCESS = Internal.createIndex(DSL.name("idx_cache_last_access"), CacheEntries.CACHE_ENTRIES, new OrderField[] { CacheEntries.CACHE_ENTRIES.LAST_ACCESS_TS }, false);
 }
