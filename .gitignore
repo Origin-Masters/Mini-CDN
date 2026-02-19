@@ -19,5 +19,10 @@ ehthumbs.db
 .project
 .classpath
 
+.minicdn.history
+edge.log
+git-stats.ps1
+origin.log
 
 target
+cli/data/users.db
