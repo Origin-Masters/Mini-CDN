@@ -71,23 +71,55 @@ function cWL([string]$text, [System.ConsoleColor]$color) {
     else          { Write-Host $text -ForegroundColor $color }
 }
 
+function Write-GradientLine([string]$line, [System.ConsoleColor[]]$palette) {
+    if ($NoColor -or -not $palette -or $palette.Count -eq 0) {
+        Write-Host $line
+        return
+    }
+
+    $chars = $line.ToCharArray()
+    for ($i = 0; $i -lt $chars.Length; $i++) {
+        $colorIndex = [Math]::Floor(($i / [Math]::Max(1, $chars.Length - 1)) * ($palette.Count - 1))
+        cW $chars[$i] $palette[$colorIndex]
+    }
+    Write-Host ""
+}
+
 # ─────────────────────────────────────────────
 #  BANNER
 # ─────────────────────────────────────────────
 function Write-Banner {
     $lines = @(
-        " ██████╗ ██╗████████╗    ███████╗████████╗ █████╗ ████████╗███████╗",
-        "██╔════╝ ██║╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝",
-        "██║  ███╗██║   ██║       ███████╗   ██║   ███████║   ██║   ███████╗ ",
-        "██║   ██║██║   ██║       ╚════██║   ██║   ██╔══██║   ██║   ╚════██║",
-        "╚██████╔╝██║   ██║       ███████║   ██║   ██║  ██║   ██║   ███████║",
-        " ╚═════╝ ╚═╝   ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝"
+        "  ▄████  ██▓▄▄▄█████▓    ██████ ▄▄▄█████▓ ▄▄▄     ▄▄▄█████▓  ██████ ",
+        " ██▒ ▀█▒▓██▒▓  ██▒ ▓▒  ▒██    ▒ ▓  ██▒ ▓▒▒████▄   ▓  ██▒ ▓▒▒██    ▒ ",
+        "▒██░▄▄▄░▒██▒▒ ▓██░ ▒░  ░ ▓██▄   ▒ ▓██░ ▒░▒██  ▀█▄ ▒ ▓██░ ▒░░ ▓██▄   ",
+        "░▓█  ██▓░██░░ ▓██▓ ░     ▒   ██▒░ ▓██▓ ░ ░██▄▄▄▄██░ ▓██▓ ░   ▒   ██▒",
+        "░▒▓███▀▒░██░  ▒██▒ ░   ▒██████▒▒  ▒██▒ ░  ▓█   ▓██▒ ▒██▒ ░ ▒██████▒▒",
+        " ░▒   ▒ ░▓    ▒ ░░     ▒ ▒▓▒ ▒ ░  ▒ ░░    ▒▒   ▓▒█░ ▒ ░░   ▒ ▒▓▒ ▒ ░",
+        "  ░   ░  ▒ ░    ░      ░ ░▒  ░ ░    ░      ▒   ▒▒ ░   ░    ░ ░▒  ░ ░",
+        "░ ░   ░  ▒ ░  ░        ░  ░  ░    ░        ░   ▒    ░      ░  ░  ░  ",
+        "      ░  ░                   ░                  ░  ░              ░  "
     )
+
+    $synthWave = @(
+        "           .-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-.",
+        "           |      ✦  Contributor Analytics Command Center  ✦      |",
+        "           '-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-'"
+    )
+
     Write-Host ""
-    $colors = @([ConsoleColor]::Cyan,[ConsoleColor]::Cyan,[ConsoleColor]::Blue,
-                [ConsoleColor]::Blue,[ConsoleColor]::DarkBlue,[ConsoleColor]::DarkBlue)
-    for ($i = 0; $i -lt $lines.Count; $i++) { cWL $lines[$i] $colors[$i] }
-    cWL "  Contributor Line-Change Analytics  |  PowerShell Edition" DarkGray
+    $palette = @(
+        [ConsoleColor]::Magenta,
+        [ConsoleColor]::DarkMagenta,
+        [ConsoleColor]::Blue,
+        [ConsoleColor]::DarkBlue,
+        [ConsoleColor]::Cyan,
+        [ConsoleColor]::DarkCyan
+    )
+
+    foreach ($line in $lines) { Write-GradientLine $line $palette }
+    foreach ($line in $synthWave) { cWL $line DarkGray }
+    cWL "     Contributor Line-Change Analytics  |  PowerShell Neon Edition" White
     Write-Host ""
 }
 
@@ -95,14 +127,14 @@ function Write-Banner {
 #  SECTION HEADERS
 # ─────────────────────────────────────────────
 function Write-Section([string]$title) {
-    $pad   = 2
-    $inner = " " * $pad + $title + " " * $pad
+    $pad   = 1
+    $inner = " " * $pad + "✦ " + $title + " ✦" + " " * $pad
     $width = $inner.Length + 4
     $top   = [char]0x256D + ([string][char]0x2500 * ($width - 2)) + [char]0x256E
     $mid   = [char]0x2502 + " " + $inner + " " + [char]0x2502
     $bot   = [char]0x2570 + ([string][char]0x2500 * ($width - 2)) + [char]0x256F
     Write-Host ""
-    cWL $top  Cyan
+    cWL $top  DarkCyan
     cWL $mid  White
     cWL $bot  Cyan
     Write-Host ""
@@ -112,7 +144,13 @@ function Write-Section([string]$title) {
 #  HORIZONTAL RULE
 # ─────────────────────────────────────────────
 function Write-HR([int]$width = 72, [string]$char = [string][char]0x2500) {
-    cWL ($char * $width) DarkGray
+    if ($NoColor) {
+        Write-Host ($char * $width)
+        return
+    }
+
+    $line = $char * $width
+    Write-GradientLine $line @([ConsoleColor]::DarkGray,[ConsoleColor]::Gray,[ConsoleColor]::DarkGray)
 }
 
 # ─────────────────────────────────────────────
