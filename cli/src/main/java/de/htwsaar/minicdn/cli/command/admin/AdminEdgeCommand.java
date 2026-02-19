@@ -18,7 +18,7 @@ import picocli.CommandLine.Spec;
 
 @Command(
         name = "edge",
-        description = "Start/stop/list managed edge instances via the router admin API.",
+        description = "Manage edge instances via router's admin API.",
         mixinStandardHelpOptions = true,
         descriptionHeading = "%nBeschreibung:%n",
         parameterListHeading = "%nParameter:%n",

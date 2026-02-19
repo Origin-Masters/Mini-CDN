@@ -19,8 +19,7 @@ import picocli.CommandLine.Option;
 
 @Command(
         name = "file",
-        aliases = {"resource"},
-        description = "Manage files on Origin (file-model: resource == file)",
+        description = "Manage files on Origin server.",
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
@@ -29,9 +28,10 @@ import picocli.CommandLine.Option;
             "  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
         },
         subcommands = {
-                AdminResourceCommand.AdminResourceAddCommand.class,
+                AdminResourceCommand.AdminResourceUploadCommand.class,
                 AdminResourceCommand.AdminResourceListCommand.class,
-                AdminResourceCommand.AdminResourceShowCommand.class
+                AdminResourceCommand.AdminResourceShowCommand.class,
+                AdminResourceCommand.AdminResourceDownloadCommand.class
         })
 public class AdminResourceCommand implements Runnable {
 
@@ -52,14 +52,13 @@ public class AdminResourceCommand implements Runnable {
 
     @Command(
             name = "upload",
-            aliases = {"add"},
-            description = "Upload a file to the Origin server (admin API)",
+            description = "Upload a file to the Origin server.",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
                 "  minicdn admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf"
             })
-    public static class AdminResourceAddCommand implements Callable<Integer> {
+    public static class AdminResourceUploadCommand implements Callable<Integer> {
 
         @CommandLine.ParentCommand
         AdminResourceCommand parent;
@@ -129,7 +128,7 @@ public class AdminResourceCommand implements Runnable {
 
     @Command(
             name = "list",
-            description = "List files on Origin",
+            description = "List files on Origin server with pagination.",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
@@ -193,7 +192,7 @@ public class AdminResourceCommand implements Runnable {
 
     @Command(
             name = "show",
-            description = "Show a file on Origin",
+            description = "Show a file on Origin server (metadata and content as text, if available)",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {"  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"})
@@ -259,7 +258,7 @@ public class AdminResourceCommand implements Runnable {
 
     @Command(
             name = "download",
-            description = "Download a file from Origin to a local path (binary-safe)",
+            description = "Download a file from Origin Server to a local path (binary-safe)",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
