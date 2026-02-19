@@ -4,6 +4,9 @@ import de.htwsaar.minicdn.common.util.Sha256Util;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +51,26 @@ public class OriginController {
      * Name des HTTP-Headers, der den SHA-256 Hash der Datei enthält.
      */
     private static final String SHA256_HEADER = "X-Content-SHA256";
+
+    /**
+     * Repräsentiert die Metadaten einer Datei im Origin-Verzeichnis.
+     *
+     * @param path         relativer Pfad der Datei
+     * @param size         Größe der Datei in Bytes
+     * @param lastModified ISO-8601 formatierter Zeitstempel der letzten Änderung
+     * @param contentType  ermittelter Content-Type der Datei
+     */
+    public record FileMeta(String path, long size, String lastModified, String contentType) {}
+
+    /**
+     * Repräsentiert die Antwortstruktur für die Auflistung von Dateien mit Paginierung.
+     *
+     * @param page  aktueller Seitenindex (beginnend bei 1)
+     * @param size  Anzahl der Einträge pro Seite
+     * @param total Gesamtanzahl der verfügbaren Dateien
+     * @param items Liste der Dateimetadaten für die aktuelle Seite
+     */
+    public record FileListResponse(int page, int size, int total, List<FileMeta> items) {}
 
     /**
      * Liefert eine Datei aus dem Origin-Verzeichnis als binäre HTTP-Antwort zurück.
@@ -215,5 +238,63 @@ public class OriginController {
 
         Files.delete(file);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Listet Dateien im Origin-Verzeichnis mit Paginierung auf.
+     *
+     * <p>
+     * Liefert für jede Datei Metadaten (Pfad, Größe, letzter Änderungszeitpunkt, Content-Type).
+     * Falls das Basisverzeichnis nicht existiert, wird eine leere Ergebnismenge zurückgegeben.
+     * Ungültige Anfrageparameter (z.\,B. {@code page < 1} oder {@code size <= 0}) führen zu {@code 400 Bad Request}.
+     * </p>
+     *
+     * @param page Seitenindex, beginnend bei 1
+     * @param size Anzahl der Einträge pro Seite
+     * @return {@code 200 OK} mit einer {@link FileListResponse} (page, size, total, items)
+     * @throws IOException falls ein Ein-/Ausgabefehler auftritt
+     */
+    @GetMapping("/files")
+    public ResponseEntity<FileListResponse> listFiles(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size)
+            throws IOException {
+
+        if (page < 1 || size <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (!Files.exists(ORIGIN_DIR)) {
+            return ResponseEntity.ok(new FileListResponse(page, size, 0, List.of()));
+        }
+
+        try (Stream<Path> s = Files.walk(ORIGIN_DIR)) {
+            List<Path> allFiles = s.filter(Files::isRegularFile)
+                    .sorted(Comparator.comparing(p -> ORIGIN_DIR.relativize(p).toString()))
+                    .toList();
+
+            int total = allFiles.size();
+            int from = Math.min((page - 1) * size, total);
+            int to = Math.min(from + size, total);
+
+            List<FileMeta> items = allFiles.subList(from, to).stream()
+                    .map(p -> {
+                        try {
+                            String rel = ORIGIN_DIR.relativize(p).toString().replace('\\', '/');
+                            long fileSize = Files.size(p);
+                            String lastModified =
+                                    Files.getLastModifiedTime(p).toInstant().toString();
+                            String contentType = Files.probeContentType(p);
+                            if (contentType == null) contentType = "application/octet-stream";
+                            return new FileMeta(rel, fileSize, lastModified, contentType);
+                        } catch (IOException e) {
+                            String rel = ORIGIN_DIR.relativize(p).toString().replace('\\', '/');
+                            return new FileMeta(rel, -1L, null, "application/octet-stream");
+                        }
+                    })
+                    .toList();
+
+            return ResponseEntity.ok(new FileListResponse(page, size, total, items));
+        }
     }
 }
