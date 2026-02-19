@@ -120,6 +120,49 @@ public final class AdminEdgeLauncherService {
         return HttpUtils.sendForStringBody(httpClient, req);
     }
 
+    /**
+     * Startet mehrere Edge-Prozesse mit automatischer Portvergabe über den Router.
+     *
+     * @param routerBaseUrl Basis-URL des Routers (z.B. http://localhost:8082)
+     * @param region Zielregion (z.B. EU)
+     * @param count Anzahl zu startender Edges (> 0)
+     * @param originBaseUrl Origin-Basis-URL (z.B. http://localhost:8080)
+     * @param autoRegister Wenn true, registriert der Router die gestarteten Edges automatisch
+     * @param waitUntilReady Wenn true, wartet der Router pro Edge auf Readiness
+     * @return HTTP-Ergebnis inkl. Body oder Fehlertext
+     */
+    public HttpCallResult startEdgesAuto(
+            URI routerBaseUrl,
+            String region,
+            int count,
+            URI originBaseUrl,
+            boolean autoRegister,
+            boolean waitUntilReady) {
+
+        Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
+        Objects.requireNonNull(region, "region");
+        Objects.requireNonNull(originBaseUrl, "originBaseUrl");
+
+        URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
+        URI url = base.resolve("api/cdn/admin/edges/start/auto");
+
+        String json = String.format(
+                "{\"region\":\"%s\",\"count\":%d,\"originBaseUrl\":\"%s\",\"autoRegister\":%s,\"waitUntilReady\":%s}",
+                JsonUtils.escapeJson(region),
+                count,
+                JsonUtils.escapeJson(originBaseUrl.toString()),
+                autoRegister,
+                waitUntilReady);
+
+        HttpRequest req = HttpRequest.newBuilder(url)
+                .timeout(requestTimeout)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        return HttpUtils.sendForStringBody(httpClient, req);
+    }
+
     private static boolean isSafeInstanceId(String s) {
         return !s.isBlank() && s.matches("[A-Za-z0-9_-]+");
     }

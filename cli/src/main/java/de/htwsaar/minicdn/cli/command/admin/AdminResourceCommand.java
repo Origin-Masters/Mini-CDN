@@ -6,13 +6,11 @@ import de.htwsaar.minicdn.cli.service.admin.AdminResourceService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
-
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -28,10 +26,10 @@ import picocli.CommandLine.Option;
             "  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
         },
         subcommands = {
-                AdminResourceCommand.AdminResourceUploadCommand.class,
-                AdminResourceCommand.AdminResourceListCommand.class,
-                AdminResourceCommand.AdminResourceShowCommand.class,
-                AdminResourceCommand.AdminResourceDownloadCommand.class
+            AdminResourceCommand.AdminResourceUploadCommand.class,
+            AdminResourceCommand.AdminResourceListCommand.class,
+            AdminResourceCommand.AdminResourceShowCommand.class,
+            AdminResourceCommand.AdminResourceDownloadCommand.class
         })
 public class AdminResourceCommand implements Runnable {
 

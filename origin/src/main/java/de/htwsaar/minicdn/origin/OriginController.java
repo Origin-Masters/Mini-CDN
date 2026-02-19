@@ -1,14 +1,12 @@
 package de.htwsaar.minicdn.origin;
 
 import de.htwsaar.minicdn.common.util.Sha256Util;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
-
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
@@ -62,8 +60,7 @@ public class OriginController {
      * @param lastModified ISO-8601 formatierter Zeitstempel der letzten Änderung
      * @param contentType  ermittelter Content-Type der Datei
      */
-    public record FileMeta(String path, long size, String lastModified, String contentType) {
-    }
+    public record FileMeta(String path, long size, String lastModified, String contentType) {}
 
     /**
      * Repräsentiert die Antwortstruktur für die Auflistung von Dateien mit Paginierung.
@@ -73,8 +70,7 @@ public class OriginController {
      * @param total Gesamtanzahl der verfügbaren Dateien
      * @param items Liste der Dateimetadaten für die aktuelle Seite
      */
-    public record FileListResponse(int page, int size, int total, List<FileMeta> items) {
-    }
+    public record FileListResponse(int page, int size, int total, List<FileMeta> items) {}
 
     /**
      * Liefert eine Datei aus dem Origin-Verzeichnis als binäre HTTP-Antwort zurück.

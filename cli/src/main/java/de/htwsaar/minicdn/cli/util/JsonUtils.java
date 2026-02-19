@@ -1,8 +1,7 @@
 package de.htwsaar.minicdn.cli.util;
 
 public final class JsonUtils {
-    private JsonUtils() {
-    }
+    private JsonUtils() {}
 
     /**
      * Hilfsfunktion zum Escapen von JSON-Strings, damit sie sicher in CLI-Ausgaben oder als Werte in JSON-Strukturen eingebettet werden können.
@@ -78,5 +77,3 @@ public final class JsonUtils {
         }
     }
 }
-
-
