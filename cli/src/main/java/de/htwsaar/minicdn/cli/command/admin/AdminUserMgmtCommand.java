@@ -5,11 +5,14 @@ import de.htwsaar.minicdn.cli.service.admin.AdminUserService;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
+
+import de.htwsaar.minicdn.cli.util.DatabaseUtils;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
+
 
 /**
  * Admin-Command zur Benutzerverwaltung.
@@ -77,7 +80,7 @@ public final class AdminUserMgmtCommand implements Runnable {
 
         @Override
         public void run() {
-            String jdbcUrl = resolveJdbcUrl();
+            String jdbcUrl = DatabaseUtils.resolveJdbcUrl();
             int roleId = parseRole(role);
 
             try (AdminUserService svc = new AdminUserService(jdbcUrl)) {
@@ -95,16 +98,7 @@ public final class AdminUserMgmtCommand implements Runnable {
             }
         }
 
-        private String resolveJdbcUrl() {
-            String jdbcUrl = System.getenv("MINICDN_JDBC_URL");
-            if (jdbcUrl == null || jdbcUrl.isBlank()) {
-                jdbcUrl = System.getenv("MINICDNJDBCURL");
-            }
-            if (jdbcUrl == null || jdbcUrl.isBlank()) {
-                jdbcUrl = "jdbc:sqlite:./minicdn.db";
-            }
-            return jdbcUrl;
-        }
+
 
         private int parseRole(String r) {
             if (r == null) {
