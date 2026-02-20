@@ -2,17 +2,15 @@ package de.htwsaar.minicdn.cli.command.admin;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.admin.AdminUserService;
+import de.htwsaar.minicdn.cli.util.DatabaseUtils;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
-
-import de.htwsaar.minicdn.cli.util.DatabaseUtils;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
-
 
 /**
  * Admin-Command zur Benutzerverwaltung.
@@ -97,8 +95,6 @@ public final class AdminUserMgmtCommand implements Runnable {
                 parent.ctx.err().flush();
             }
         }
-
-
 
         private int parseRole(String r) {
             if (r == null) {

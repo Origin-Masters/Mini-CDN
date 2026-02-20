@@ -1,8 +1,7 @@
 package de.htwsaar.minicdn.cli.util;
 
 public class DatabaseUtils {
-    private DatabaseUtils() {
-    }
+    private DatabaseUtils() {}
 
     public static String resolveJdbcUrl() {
         String jdbcUrl = System.getenv("MINICDN_JDBC_URL");

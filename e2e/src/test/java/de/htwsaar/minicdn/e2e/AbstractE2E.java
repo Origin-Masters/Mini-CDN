@@ -8,11 +8,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
-/**
- * Gemeinsame Basis für alle E2E-Tests.
- *
- * Startet Origin, Edge und Router genau einmal pro JVM.
- */
 public abstract class AbstractE2E {
 
     protected static final int ORIGIN_PORT = 8080;
@@ -34,7 +29,7 @@ public abstract class AbstractE2E {
 
         originCtx = new SpringApplicationBuilder(OriginApp.class)
                 .profiles("origin")
-                .properties("server.port=" + ORIGIN_PORT)
+                .properties("server.port=" + ORIGIN_PORT, "minicdn.admin.token=secret-token")
                 .run();
 
         edgeCtx = new SpringApplicationBuilder(EdgeApp.class)
@@ -43,12 +38,13 @@ public abstract class AbstractE2E {
                         "server.port=" + EDGE_PORT,
                         "origin.base-url=" + ORIGIN_BASE,
                         "edge.cache.ttl-ms=60000",
-                        "edge.cache.max-entries=100")
+                        "edge.cache.max-entries=100",
+                        "minicdn.admin.token=secret-token")
                 .run();
 
         routerCtx = new SpringApplicationBuilder(RouterApp.class)
                 .profiles("cdn")
-                .properties("server.port=" + ROUTER_PORT)
+                .properties("server.port=" + ROUTER_PORT, "minicdn.admin.token=secret-token")
                 .run();
     }
 

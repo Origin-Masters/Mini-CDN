@@ -67,7 +67,7 @@ public final class AdminEdgeLauncherService {
                 + "\"waitUntilReady\":" + waitUntilReady
                 + "}";
 
-        HttpRequest req = HttpRequest.newBuilder(url)
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
                 .timeout(requestTimeout)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
@@ -96,8 +96,10 @@ public final class AdminEdgeLauncherService {
         URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
         URI url = base.resolve("api/cdn/admin/edges/" + trimmed + "?deregister=" + deregister);
 
-        HttpRequest req =
-                HttpRequest.newBuilder(url).timeout(requestTimeout).DELETE().build();
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
+                .timeout(requestTimeout)
+                .DELETE()
+                .build();
 
         return HttpUtils.sendForStringBody(httpClient, req);
     }
@@ -114,8 +116,10 @@ public final class AdminEdgeLauncherService {
         URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
         URI url = base.resolve("api/cdn/admin/edges/managed");
 
-        HttpRequest req =
-                HttpRequest.newBuilder(url).timeout(requestTimeout).GET().build();
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
+                .timeout(requestTimeout)
+                .GET()
+                .build();
 
         return HttpUtils.sendForStringBody(httpClient, req);
     }
@@ -154,7 +158,7 @@ public final class AdminEdgeLauncherService {
                 autoRegister,
                 waitUntilReady);
 
-        HttpRequest req = HttpRequest.newBuilder(url)
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
                 .timeout(requestTimeout)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))

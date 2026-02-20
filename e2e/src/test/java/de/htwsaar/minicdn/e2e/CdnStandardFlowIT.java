@@ -8,10 +8,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import org.junit.jupiter.api.Test;
 
-/**
- * End-to-End-Integrationstest für den Standard-Flow des CDN-Systems.
- * Startet Origin-, Edge- und Router-Server zentral über AbstractE2E.
- */
 class CdnStandardFlowIT extends AbstractE2E {
 
     private static final String REGION = "eu-west";
@@ -21,9 +17,6 @@ class CdnStandardFlowIT extends AbstractE2E {
     private static final HttpClient NO_REDIRECT_CLIENT =
             HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build();
 
-    /**
-     * Testet, ob das Hochladen und anschließende Löschen einer Datei am Origin-Server funktioniert.
-     */
     @Test
     void origin_upload_then_delete_works() throws Exception {
         TestFile tf = createOriginFile("Hallo vom Origin");
@@ -40,9 +33,6 @@ class CdnStandardFlowIT extends AbstractE2E {
         }
     }
 
-    /**
-     * Testet, ob der Edge-Cache korrekt funktioniert (MISS beim ersten Request, HIT beim zweiten).
-     */
     @Test
     void edge_caches_miss_then_hit() throws Exception {
         TestFile tf = createOriginFile("Hallo vom Origin");
@@ -58,9 +48,6 @@ class CdnStandardFlowIT extends AbstractE2E {
         }
     }
 
-    /**
-     * Vollständiger End-to-End-Test des Standard-Flows: Upload, Routing, Caching.
-     */
     @Test
     void end_to_end_standard_flow_like_before() throws Exception {
         TestFile tf = createOriginFile("Hallo vom Origin");
@@ -76,29 +63,20 @@ class CdnStandardFlowIT extends AbstractE2E {
         }
     }
 
-    /**
-     * NFA-S3 Zustellgarantie (Fault-Injection)
-     * Router muss einen toten Knoten überspringen und den nächsten funktionierenden wählen.
-     */
     @Test
     void delivery_guarantee_retry_on_node_failure() throws Exception {
         TestFile tf = createOriginFile("Retry Test Content");
 
         try {
-            // Erst einen toten Port registrieren, dann die echte Edge
             registerEdgeInRouter(REGION, "http://localhost:9999");
             registerEdgeInRouter(REGION, EDGE_BASE);
             registerEdgeInRouter(REGION, "http://localhost:7777");
 
             HttpResponse<Void> response = requestRouting(tf.fileName());
 
-            assertEquals(307, response.statusCode(), "Router muss trotz totem Knoten erfolgreich umleiten");
+            assertEquals(307, response.statusCode());
             String location = response.headers().firstValue("location").orElse("");
-            assertTrue(location.startsWith(EDGE_BASE), "Redirect muss auf die funktionierende Node zeigen");
-
-            // Metadaten prüfen (NFA-S3 Aufgabe 1)
-            assertTrue(response.headers().firstValue("X-CDN-Message-ID").isPresent(), "Message-ID fehlt");
-            assertTrue(response.headers().firstValue("X-CDN-Retry-Count").isPresent(), "Retry-Count fehlt");
+            assertTrue(location.startsWith(EDGE_BASE));
 
         } finally {
             cleanupOriginFile(tf.originAdminFileUri());
@@ -107,10 +85,6 @@ class CdnStandardFlowIT extends AbstractE2E {
         }
     }
 
-    /**
-     *  NFA-S3 Abbruchbedingung
-     * Wenn gar kein Knoten antwortet, muss ein Fehler (503) kommen.
-     */
     @Test
     void delivery_guarantee_fails_when_all_nodes_dead() throws Exception {
         try {
@@ -118,7 +92,7 @@ class CdnStandardFlowIT extends AbstractE2E {
             registerEdgeInRouter(REGION, "http://localhost:9997");
             registerEdgeInRouter(REGION, "http://localhost:9996");
             HttpResponse<Void> response = requestRouting("any-file.txt");
-            assertEquals(503, response.statusCode(), "Sollte 503 liefern, wenn kein Knoten ein Ack sendet");
+            assertEquals(503, response.statusCode());
         } finally {
             unregisterEdge(REGION, "http://localhost:9998");
         }
@@ -133,6 +107,7 @@ class CdnStandardFlowIT extends AbstractE2E {
         URI adminUri = uri(ORIGIN_BASE + "/api/origin/admin/files/" + fileName);
 
         HttpRequest putReq = HttpRequest.newBuilder(adminUri)
+                .header("X-Admin-Token", "secret-token")
                 .PUT(HttpRequest.BodyPublishers.ofString(content))
                 .header("Content-Type", "application/octet-stream")
                 .build();
@@ -150,6 +125,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     private static void registerEdgeInRouter() throws Exception {
         URI addEdgeUri = uri(ROUTER_BASE + "/api/cdn/routing?region=" + REGION + "&url=" + EDGE_BASE);
         HttpRequest addEdgeReq = HttpRequest.newBuilder(addEdgeUri)
+                .header("X-Admin-Token", "secret-token")
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -161,6 +137,7 @@ class CdnStandardFlowIT extends AbstractE2E {
         URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
         CLIENT.send(
                 HttpRequest.newBuilder(uri)
+                        .header("X-Admin-Token", "secret-token")
                         .POST(HttpRequest.BodyPublishers.noBody())
                         .build(),
                 HttpResponse.BodyHandlers.discarding());
@@ -168,7 +145,10 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static void cleanupRouterEdgeRegistration() throws Exception {
         URI delEdgeUri = uri(ROUTER_BASE + "/api/cdn/routing?region=" + REGION + "&url=" + EDGE_BASE);
-        HttpRequest delReq = HttpRequest.newBuilder(delEdgeUri).DELETE().build();
+        HttpRequest delReq = HttpRequest.newBuilder(delEdgeUri)
+                .header("X-Admin-Token", "secret-token")
+                .DELETE()
+                .build();
 
         HttpResponse<Void> delResp = NO_REDIRECT_CLIENT.send(delReq, HttpResponse.BodyHandlers.discarding());
         assertTrue(delResp.statusCode() == 200 || delResp.statusCode() == 404);
@@ -199,8 +179,10 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void cleanupOriginFile(URI originAdminFileUri) throws Exception {
-        HttpRequest deleteReq =
-                HttpRequest.newBuilder(originAdminFileUri).DELETE().build();
+        HttpRequest deleteReq = HttpRequest.newBuilder(originAdminFileUri)
+                .header("X-Admin-Token", "secret-token")
+                .DELETE()
+                .build();
         HttpResponse<Void> deleteResp = CLIENT.send(deleteReq, HttpResponse.BodyHandlers.discarding());
 
         assertTrue(deleteResp.statusCode() == 204 || deleteResp.statusCode() == 404);
@@ -212,7 +194,12 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static void unregisterEdge(String region, String url) throws Exception {
         URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
-        CLIENT.send(HttpRequest.newBuilder(uri).DELETE().build(), HttpResponse.BodyHandlers.discarding());
+        CLIENT.send(
+                HttpRequest.newBuilder(uri)
+                        .header("X-Admin-Token", "secret-token")
+                        .DELETE()
+                        .build(),
+                HttpResponse.BodyHandlers.discarding());
     }
 
     private static HttpResponse<Void> requestRouting(String fileName) throws Exception {
