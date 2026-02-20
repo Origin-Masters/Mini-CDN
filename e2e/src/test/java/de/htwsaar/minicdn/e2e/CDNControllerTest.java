@@ -6,13 +6,28 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.*;
 import org.springframework.http.*;
-import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CDNControllerTest extends AbstractE2E {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = createAuthenticatedTemplate();
+    /**
+     * Builds a RestTemplate with an interceptor that ensures the `X-Admin-Token` header is present.
+     * If the header is missing, a default token is added before the request is executed.
+     *
+     *
+     */
+    private RestTemplate createAuthenticatedTemplate() {
+        RestTemplate template = new RestTemplate();
+        template.getInterceptors().add((request, body, execution) -> {
+            if (!request.getHeaders().containsKey("X-Admin-Token")) {
+                request.getHeaders().add("X-Admin-Token", "secret-token");
+            }
+            return execution.execute(request, body);
+        });
+        return template;
+    }
 
     @Test
     @Order(1)

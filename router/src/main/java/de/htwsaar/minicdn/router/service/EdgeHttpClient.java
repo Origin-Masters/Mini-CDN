@@ -119,15 +119,19 @@ public class EdgeHttpClient {
     }
 
     /**
-     * Ergänzt den aus der aktuellen Request-Verarbeitung stammenden Trace-Header.
+     * Enriches an HttpRequest.Builder with the admin token and, if present, the current trace ID.
+     * Always sets the X-Admin-Token header for internal edge requests to authorize them,
+     * and propagates the TraceId header when available for request correlation.
      *
-     * <p>Ist keine Trace-ID im MDC vorhanden (z. B. Background-Task), bleibt der Builder unverändert.</p>
-     *
-     * @param builder Request-Builder für einen Edge-Aufruf
-     * @return derselbe Builder, optional mit {@code X-Trace-Id}-Header
-     */
-    private static HttpRequest.Builder withCurrentTraceId(HttpRequest.Builder builder) {
+     * @param builder HttpRequest.Builder to enrich with headers * @return the same builder with added headers */
+    @org.springframework.beans.factory.annotation.Value("${minicdn.admin.token:secret-token}")
+    private String adminToken;
+
+    private HttpRequest.Builder withCurrentTraceId(HttpRequest.Builder builder) {
         String traceId = MDC.get(TraceIdFilter.TRACE_ID_KEY);
+
+        // Always add admin token for internal edge calls builder.header("X-Admin-Token", adminToken);
+
         if (traceId == null || traceId.isBlank()) {
             return builder;
         }

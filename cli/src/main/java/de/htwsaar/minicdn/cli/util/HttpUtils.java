@@ -2,6 +2,7 @@ package de.htwsaar.minicdn.cli.util;
 
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
 import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -29,5 +30,13 @@ public final class HttpUtils {
         } catch (IOException e) {
             return HttpCallResult.ioError(e.getMessage());
         }
+    }
+
+    /** Creates an HTTP request builder for admin endpoints, adding the required admin token header.
+     *
+     * @param uri the target URI for the request * @return a builder preconfigured with the `X-Admin-Token` header */
+    public static HttpRequest.Builder newAdminRequestBuilder(URI uri) {
+        String token = System.getenv().getOrDefault("MINICDN_ADMIN_TOKEN", "secret-token");
+        return HttpRequest.newBuilder(uri).header("X-Admin-Token", token);
     }
 }

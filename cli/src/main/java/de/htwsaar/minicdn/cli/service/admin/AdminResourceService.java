@@ -42,7 +42,8 @@ public final class AdminResourceService {
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve("api/origin/admin/files/" + cleanPath);
 
-        HttpRequest req = HttpRequest.newBuilder(url)
+        // Issue #24: Rollen
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
                 .timeout(requestTimeout)
                 .header("Content-Type", "application/octet-stream")
                 .PUT(HttpRequest.BodyPublishers.ofFile(localFile))
@@ -62,8 +63,10 @@ public final class AdminResourceService {
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve(String.format("api/origin/files?page=%d&size=%d", page, size));
 
-        HttpRequest req =
-                HttpRequest.newBuilder(url).timeout(requestTimeout).GET().build();
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
+                .timeout(requestTimeout)
+                .GET()
+                .build();
 
         return HttpUtils.sendForStringBody(httpClient, req);
     }
@@ -80,7 +83,7 @@ public final class AdminResourceService {
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve("api/origin/files/" + cleanPath);
 
-        HttpRequest req = HttpRequest.newBuilder(url)
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
                 .timeout(requestTimeout)
                 .method("HEAD", HttpRequest.BodyPublishers.noBody())
                 .build();
@@ -128,8 +131,10 @@ public final class AdminResourceService {
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve("api/origin/files/" + cleanPath);
 
-        HttpRequest req =
-                HttpRequest.newBuilder(url).timeout(requestTimeout).GET().build();
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
+                .timeout(requestTimeout)
+                .GET()
+                .build();
 
         try {
             HttpResponse<Path> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofFile(localTargetFile));
