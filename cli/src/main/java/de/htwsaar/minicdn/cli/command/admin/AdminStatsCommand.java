@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.cli.command.admin;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwsaar.minicdn.cli.di.CliContext;
+import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -117,7 +118,7 @@ public final class AdminStatsCommand implements Runnable {
             URI effectiveHost = Objects.requireNonNull(host, "host");
             int safeWindow = Math.max(1, windowSec);
 
-            URI base = ensureTrailingSlash(effectiveHost);
+            URI base = UriUtils.ensureTrailingSlash(effectiveHost);
             URI url = base.resolve("api/cdn/admin/stats?windowSec=" + safeWindow + "&aggregateEdge=" + aggregateEdge);
 
             try {
@@ -180,11 +181,6 @@ public final class AdminStatsCommand implements Runnable {
                 err.flush();
                 return 1;
             }
-        }
-
-        private static URI ensureTrailingSlash(URI uri) {
-            String s = uri.toString();
-            return URI.create(s.endsWith("/") ? s : s + "/");
         }
     }
 }

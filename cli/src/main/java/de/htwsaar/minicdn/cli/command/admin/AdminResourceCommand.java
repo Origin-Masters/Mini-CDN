@@ -23,7 +23,8 @@ import picocli.CommandLine.Option;
         footer = {
             "  minicdn admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf",
             "  minicdn admin file list --origin http://localhost:8080 --page 1 --size 20",
-            "  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
+            "  minicdn admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf",
+            "  minicdn admin file download --origin http://localhost:8080 --path docs/Lebenslauf.pdf --out ./downloads/Lebenslauf.pdf"
         },
         subcommands = {
             AdminResourceCommand.AdminResourceUploadCommand.class,
@@ -161,7 +162,7 @@ public class AdminResourceCommand implements Runnable {
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "List files successful: status=%s origin=%s page=%s size=%s",
+                        "[ADMIN] List files successful: status=%s origin=%s page=%s size=%s",
                         result.statusCode(),
                         origin,
                         page,
@@ -177,7 +178,7 @@ public class AdminResourceCommand implements Runnable {
 
             ConsoleUtils.error(
                     err,
-                    "List files failed: status=%s error=%s body=%s origin=%s page=%s size=%s",
+                    "[ADMIN] List files failed: status=%s error=%s body=%s origin=%s page=%s size=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
@@ -217,7 +218,8 @@ public class AdminResourceCommand implements Runnable {
         public Integer call() {
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -229,7 +231,7 @@ public class AdminResourceCommand implements Runnable {
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "Show file successful: status=%s origin=%s path=%s",
+                        "[ADMIN] Show file successful: status=%s origin=%s path=%s",
                         result.statusCode(),
                         origin,
                         cleanPath);
@@ -244,7 +246,7 @@ public class AdminResourceCommand implements Runnable {
 
             ConsoleUtils.error(
                     err,
-                    "Show file failed: status=%s error=%s body=%s origin=%s path=%s",
+                    "[ADMIN] Show file failed: status=%s error=%s body=%s origin=%s path=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
@@ -292,7 +294,8 @@ public class AdminResourceCommand implements Runnable {
         public Integer call() {
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -302,7 +305,7 @@ public class AdminResourceCommand implements Runnable {
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "Download successful: status=%s origin=%s path=%s out=%s",
+                        "[ADMIN] Download successful: status=%s origin=%s path=%s out=%s",
                         result.statusCode(),
                         origin,
                         cleanPath,
@@ -312,7 +315,7 @@ public class AdminResourceCommand implements Runnable {
 
             ConsoleUtils.error(
                     err,
-                    "Download failed: status=%s error=%s body=%s origin=%s path=%s out=%s",
+                    "[ADMIN] Download failed: status=%s error=%s body=%s origin=%s path=%s out=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
@@ -322,4 +325,17 @@ public class AdminResourceCommand implements Runnable {
             return 2;
         }
     }
+
+    //    @Command(
+    //            name = "delete",
+    //            description = "Delete a file from Origin Server",
+    //            mixinStandardHelpOptions = true,
+    //            footerHeading = "%nBeispiele:%n",
+    //            footer = {
+    //                    "  minicdn admin file delete --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
+    //            })
+    //    public static class AdminResourceDeleteCommand {
+    //
+    //
+    //    }
 }

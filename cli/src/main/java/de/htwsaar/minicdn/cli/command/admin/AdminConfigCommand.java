@@ -2,6 +2,7 @@ package de.htwsaar.minicdn.cli.command.admin;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.admin.AdminConfigService;
+import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import java.util.Objects;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -60,11 +61,9 @@ public final class AdminConfigCommand implements Runnable {
         public void run() {
             boolean ok = AdminConfigService.set(key, value);
             if (ok) {
-                parent.ctx.out().printf("[ADMIN] Set config %s=%s%n", key, value);
-                parent.ctx.out().flush();
+                ConsoleUtils.info(parent.ctx.err(), "[ADMIN] Set config %s = %s", key, value);
             } else {
-                parent.ctx.err().printf("[ADMIN] Failed to set config %s%n", key);
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Failed to set config %s = %s", key, value);
             }
         }
     }
@@ -83,8 +82,7 @@ public final class AdminConfigCommand implements Runnable {
             var lines = AdminConfigService.formatLines();
 
             if (lines.isEmpty()) {
-                parent.ctx.out().println("[ADMIN] No global configuration set");
-                parent.ctx.out().flush();
+                ConsoleUtils.info(parent.ctx.err(), "[ADMIN] No configurations found");
                 return;
             }
 

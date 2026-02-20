@@ -13,7 +13,7 @@ import org.jooq.impl.DSL;
  */
 public final class AdminUserService implements AutoCloseable {
     private final DSLContext dsl;
-    private final Connection connection; // only set when constructed from JDBC URL
+    private final Connection connection;
 
     public AdminUserService(DSLContext dsl) {
         this.dsl = dsl;
@@ -26,7 +26,7 @@ public final class AdminUserService implements AutoCloseable {
     }
 
     /**
-     * Insert a user and return the generated id (>0) or -1 on failure.
+     * Fügt einen neuen Benutzer mit dem angegebenen Namen und der Rolle hinzu. Gibt die ID des neuen Benutzers zurück oder -1 bei Fehlern.
      */
     public int addUser(String name, int role) {
         // Use generic table/field references instead of generated jOOQ classes
