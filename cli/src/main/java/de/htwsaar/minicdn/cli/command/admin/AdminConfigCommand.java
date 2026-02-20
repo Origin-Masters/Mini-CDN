@@ -2,7 +2,9 @@ package de.htwsaar.minicdn.cli.command.admin;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.admin.AdminConfigService;
+
 import java.util.Objects;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -18,7 +20,10 @@ import picocli.CommandLine.Spec;
 @Command(
         name = "config",
         description = "Manage global configuration",
-        subcommands = {AdminConfigCommand.AdminConfigSetCommand.class, AdminConfigCommand.AdminConfigShowCommand.class})
+        subcommands = {
+                AdminConfigCommand.AdminConfigSetCommand.class,
+                AdminConfigCommand.AdminConfigShowCommand.class})
+
 public final class AdminConfigCommand implements Runnable {
 
     private final CliContext ctx;
