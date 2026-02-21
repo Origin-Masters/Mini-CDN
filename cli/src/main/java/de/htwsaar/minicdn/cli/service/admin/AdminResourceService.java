@@ -5,7 +5,6 @@ import de.htwsaar.minicdn.cli.util.HttpUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;

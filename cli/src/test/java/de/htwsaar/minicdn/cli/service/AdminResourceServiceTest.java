@@ -8,18 +8,13 @@ public class AdminResourceServiceTest extends TestCase {
 
     public void testUploadToOrigin() {}
 
-    public void testTestUploadToOrigin() {
-    }
+    public void testTestUploadToOrigin() {}
 
-    public void testListOriginFiles() {
-    }
+    public void testListOriginFiles() {}
 
-    public void testShowOriginFile() {
-    }
+    public void testShowOriginFile() {}
 
-    public void testDownloadOriginFile() {
-    }
+    public void testDownloadOriginFile() {}
 
-    public void testDeleteOriginFile() {
-    }
+    public void testDeleteOriginFile() {}
 }
