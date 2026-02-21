@@ -5,6 +5,7 @@ import de.htwsaar.minicdn.cli.util.HttpUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -145,5 +146,23 @@ public final class AdminResourceService {
         } catch (IOException e) {
             return HttpCallResult.ioError(e.getMessage());
         }
+    }
+
+    /**
+     * Lösche eine Datei auf dem Origin-Server (Admin-API): DELETE /api/origin/admin/files/{path}
+     */
+    public HttpCallResult deleteOriginFile(URI origin, String cleanPath) {
+        String path = PathUtils.stripLeadingSlash(Objects.toString(cleanPath, ""));
+        if (path.isBlank()) return HttpCallResult.clientError("path must not be blank");
+
+        URI base = UriUtils.ensureTrailingSlash(origin);
+        URI url = base.resolve("api/origin/admin/files/" + path);
+
+        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
+                .timeout(requestTimeout)
+                .DELETE()
+                .build();
+
+        return HttpUtils.sendForStringBody(httpClient, req);
     }
 }
