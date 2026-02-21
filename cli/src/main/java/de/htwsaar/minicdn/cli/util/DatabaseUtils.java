@@ -15,7 +15,7 @@ public class DatabaseUtils {
             jdbcUrl = System.getenv("MINICDNJDBCURL");
         }
         if (jdbcUrl == null || jdbcUrl.isBlank()) {
-            jdbcUrl = "jdbc:sqlite:./minicdn.db";
+            jdbcUrl = "jdbc:sqlite:cli/data/users.db";
         }
         return jdbcUrl;
     }

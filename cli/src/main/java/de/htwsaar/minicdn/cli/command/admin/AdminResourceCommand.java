@@ -87,15 +87,13 @@ public class AdminResourceCommand implements Runnable {
         @Override
         public Integer call() throws FileNotFoundException {
             if (file == null || !Files.exists(file) || !Files.isRegularFile(file)) {
-                ConsoleUtils.error(
-                        parent.ctx.err(), "Local file does not exist or is not a regular file: %s", file);
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Local file does not exist or is not a regular file: %s", file);
                 return 1;
             }
 
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                ConsoleUtils.error(
-                        parent.ctx.err(), "Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -105,7 +103,7 @@ public class AdminResourceCommand implements Runnable {
             if (rc == 0) {
                 ConsoleUtils.info(
                         parent.ctx.out(),
-                        "Upload successful: status=%s origin=%s path=%s file=%s",
+                        "[ADMIN] Upload successful: status=%s origin=%s path=%s file=%s",
                         result.statusCode(),
                         origin,
                         cleanPath,
@@ -115,7 +113,7 @@ public class AdminResourceCommand implements Runnable {
 
             ConsoleUtils.error(
                     parent.ctx.err(),
-                    "Upload failed: status=%s error=%s body=%s origin=%s path=%s file=%s",
+                    "[ADMIN] Upload failed: status=%s error=%s body=%s origin=%s path=%s file=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
@@ -163,7 +161,7 @@ public class AdminResourceCommand implements Runnable {
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "List files successful: status=%s origin=%s page=%s size=%s",
+                        "[ADMIN] List files successful: status=%s origin=%s page=%s size=%s",
                         result.statusCode(),
                         origin,
                         page,
@@ -179,7 +177,7 @@ public class AdminResourceCommand implements Runnable {
 
             ConsoleUtils.error(
                     err,
-                    "List files failed: status=%s error=%s body=%s origin=%s page=%s size=%s",
+                    "[ADMIN] List files failed: status=%s error=%s body=%s origin=%s page=%s size=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
@@ -219,8 +217,7 @@ public class AdminResourceCommand implements Runnable {
         public Integer call() {
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                ConsoleUtils.error(
-                        parent.ctx.err(), "Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -232,7 +229,7 @@ public class AdminResourceCommand implements Runnable {
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "Show file successful: status=%s origin=%s path=%s",
+                        "[ADMIN] Show file successful: status=%s origin=%s path=%s",
                         result.statusCode(),
                         origin,
                         cleanPath);
@@ -247,7 +244,7 @@ public class AdminResourceCommand implements Runnable {
 
             ConsoleUtils.error(
                     err,
-                    "Show file failed: status=%s error=%s body=%s origin=%s path=%s",
+                    "[ADMIN] Show file failed: status=%s error=%s body=%s origin=%s path=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
@@ -306,7 +303,7 @@ public class AdminResourceCommand implements Runnable {
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "Download successful: status=%s origin=%s path=%s out=%s",
+                        "[ADMIN] Download successful: status=%s origin=%s path=%s out=%s",
                         result.statusCode(),
                         origin,
                         cleanPath,
@@ -316,7 +313,7 @@ public class AdminResourceCommand implements Runnable {
 
             ConsoleUtils.error(
                     err,
-                    "Download failed: status=%s error=%s body=%s origin=%s path=%s out=%s",
+                    "[ADMIN] Download failed: status=%s error=%s body=%s origin=%s path=%s out=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
@@ -327,64 +324,57 @@ public class AdminResourceCommand implements Runnable {
         }
     }
 
-        @Command(
-                name = "delete",
-                description = "Delete a file from Origin Server",
-                mixinStandardHelpOptions = true,
-                footerHeading = "%nBeispiele:%n",
-                footer = {
-                        "  minicdn admin file delete --origin http://localhost:8080 --path docs/Lebenslauf.pdf"
-                })
-        public static class AdminResourceDeleteCommand implements Callable<Integer> {
+    @Command(
+            name = "delete",
+            description = "Delete a file from Origin Server",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {"  minicdn admin file delete --origin http://localhost:8080 --path docs/Lebenslauf.pdf"})
+    public static class AdminResourceDeleteCommand implements Callable<Integer> {
 
-            @CommandLine.ParentCommand
-            AdminResourceCommand parent;
+        @CommandLine.ParentCommand
+        AdminResourceCommand parent;
 
-            @Option(
-                    names = "--origin",
-                    required = true,
-                    paramLabel = "ORIGIN_URL",
-                    description = "Origin server base URL, e.g. http://localhost:8080")
-            URI origin;
+        @Option(
+                names = "--origin",
+                required = true,
+                paramLabel = "ORIGIN_URL",
+                description = "Origin server base URL, e.g. http://localhost:8080")
+        URI origin;
 
-            @Option(
-                    names = "--path",
-                    required = true,
-                    paramLabel = "REMOTE_PATH",
-                    description = "File path on origin, e.g. docs/Lebenslauf.pdf")
-            String path;
+        @Option(
+                names = "--path",
+                required = true,
+                paramLabel = "REMOTE_PATH",
+                description = "File path on origin, e.g. docs/Lebenslauf.pdf")
+        String path;
 
-            @Override
-            public Integer call() {
-                String cleanPath = PathUtils.normalizePath(path);
-                if (cleanPath.isBlank()) {
-                    ConsoleUtils.error(
-                            parent.ctx.err(), "Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
-                    return 1;
-                }
-
-                HttpCallResult result = parent.service().deleteOriginFile(origin, cleanPath);
-
-                var err = parent.ctx.err();
-                if (result.is2xx()) {
-                    ConsoleUtils.info(
-                            err,
-                            "Delete successful: status=%s origin=%s path=%s",
-                            result.statusCode(),
-                            origin,
-                            cleanPath);
-                    return 0;
-                }
-
-                ConsoleUtils.error(
-                        err,
-                        "Delete failed: status=%s error=%s body=%s origin=%s path=%s",
-                        result.statusCode(),
-                        result.error(),
-                        result.body(),
-                        origin,
-                        cleanPath);
-                return 2;
+        @Override
+        public Integer call() {
+            String cleanPath = PathUtils.normalizePath(path);
+            if (cleanPath.isBlank()) {
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                return 1;
             }
+
+            HttpCallResult result = parent.service().deleteOriginFile(origin, cleanPath);
+
+            var err = parent.ctx.err();
+            if (result.is2xx()) {
+                ConsoleUtils.info(
+                        err, "[ADMIN] Delete successful: status=%s origin=%s path=%s", result.statusCode(), origin, cleanPath);
+                return 0;
+            }
+
+            ConsoleUtils.error(
+                    err,
+                    "[ADMIN] Delete failed: status=%s error=%s body=%s origin=%s path=%s",
+                    result.statusCode(),
+                    result.error(),
+                    result.body(),
+                    origin,
+                    cleanPath);
+            return 2;
         }
+    }
 }

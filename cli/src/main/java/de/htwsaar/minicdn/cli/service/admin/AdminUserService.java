@@ -3,13 +3,14 @@ package de.htwsaar.minicdn.cli.service.admin;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
 /**
- * Simple jOOQ-backed AdminUserService.
+ * Service-Klasse für die Verwaltung von Benutzern in der Admin-CLI. Bietet Funktionen zum Hinzufügen von Benutzern mit Namen und Rolle.
  */
 public final class AdminUserService implements AutoCloseable {
     private final DSLContext dsl;
@@ -23,13 +24,27 @@ public final class AdminUserService implements AutoCloseable {
     public AdminUserService(String jdbcUrl) throws SQLException {
         this.connection = DriverManager.getConnection(jdbcUrl);
         this.dsl = DSL.using(this.connection, SQLDialect.SQLITE);
+        initializeSchema();
+    }
+
+    /**
+     * Initialisiert das Datenbankschema, falls es noch nicht existiert. Erstellt die Tabelle "users" mit den Spalten "id", "name" und "role".
+     */
+    private void initializeSchema() {
+        dsl.execute("""
+                    CREATE TABLE IF NOT EXISTS users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        role INTEGER NOT NULL
+                    )
+                """);
     }
 
     /**
      * Fügt einen neuen Benutzer mit dem angegebenen Namen und der Rolle hinzu. Gibt die ID des neuen Benutzers zurück oder -1 bei Fehlern.
      */
     public int addUser(String name, int role) {
-        // Use generic table/field references instead of generated jOOQ classes
+        // Versuche, den Benutzer einzufügen und die Anzahl der betroffenen Zeilen zu erhalten
         int affected = dsl.insertInto(DSL.table(DSL.name("users")))
                 .columns(DSL.field(DSL.name("name")), DSL.field(DSL.name("role")))
                 .values(name, role)
@@ -39,15 +54,16 @@ public final class AdminUserService implements AutoCloseable {
             return -1;
         }
 
-        // fallback for sqlite to obtain last inserted id
+        // Hole die ID des zuletzt eingefügten Datensatzes. SQLite bietet die Funktion last_insert_rowid() dafür an.
         Record r = dsl.fetchOne("SELECT last_insert_rowid() AS id");
         if (r != null) {
-            // try named retrieval first
+            // Versuche zuerst, die ID als Integer abzurufen (typischerweise sollte sie das sein)
             Integer id = r.get("id", Integer.class);
             if (id != null) {
                 return id;
             }
-            // fall back to numeric retrieval and convert
+            // Falls das nicht funktioniert, versuche es als Number und konvertiere es dann zu int.
+            // Das ist eine zusätzliche Absicherung, falls die Datenbank oder der JDBC-Treiber die ID als anderen numerischen Typ zurückgibt.
             Number n = r.get(0, Number.class);
             if (n != null) {
                 return n.intValue();

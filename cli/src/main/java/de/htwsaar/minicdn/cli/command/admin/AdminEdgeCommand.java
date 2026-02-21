@@ -125,15 +125,15 @@ public final class AdminEdgeCommand implements Runnable {
         @Override
         public Integer call() {
             if (region == null || region.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE region must not be blank");
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] region must not be blank");
                 return 3;
             }
             if (port <= 0 || port > 65535) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE invalid port: %d (expected 1..65535)", port);
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] invalid port: %d (expected 1..65535)", port);
                 return 3;
             }
             if (originBaseUrl == null || originBaseUrl.getScheme() == null) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE invalid --origin (must be an absolute http/https URI)");
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] invalid --origin (must be an absolute http/https URI)");
                 return 3;
             }
 
@@ -142,7 +142,7 @@ public final class AdminEdgeCommand implements Runnable {
                         parent.service().startEdge(host, region, port, originBaseUrl, autoRegister, waitReady);
 
                 if (result.error() != null) {
-                    ConsoleUtils.error(parent.ctx.err(), "EDGE start failed: %s", result.error());
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] start failed: %s", result.error());
                     return 1;
                 }
 
@@ -150,7 +150,7 @@ public final class AdminEdgeCommand implements Runnable {
                 String body = Objects.toString(result.body(), "");
 
                 if (sc < 200 || sc >= 300) {
-                    ConsoleUtils.error(parent.ctx.err(), "EDGE start rejected: HTTP %d, body=%s", sc, body);
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] start rejected: HTTP %d, body=%s", sc, body);
                     return 2;
                 }
 
@@ -168,7 +168,7 @@ public final class AdminEdgeCommand implements Runnable {
 
                 ConsoleUtils.info(
                         parent.ctx.out(),
-                        "EDGE started instanceId=%s url=%s pid=%d region=%s",
+                        "[EDGE] started instanceId=%s url=%s pid=%d region=%s",
                         instanceId,
                         url,
                         pid,
@@ -176,7 +176,7 @@ public final class AdminEdgeCommand implements Runnable {
                 return 0;
 
             } catch (Exception ex) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE start failed: %s", ex.getMessage());
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] start failed: %s", ex.getMessage());
                 return 1;
             }
         }
@@ -226,7 +226,7 @@ public final class AdminEdgeCommand implements Runnable {
         public Integer call() {
             if (!force) {
                 ConsoleUtils.error(
-                        parent.ctx.err(), "EDGE stop is destructive. Re-run with --force. instanceId=%s", instanceId);
+                        parent.ctx.err(), "[EDGE] stop is destructive. Re-run with --force. instanceId=%s", instanceId);
                 return 3;
             }
 
@@ -234,7 +234,7 @@ public final class AdminEdgeCommand implements Runnable {
                 HttpCallResult result = parent.service().stopEdge(host, instanceId, deregister);
 
                 if (result.error() != null) {
-                    ConsoleUtils.error(parent.ctx.err(), "EDGE stop failed: %s", result.error());
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] stop failed: %s", result.error());
                     return 1;
                 }
 
@@ -242,7 +242,7 @@ public final class AdminEdgeCommand implements Runnable {
                 if (sc >= 200 && sc < 300) {
                     ConsoleUtils.info(
                             parent.ctx.out(),
-                            "EDGE stopped instanceId=%s deregister=%s (HTTP %d)",
+                            "[EDGE] stopped instanceId=%s deregister=%s (HTTP %d)",
                             instanceId,
                             deregister,
                             sc);
@@ -251,13 +251,13 @@ public final class AdminEdgeCommand implements Runnable {
 
                 ConsoleUtils.error(
                         parent.ctx.err(),
-                        "EDGE stop rejected: HTTP %d, body=%s",
+                        "[EDGE] stop rejected: HTTP %d, body=%s",
                         sc,
                         Objects.toString(result.body(), ""));
                 return 2;
 
             } catch (Exception ex) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE stop failed: %s", ex.getMessage());
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] stop failed: %s", ex.getMessage());
                 return 1;
             }
         }
@@ -298,7 +298,7 @@ public final class AdminEdgeCommand implements Runnable {
                 HttpCallResult result = parent.service().listManaged(host);
 
                 if (result.error() != null) {
-                    ConsoleUtils.error(parent.ctx.err(), "EDGE managed failed: %s", result.error());
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] managed failed: %s", result.error());
                     return 1;
                 }
 
@@ -306,7 +306,7 @@ public final class AdminEdgeCommand implements Runnable {
                 String body = Objects.toString(result.body(), "");
 
                 if (sc < 200 || sc >= 300) {
-                    ConsoleUtils.error(parent.ctx.err(), "EDGE managed rejected: HTTP %d, body=%s", sc, body);
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] managed rejected: HTTP %d, body=%s", sc, body);
                     return 2;
                 }
 
@@ -318,7 +318,7 @@ public final class AdminEdgeCommand implements Runnable {
 
                 JsonNode arr = MAPPER.readTree(body);
                 if (!arr.isArray() || arr.isEmpty()) {
-                    ConsoleUtils.info(parent.ctx.out(), "EDGE no managed instances");
+                    ConsoleUtils.info(parent.ctx.out(), "[EDGE] no managed instances");
                     return 0;
                 }
 
@@ -334,7 +334,7 @@ public final class AdminEdgeCommand implements Runnable {
                 return 0;
 
             } catch (Exception ex) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE managed failed: %s", ex.getMessage());
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] managed failed: %s", ex.getMessage());
                 return 1;
             }
         }
@@ -410,16 +410,16 @@ public final class AdminEdgeCommand implements Runnable {
         @Override
         public Integer call() {
             if (region == null || region.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start region must not be blank");
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] auto-start region must not be blank");
                 return 3;
             }
             if (count <= 0) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start invalid --count: %d (expected > 0)", count);
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] auto-start invalid --count: %d (expected > 0)", count);
                 return 3;
             }
             if (originBaseUrl == null || originBaseUrl.getScheme() == null) {
                 ConsoleUtils.error(
-                        parent.ctx.err(), "EDGE auto-start invalid --origin (must be an absolute http/https URI)");
+                        parent.ctx.err(), "[EDGE] auto-start invalid --origin (must be an absolute http/https URI)");
                 return 3;
             }
 
@@ -428,7 +428,7 @@ public final class AdminEdgeCommand implements Runnable {
                         parent.service().startEdgesAuto(host, region, count, originBaseUrl, autoRegister, waitReady);
 
                 if (result.error() != null) {
-                    ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start failed: %s", result.error());
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] auto-start failed: %s", result.error());
                     return 1;
                 }
 
@@ -436,7 +436,7 @@ public final class AdminEdgeCommand implements Runnable {
                 String body = Objects.toString(result.body(), "");
 
                 if (sc < 200 || sc >= 300) {
-                    ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start rejected: HTTP %d, body=%s", sc, body);
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] auto-start rejected: HTTP %d, body=%s", sc, body);
                     return 2;
                 }
 
@@ -453,7 +453,7 @@ public final class AdminEdgeCommand implements Runnable {
 
                 ConsoleUtils.info(
                         parent.ctx.out(),
-                        "EDGE auto-start done region=%s requested=%d started=%d",
+                        "[EDGE] auto-start done region=%s requested=%d started=%d",
                         r,
                         requested,
                         started);
@@ -474,7 +474,7 @@ public final class AdminEdgeCommand implements Runnable {
                 return 0;
 
             } catch (Exception ex) {
-                ConsoleUtils.error(parent.ctx.err(), "EDGE auto-start failed: %s", ex.getMessage());
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] auto-start failed: %s", ex.getMessage());
                 return 1;
             }
         }

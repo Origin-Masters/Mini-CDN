@@ -2,10 +2,13 @@ package de.htwsaar.minicdn.cli.command.admin;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.admin.AdminUserService;
+import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import de.htwsaar.minicdn.cli.util.DatabaseUtils;
+
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -23,14 +26,14 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  minicdn admin user add --name alice --role ADMIN",
-            "  minicdn admin user list --role USER --page 1 --size 20",
-            "  minicdn admin user remove --id 42 --force"
+                "  minicdn admin user add --name alice --role ADMIN",
+                "  minicdn admin user list --role USER --page 1 --size 20",
+                "  minicdn admin user remove --id 42 --force"
         },
         subcommands = {
-            AdminUserMgmtCommand.AdminUserAddCommand.class,
-            AdminUserMgmtCommand.AdminUserRemoveCommand.class,
-            AdminUserMgmtCommand.AdminUserListCommand.class
+                AdminUserMgmtCommand.AdminUserAddCommand.class,
+                AdminUserMgmtCommand.AdminUserRemoveCommand.class,
+                AdminUserMgmtCommand.AdminUserListCommand.class
         })
 public final class AdminUserMgmtCommand implements Runnable {
 
@@ -60,8 +63,8 @@ public final class AdminUserMgmtCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  minicdn admin user add --name alice --role ADMIN",
-                "  minicdn admin user add --name bob --role USER"
+                    "  minicdn admin user add --name alice --role ADMIN",
+                    "  minicdn admin user add --name bob --role USER"
             })
     public static final class AdminUserAddCommand implements Runnable {
 
@@ -84,18 +87,17 @@ public final class AdminUserMgmtCommand implements Runnable {
             try (AdminUserService svc = new AdminUserService(jdbcUrl)) {
                 int id = svc.addUser(name, roleId);
                 if (id > 0) {
-                    parent.ctx.out().printf("[ADMIN] User added: id=%d name=%s role=%d%n", id, name, roleId);
-                    parent.ctx.out().flush();
+                    ConsoleUtils.info(
+                            parent.ctx.out(), "[ADMIN] User added successfully: id=%d name=%s role=%d", id, name, roleId);
                 } else {
-                    parent.ctx.err().println("[ADMIN] Failed to insert user");
-                    parent.ctx.err().flush();
+                    ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Failed to add user: name=%s role=%d", name, roleId);
                 }
             } catch (SQLException e) {
-                parent.ctx.err().println("[ADMIN] Database error: " + e.getMessage());
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Database error: %s", e.getMessage());
             }
         }
 
+        // Hilfsfunktion zum Parsen der Rolle aus String, unterstützt sowohl benannte Rollen als auch numerische IDs
         private int parseRole(String r) {
             if (r == null) {
                 return ROLE_MAP.get("USER");
@@ -147,8 +149,8 @@ public final class AdminUserMgmtCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  minicdn admin user remove --id 42 --force",
-                "  minicdn admin user remove --name alice --force --reassign-owner 1"
+                    "  minicdn admin user remove --id 42 --force",
+                    "  minicdn admin user remove --name alice --force --reassign-owner 1"
             })
     public static final class AdminUserRemoveCommand implements Runnable {
 
