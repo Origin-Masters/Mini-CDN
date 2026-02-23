@@ -1,76 +1,132 @@
-Write-Host "Starting [MINI-CDN] servers...`n" -ForegroundColor Cyan
+Write-Host "Starting MINI-CDN..." -ForegroundColor Cyan
 
-# Start ORIGIN
-Set-Location origin
-Write-Host "Starting ORIGIN..."
-Start-Process -NoNewWindow -FilePath "mvn" -ArgumentList "spring-boot:run -Dspring-boot.run.arguments=""--spring.profiles.active=origin""" -RedirectStandardOutput "..\origin.log" -RedirectStandardError "..\origin.log"
-Set-Location ..
+$root = Get-Location
 
-# Start EDGE
-Set-Location edge
-Write-Host "Starting EDGE..."
-Start-Process -NoNewWindow -FilePath "mvn" -ArgumentList "spring-boot:run -Dspring-boot.run.arguments=""--spring.profiles.active=edge""" -RedirectStandardOutput "..\edge.log" -RedirectStandardError "..\edge.log"
-Set-Location ..
+$originJar = "$root\origin\target\origin-1.0-SNAPSHOT-exec.jar"
+$edgeJar   = "$root\edge\target\edge-1.0-SNAPSHOT-exec.jar"
+$routerJar = "$root\router\target\router-1.0-SNAPSHOT-exec.jar"
 
-# Start ROUTER
-Set-Location router
-Write-Host "Starting ROUTER...`n"
-Start-Process -NoNewWindow -FilePath "mvn" -ArgumentList "spring-boot:run -Dspring-boot.run.arguments=""--spring.profiles.active=cdn""" -RedirectStandardOutput "..\router.log" -RedirectStandardError "..\router.log"
-Set-Location ..
 
-Write-Host "Waiting for servers to start (this takes ~60s the first time)...`n"
-$maxWait = 120
-$elapsed = 0
+function Start-Service {
 
-while ($true) {
-    # Check ob die Ports hören (PID ermitteln)
-    $originPid = (Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue).OwningProcess
-    $edgePid = (Get-NetTCPConnection -LocalPort 8081 -ErrorAction SilentlyContinue).OwningProcess
-    $routerPid = (Get-NetTCPConnection -LocalPort 8082 -ErrorAction SilentlyContinue).OwningProcess
+    param (
+        $name,
+        $jar,
+        $profile,
+        $log
+    )
 
-    $originStatus = if ($originPid) { "✅" } else { "⏳" }
-    $edgeStatus = if ($edgePid) { "✅" } else { "⏳" }
-    $routerStatus = if ($routerPid) { "✅" } else { "⏳" }
+    Write-Host "Starting $name..."
 
-    Write-Host "`r  [$($elapsed)s]  ORIGIN:$originStatus  EDGE:$edgeStatus  ROUTER:$routerStatus" -NoNewline
+    $cmd = "java -jar `"$jar`" --spring.profiles.active=$profile > `"$log`" 2>&1"
 
-    if ($originPid -and $edgePid -and $routerPid) {
-        Write-Host "`n"
+    Start-Process cmd.exe -ArgumentList "/c $cmd" -WindowStyle Hidden
+}
+
+
+# START SERVICES
+
+Start-Service "ORIGIN" $originJar "origin" "$root\origin.log"
+
+Start-Service "EDGE" $edgeJar "edge" "$root\edge.log"
+
+Start-Service "ROUTER" $routerJar "router" "$root\router.log"
+
+
+
+# WAIT FOR PORTS
+
+Write-Host "Waiting for ports..."
+
+$success = $false
+
+for ($i=0; $i -lt 60; $i++) {
+
+    $o = Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue
+    $e = Get-NetTCPConnection -LocalPort 8081 -ErrorAction SilentlyContinue
+    $r = Get-NetTCPConnection -LocalPort 8082 -ErrorAction SilentlyContinue
+
+    if ($o -and $e -and $r) {
+
+        $success = $true
         break
     }
 
-    if ($elapsed -ge $maxWait) {
-        Write-Host "`n`nERROR: Timeout after ${maxWait}s. Check *.log files for errors." -ForegroundColor Red
-        exit 1
-    }
-
-    Start-Sleep -Seconds 5
-    $elapsed += 5
+    Start-Sleep 2
 }
 
-# Warten bis Router Health OK meldet
-while ($true) {
+
+if (-not $success) {
+
+    Write-Host "Startup failed. Check logs." -ForegroundColor Red
+    exit
+}
+
+
+
+# WAIT FOR ROUTER HEALTH
+
+Write-Host "Waiting for Router health..."
+
+$routerReady = $false
+
+for ($i=0; $i -lt 60; $i++) {
+
     try {
-        $response = Invoke-WebRequest -Uri "http://localhost:8082/api/cdn/health" -UseBasicParsing -ErrorAction Stop
+
+        Invoke-WebRequest `
+            -Uri "http://localhost:8082/api/cdn/health" `
+            -UseBasicParsing `
+            -TimeoutSec 2 | Out-Null
+
+        $routerReady = $true
         break
-    } catch {
-        Start-Sleep -Seconds 2
+    }
+    catch {
+
+        Start-Sleep 2
     }
 }
 
-Write-Host "✅ All servers running!`n" -ForegroundColor Green
-Write-Host "[ORIGIN]: 8080 (PID: $($originPid[0]))"
-Write-Host "[EDGE]:   8081 (PID: $($edgePid[0]))"
-Write-Host "[ROUTER]: 8082 (PID: $($routerPid[0]))`n"
 
-# Edge beim Router registrieren
-Write-Host "Registering [EDGE] at [ROUTER]..."
-try {
-    $null = Invoke-WebRequest -Method Post -Uri "http://localhost:8082/api/cdn/routing?region=EU&url=http://localhost:8081" -Headers @{"X-Admin-Token"="secret-token"} -UseBasicParsing -ErrorAction Stop
-    Write-Host "[EDGE] registered for region [EU]" -ForegroundColor Green
-} catch {
-    Write-Host "Failed to register EDGE: $_" -ForegroundColor Red
+if (-not $routerReady) {
+
+    Write-Host "Router not ready. Check router.log" -ForegroundColor Red
+    exit
 }
 
-Write-Host "`n➡️  Start the CLI in another terminal: .\start-cli.ps1" -ForegroundColor Cyan
 
+
+# REGISTER EDGE
+
+Write-Host "Registering EDGE..."
+
+try {
+
+    Invoke-WebRequest `
+        -Method POST `
+        -Uri "http://localhost:8082/api/cdn/routing?region=EU&url=http://localhost:8081" `
+        -Headers @{ "X-Admin-Token" = "secret-token" } `
+        -UseBasicParsing | Out-Null
+
+    Write-Host "EDGE registered successfully." -ForegroundColor Green
+}
+catch {
+
+    Write-Host "EDGE registration failed." -ForegroundColor Red
+}
+
+
+
+# SUCCESS
+
+Write-Host ""
+Write-Host "MINI-CDN RUNNING" -ForegroundColor Green
+Write-Host "Origin : http://localhost:8080"
+Write-Host "Edge   : http://localhost:8081"
+Write-Host "Router : http://localhost:8082"
+Write-Host ""
+Write-Host "Logs:"
+Write-Host "origin.log"
+Write-Host "edge.log"
+Write-Host "router.log"

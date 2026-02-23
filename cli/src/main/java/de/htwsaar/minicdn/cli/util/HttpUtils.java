@@ -32,11 +32,36 @@ public final class HttpUtils {
         }
     }
 
-    /** Creates an HTTP request builder for admin endpoints, adding the required admin token header.
+    /**
+     * Creates an HTTP request builder for admin endpoints, adding the required admin token header.
      *
-     * @param uri the target URI for the request * @return a builder preconfigured with the `X-Admin-Token` header */
+     * @param uri the target URI for the request
+     * @return a builder preconfigured with the {@code X-Admin-Token} header
+     */
     public static HttpRequest.Builder newAdminRequestBuilder(URI uri) {
         String token = System.getenv().getOrDefault("MINICDN_ADMIN_TOKEN", "secret-token");
-        return HttpRequest.newBuilder(uri).header("X-Admin-Token", token);
+        return newAdminRequestBuilder(uri, token);
+    }
+
+    /**
+     * Creates an HTTP request builder for admin endpoints with an explicit token value.
+     *
+     * @param uri the target URI for the request
+     * @param token admin token value (falls leer/null: Env/System-Property-Fallback)
+     * @return a builder preconfigured with the {@code X-Admin-Token} header
+     */
+    public static HttpRequest.Builder newAdminRequestBuilder(URI uri, String token) {
+        Objects.requireNonNull(uri, "uri");
+        String effectiveToken = token;
+        if (effectiveToken == null || effectiveToken.isBlank()) {
+            effectiveToken = System.getenv("MINICDN_ADMIN_TOKEN");
+        }
+        if (effectiveToken == null || effectiveToken.isBlank()) {
+            effectiveToken = System.getProperty("minicdn.admin.token");
+        }
+        if (effectiveToken == null || effectiveToken.isBlank()) {
+            effectiveToken = "secret-token";
+        }
+        return HttpRequest.newBuilder(uri).header("X-Admin-Token", effectiveToken);
     }
 }
