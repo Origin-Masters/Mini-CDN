@@ -81,7 +81,7 @@ public final class AdminStatsCommand implements Runnable {
 
         @Option(
                 names = {"-H", "--host"},
-                defaultValue = "http://localhost:8080",
+                defaultValue = "http://localhost:8082",
                 paramLabel = "ROUTER_URL",
                 description = "Basis-URL des Routers, z.B. http://localhost:8080")
         private URI host;
@@ -106,6 +106,10 @@ public final class AdminStatsCommand implements Runnable {
                 description = "Vollständige JSON-Antwort pretty-printed ausgeben")
         private boolean printJson;
 
+        @Option(names = {"--token"}, defaultValue = "secret-token", paramLabel = "TOKEN", description = "Admin token")
+        private String token;
+
+
         public AdminStatsShowCommand(CliContext ctx) {
             this.ctx = Objects.requireNonNull(ctx, "ctx");
         }
@@ -125,6 +129,7 @@ public final class AdminStatsCommand implements Runnable {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(url)
                         .timeout(ctx.defaultRequestTimeout())
+                        .header("X-Admin-Token", token)
                         .GET()
                         .build();
 
