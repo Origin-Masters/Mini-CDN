@@ -44,3 +44,6 @@
 1771450454713:minicdn admin edge --help
 1771450465162:admin edge --help
 1771454810333:admin edge -v
+1771856870453:admin stats show
+1771856896978:exit
+1771858639417:admin stats show
