@@ -27,9 +27,9 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-                "  minicdn admin user add --name alice --role ADMIN",
-                "  minicdn admin user list --role USER --page 1 --size 20",
-                "  minicdn admin user remove --id 42 --force"
+                "  admin user add --name alice --role ADMIN",
+                "  admin user list --role USER --page 1 --size 20",
+                "  admin user remove --id 42 --force"
         },
         subcommands = {
                 AdminUserMgmtCommand.AdminUserAddCommand.class,
@@ -64,8 +64,8 @@ public final class AdminUserMgmtCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin user add --name alice --role ADMIN",
-                    "  minicdn admin user add --name bob --role USER"
+                    "  admin user add --name alice --role ADMIN",
+                    "  admin user add --name bob --role USER"
             })
     public static final class AdminUserAddCommand implements Runnable {
 
@@ -107,7 +107,9 @@ public final class AdminUserMgmtCommand implements Runnable {
             description = "List users in the system",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {"  minicdn admin user list", "  minicdn admin user list --role ADMIN --page 1 --size 50"})
+            footer = {
+                    "  admin user list",
+                    "  admin user list --role ADMIN --page 1 --size 50"})
     public static final class AdminUserListCommand implements Runnable {
 
         @ParentCommand
@@ -163,7 +165,7 @@ public final class AdminUserMgmtCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  minicdn admin user remove --id 42 --force"
+                    "  admin user remove --id 42 --force"
             })
     public static final class AdminUserRemoveCommand implements Runnable {
 

@@ -26,9 +26,9 @@ import picocli.CommandLine.Option;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  minicdn admin ping",
-            "  minicdn admin ping -H http://localhost:8082 -p api/cdn/health",
-            "  minicdn admin ping -H http://localhost:8080 -p api/origin/health"
+            "  admin ping",
+            "  admin ping -H http://localhost:8082 -p api/cdn/health",
+            "  admin ping -H http://localhost:8080 -p api/origin/health"
         })
 public final class PingCommand implements Callable<Integer> {
 
