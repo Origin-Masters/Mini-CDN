@@ -8,8 +8,7 @@ import java.util.Objects;
  * Hilfsfunktionen zum formatierten Ausgeben von Info- und Fehlermeldungen auf der Konsole, mit konsistentem Präfix und automatischem Flush.
  */
 public final class ConsoleUtils {
-    private ConsoleUtils() {
-    }
+    private ConsoleUtils() {}
 
     public static void info(PrintStream out, String fmt, Object... args) {
         Objects.requireNonNull(out, "out");
