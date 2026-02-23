@@ -1,15 +1,4 @@
 [INFO] Scanning for projects...
-Downloading from central: https://repo.maven.apache.org/maven2/com/diffplug/spotless/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/com/github/spotbugs/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
-Progress (1): 249 BProgress (2): 249 B | 240 B                           Downloaded from central: https://repo.maven.apache.org/maven2/com/github/spotbugs/maven-metadata.xml (240 B at 902 B/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml (249 B at 936 B/s)
-Progress (1): 398 B                   Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
-Downloaded from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml (398 B at 1.5 kB/s)
-Progress (1): 4.6 kBProgress (1): 10 kB Progress (1): 14 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 332 kB/s)
-Progress (1): 3.1 kBProgress (1): 8.0 kBProgress (1): 8.0 kBProgress (1): 13 kB Progress (1): 17 kBProgress (1): 20 kBProgress (1): 21 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 232 kB/s)
 [INFO] 
 [INFO] ----------------------< de.htwsaar.minicdn:edge >-----------------------
 [INFO] Building mini-cdn-edge 1.0-SNAPSHOT
@@ -41,7 +30,7 @@ Progress (1): 3.1 kBProgress (1): 8.0 kBProgress (1): 8.0 kBProgress (1): 13 
                                       
 [INFO] 
 
-jOOQ tip of the day: A ResultQuery<R> extends Iterable<R>, so you can just foreach your queries! See: https://blog.jooq.org/a-hidden-jooq-gem-foreach-loop-over-resultquery/
+jOOQ tip of the day: The jOOQ code generator can generate code from an XML representation of your schema: https://www.jooq.org/doc/latest/manual/code-generation/codegen-xml/
 
 [INFO] No <inputCatalog/> was provided. Generating ALL available catalogs instead.
 [INFO] No <inputSchema/> was provided. Generating ALL available schemata instead.
@@ -52,8 +41,8 @@ jOOQ tip of the day: A ResultQuery<R> extends Iterable<R>, so you can just forea
 [INFO] Database parameters      
 [INFO] ----------------------------------------------------------
 [INFO]   dialect                : SQLITE
-[INFO]   URL                    : jdbc:sqlite:/Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/data/edge-cache.db
-[INFO]   target dir             : /Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/src/main/java
+[INFO]   URL                    : jdbc:sqlite:/Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/edge/data/edge-cache.db
+[INFO]   target dir             : /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/edge/src/main/java
 [INFO]   target package         : de.htwsaar.minicdn.edge.db
 [INFO]   includes               : [.*]
 [INFO]   excludes               : []
@@ -151,50 +140,81 @@ jOOQ tip of the day: A ResultQuery<R> extends Iterable<R>, so you can just forea
 [INFO] Generating tables        
 [INFO] Generating table         : CacheEntries.java [input=cache_entries, pk=pk_cache_entries]
 [INFO] Indexes fetched          : 2 (2 included, 0 excluded)
-[INFO] Tables generated         : Total: 185.823ms
+[INFO] Tables generated         : Total: 228.196ms
 [INFO] Generating table records 
 [INFO] Generating record        : CacheEntriesRecord.java
-[INFO] Table records generated  : Total: 202.086ms, +16.262ms
+[INFO] Table records generated  : Total: 247.177ms, +18.98ms
 [INFO] Generating table references
-[INFO] Table refs generated     : Total: 202.595ms, +0.509ms
+[INFO] Table refs generated     : Total: 247.942ms, +0.765ms
 [INFO] Generating Keys          
-[INFO] Keys generated           : Total: 203.155ms, +0.56ms
+[INFO] Keys generated           : Total: 248.835ms, +0.892ms
 [INFO] Generating Indexes       
-[INFO] Indexes generated        : Total: 203.583ms, +0.427ms
-[INFO] Generation finished:     : Total: 203.626ms, +0.043ms
+[INFO] Indexes generated        : Total: 249.976ms, +1.141ms
+[INFO] Generation finished:     : Total: 250.072ms, +0.095ms
 [INFO]                          
 [INFO] Affected files: 7        
-[INFO] Modified files: 7        
+[INFO] Modified files: 0        
+[INFO] No modified files        : This code generation run has not produced any file modifications.
+This means, the schema has not changed, and no other parameters (jOOQ version, driver version, database version,
+and any configuration elements) have changed either.
+
+In automated builds, it is recommended to prevent unnecessary code generation runs. This run took: 234.395ms
+Possible means to prevent this:
+- Use manual code generation and check in generated sources: https://www.jooq.org/doc/latest/manual/code-generation/codegen-version-control/
+- Use schema version providers: https://www.jooq.org/doc/latest/manual/code-generation/codegen-advanced/codegen-config-database/codegen-database-version-providers/
+- Use gradle tasks and inputs: https://docs.gradle.org/current/userguide/incremental_build.html
 [INFO] Removing excess files    
 [INFO] 
 [INFO] --- resources:3.3.1:resources (default-resources) @ edge ---
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO] 
 [INFO] --- compiler:3.14.1:compile (default-compile) @ edge ---
-[INFO] Recompiling the module because of changed source code.
-[INFO] Compiling 11 source files with javac [forked debug target 21] to target/classes
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/src/main/java/de/htwsaar/minicdn/edge/EdgeApp.java:[3,37] Fehler: Package de.htwsaar.minicdn.common.auth ist nicht vorhanden
-[ERROR] /Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/src/main/java/de/htwsaar/minicdn/edge/EdgeApp.java:[11,30] Fehler: Symbol nicht gefunden
-  Symbol: Klasse SecurityConfig
-[INFO] 2 errors 
-[INFO] -------------------------------------------------------------
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ edge ---
+[INFO] skip non existing resourceDirectory /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/edge/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ edge ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< spring-boot:3.2.5:run (default-cli) < test-compile @ edge <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.5:run (default-cli) @ edge ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-02-23 15:03:27,669","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.1 with PID 2562 (/Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/edge/target/classes started by michalroziel in /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/edge)"}
+{"timestamp":"2026-02-23 15:03:27,670","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-02-23 15:03:28,012","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8081 (http)"}
+{"timestamp":"2026-02-23 15:03:28,016","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8081"]"}
+{"timestamp":"2026-02-23 15:03:28,017","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-02-23 15:03:28,017","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-02-23 15:03:28,035","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-02-23 15:03:28,036","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 341 ms"}
+{"timestamp":"2026-02-23 15:03:28,186","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8081"]"}
+{"timestamp":"2026-02-23 15:03:28,197","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8081 (http) with context path ''"}
+{"timestamp":"2026-02-23 15:03:28,201","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.706 seconds (process running for 0.857)"}
+{"timestamp":"2026-02-23 15:03:38,317","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-02-23 15:03:38,317","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-02-23 15:03:38,318","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.290 s
-[INFO] Finished at: 2026-02-22T13:50:26+01:00
+[INFO] Total time:  19.968 s
+[INFO] Finished at: 2026-02-23T15:03:45+01:00
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project edge: Compilation failure: Compilation failure: 
-[ERROR] /Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/src/main/java/de/htwsaar/minicdn/edge/EdgeApp.java:[3,37] Fehler: Package de.htwsaar.minicdn.common.auth ist nicht vorhanden
-[ERROR] /Users/sophiasarkhovska/htwSaar/5. Semester /Verteilte Systeme/Projektarbeit/gruppe-08-mini-cdn/edge/src/main/java/de/htwsaar/minicdn/edge/EdgeApp.java:[11,30] Fehler: Symbol nicht gefunden
-[ERROR]   Symbol: Klasse SecurityConfig
-[ERROR] -> [Help 1]
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.5:run (default-cli) on project edge: Process terminated with exit code: 143 -> [Help 1]
 [ERROR] 
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
 [ERROR] Re-run Maven using the -X switch to enable full debug logging.
 [ERROR] 
 [ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
