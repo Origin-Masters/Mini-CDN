@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Scanner;
+
 import org.jline.terminal.Terminal;
 
 /**
@@ -16,7 +18,7 @@ import org.jline.terminal.Terminal;
  *
  * <p>Konvention:
  * - Hier gehören nur generische Abhängigkeiten hinein (I/O, HTTP, Timeouts),
- *   keine fachlichen Services.
+ * keine fachlichen Services.
  */
 public final class CliContext {
     private final Terminal terminal;
@@ -28,10 +30,10 @@ public final class CliContext {
     /**
      * Erzeugt einen neuen CLI-Kontext.
      *
-     * @param terminal JLine-Terminal für interaktive Features (Prompt, Clear, History)
-     * @param out Writer für normale Ausgaben
-     * @param err Writer für Fehlermeldungen
-     * @param httpClient gemeinsamer HTTP-Client für API-Aufrufe
+     * @param terminal              JLine-Terminal für interaktive Features (Prompt, Clear, History)
+     * @param out                   Writer für normale Ausgaben
+     * @param err                   Writer für Fehlermeldungen
+     * @param httpClient            gemeinsamer HTTP-Client für API-Aufrufe
      * @param defaultRequestTimeout Standard-Timeout für HTTP-Requests
      */
     public CliContext(
@@ -65,5 +67,9 @@ public final class CliContext {
 
     public Duration defaultRequestTimeout() {
         return defaultRequestTimeout;
+    }
+
+    public Scanner in() {
+        return new Scanner(terminal.input());
     }
 }
