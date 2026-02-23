@@ -26,9 +26,9 @@ import picocli.CommandLine.Spec;
         commandListHeading = "%nUnterbefehle:%n",
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  minicdn admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready",
-            "  minicdn admin edge managed -H http://localhost:8082",
-            "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force"
+            "  admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready",
+            "  admin edge managed -H http://localhost:8082",
+            "  admin edge stop -H http://localhost:8082 edge-12345 --force"
         },
         subcommands = {
             AdminEdgeCommand.AdminEdgeStartCommand.class,
@@ -63,8 +63,8 @@ public final class AdminEdgeCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  minicdn admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --auto-register=true --wait-ready",
-                "  minicdn admin edge start --region US --port 8083 --origin http://localhost:8080 --auto-register=false"
+                "  admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --auto-register=true --wait-ready",
+                "  admin edge start --region US --port 8083 --origin http://localhost:8080 --auto-register=false"
             })
     public static final class AdminEdgeStartCommand implements Callable<Integer> {
 
@@ -188,8 +188,8 @@ public final class AdminEdgeCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force",
-                "  minicdn admin edge stop -H http://localhost:8082 edge-12345 --force --deregister=false"
+                "  admin edge stop -H http://localhost:8082 edge-12345 --force",
+                "  admin edge stop -H http://localhost:8082 edge-12345 --force --deregister=false"
             })
     public static final class AdminEdgeStopCommand implements Callable<Integer> {
 
@@ -269,8 +269,8 @@ public final class AdminEdgeCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  minicdn admin edge managed -H http://localhost:8082",
-                "  minicdn admin edge managed -H http://localhost:8082 --json"
+                "  admin edge managed -H http://localhost:8082",
+                "  admin edge managed -H http://localhost:8082 --json"
             })
     public static final class AdminEdgeManagedCommand implements Callable<Integer> {
 
@@ -347,9 +347,9 @@ public final class AdminEdgeCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  minicdn admin edge auto-start -H http://localhost:8082 --region EU --count 3 --origin http://localhost:8080 --auto-register=true --wait-ready",
-                "  minicdn admin edge auto-start --region US --count 10 --origin http://localhost:8080 --auto-register=false",
-                "  minicdn admin edge auto-start -H http://localhost:8082 --region EU --count 2 --origin http://localhost:8080 --json"
+                "  admin edge auto-start -H http://localhost:8082 --region EU --count 3 --origin http://localhost:8080 --auto-register=true --wait-ready",
+                "  admin edge auto-start --region US --count 10 --origin http://localhost:8080 --auto-register=false",
+                "  admin edge auto-start -H http://localhost:8082 --region EU --count 2 --origin http://localhost:8080 --json"
             })
     public static final class AdminEdgeAutoStartCommand implements Callable<Integer> {
 
