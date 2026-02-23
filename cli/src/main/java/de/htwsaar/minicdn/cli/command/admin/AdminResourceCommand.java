@@ -87,13 +87,15 @@ public class AdminResourceCommand implements Runnable {
         @Override
         public Integer call() throws FileNotFoundException {
             if (file == null || !Files.exists(file) || !Files.isRegularFile(file)) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Local file does not exist or is not a regular file: %s", file);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] Local file does not exist or is not a regular file: %s", file);
                 return 1;
             }
 
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -217,7 +219,8 @@ public class AdminResourceCommand implements Runnable {
         public Integer call() {
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -353,7 +356,8 @@ public class AdminResourceCommand implements Runnable {
         public Integer call() {
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
                 return 1;
             }
 
@@ -362,7 +366,11 @@ public class AdminResourceCommand implements Runnable {
             var err = parent.ctx.err();
             if (result.is2xx()) {
                 ConsoleUtils.info(
-                        err, "[ADMIN] Delete successful: status=%s origin=%s path=%s", result.statusCode(), origin, cleanPath);
+                        err,
+                        "[ADMIN] Delete successful: status=%s origin=%s path=%s",
+                        result.statusCode(),
+                        origin,
+                        cleanPath);
                 return 0;
             }
 

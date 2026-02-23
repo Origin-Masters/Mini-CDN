@@ -3,7 +3,6 @@ package de.htwsaar.minicdn.cli.service.admin;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
@@ -31,7 +30,8 @@ public final class AdminUserService implements AutoCloseable {
      * Initialisiert das Datenbankschema, falls es noch nicht existiert. Erstellt die Tabelle "users" mit den Spalten "id", "name" und "role".
      */
     private void initializeSchema() {
-        dsl.execute("""
+        dsl.execute(
+                """
                     CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
@@ -63,7 +63,8 @@ public final class AdminUserService implements AutoCloseable {
                 return id;
             }
             // Falls das nicht funktioniert, versuche es als Number und konvertiere es dann zu int.
-            // Das ist eine zusätzliche Absicherung, falls die Datenbank oder der JDBC-Treiber die ID als anderen numerischen Typ zurückgibt.
+            // Das ist eine zusätzliche Absicherung, falls die Datenbank oder der JDBC-Treiber die ID als anderen
+            // numerischen Typ zurückgibt.
             Number n = r.get(0, Number.class);
             if (n != null) {
                 return n.intValue();
