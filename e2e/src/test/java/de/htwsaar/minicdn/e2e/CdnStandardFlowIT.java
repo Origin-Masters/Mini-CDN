@@ -6,6 +6,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class CdnStandardFlowIT extends AbstractE2E {
@@ -13,7 +17,8 @@ class CdnStandardFlowIT extends AbstractE2E {
     private static final String REGION = "eu-west";
     private static final String CACHE_HEADER = "X-Cache";
 
-    private static final HttpClient CLIENT = HttpClient.newHttpClient();
+    private static final HttpClient CLIENT =
+            HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
     private static final HttpClient NO_REDIRECT_CLIENT =
             HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build();
 
@@ -69,9 +74,8 @@ class CdnStandardFlowIT extends AbstractE2E {
 
         try {
             registerEdgeInRouter(REGION, "http://localhost:9999");
-            registerEdgeInRouter(REGION, EDGE_BASE);
+            registerEdgeInRouter();
             registerEdgeInRouter(REGION, "http://localhost:7777");
-
             HttpResponse<Void> response = requestRouting(tf.fileName());
 
             assertEquals(307, response.statusCode());
@@ -82,19 +86,25 @@ class CdnStandardFlowIT extends AbstractE2E {
             cleanupOriginFile(tf.originAdminFileUri());
             unregisterEdge(REGION, "http://localhost:9999");
             unregisterEdge(REGION, EDGE_BASE);
+            unregisterEdge(REGION, "http://localhost:7777");
         }
     }
 
     @Test
     void delivery_guarantee_fails_when_all_nodes_dead() throws Exception {
+        TestFile tf = createOriginFile("Retry Test Content");
         try {
+            unregisterEdge(REGION, EDGE_BASE);
             registerEdgeInRouter(REGION, "http://localhost:9998");
             registerEdgeInRouter(REGION, "http://localhost:9997");
             registerEdgeInRouter(REGION, "http://localhost:9996");
-            HttpResponse<Void> response = requestRouting("any-file.txt");
+            HttpResponse<Void> response = requestRouting(tf.fileName());
             assertEquals(503, response.statusCode());
         } finally {
+            cleanupOriginFile(tf.originAdminFileUri());
             unregisterEdge(REGION, "http://localhost:9998");
+            unregisterEdge(REGION, "http://localhost:9997");
+            unregisterEdge(REGION, "http://localhost:9996");
         }
     }
 
@@ -206,5 +216,60 @@ class CdnStandardFlowIT extends AbstractE2E {
         URI routeUri = URI.create(ROUTER_BASE + "/api/cdn/files/" + fileName + "?region=" + REGION);
         return NO_REDIRECT_CLIENT.send(
                 HttpRequest.newBuilder(routeUri).GET().build(), HttpResponse.BodyHandlers.discarding());
+    }
+
+    @Test
+    void testParallelRequestStability() throws Exception {
+        int numberOfParallelRequests = 10;
+        TestFile tf = createOriginFile("Retry Test Content");
+
+        try {
+
+            String testUrl = ROUTER_BASE + "/api/cdn/files/" + tf.fileName + "?region=" + REGION;
+
+            HttpRequest request =
+                    HttpRequest.newBuilder().uri(URI.create(testUrl)).build();
+
+            registerEdgeInRouter();
+
+            long startTime = System.nanoTime(); // nanoTime ist für Benchmarks präziser
+
+            // 1. Alle Anfragen asynchron abfeuern
+            List<CompletableFuture<HttpResponse<String>>> futures = IntStream.range(0, numberOfParallelRequests)
+                    .mapToObj(i -> CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+                    .collect(Collectors.toList());
+
+            // 2. Warten, bis ALLE fertig sind
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            long endTime = System.nanoTime();
+
+            // Berechnung der Statistiken
+            long totalDurationMs = (endTime - startTime) / 1_000_000;
+            long avgDurationMs = totalDurationMs / numberOfParallelRequests;
+
+            // Statistische Ausgabe (immer sichtbar im Log)
+            System.out.println("--------------------------------------------------");
+            System.out.println("BENCHMARK ERGEBNIS:");
+            System.out.println("Gesamtdauer: " + totalDurationMs + "ms");
+            System.out.println("Durchschnitt pro Request: " + avgDurationMs + "ms");
+            System.out.println("--------------------------------------------------");
+
+            // 3. Validierung der Ergebnisse
+            String errorMsg = String.format(
+                    "Benchmark fehlgeschlagen! Gesamt: %dms, Schnitt: %dms", totalDurationMs, avgDurationMs);
+
+            for (CompletableFuture<HttpResponse<String>> future : futures) {
+                int status = future.join().statusCode();
+                // Wir prüfen auf 200 OK.
+                // Hinweis: Falls die Datei im Test-Setup fehlt, käme 404 zurück.
+                assertEquals(200, status, errorMsg + " | Einer der Statuscodes war: " + status);
+            }
+
+            System.out.println("NFA-S1 erfüllt: Alle Anfragen erfolgreich verarbeitet.");
+        } finally {
+            cleanupOriginFile(tf.originAdminFileUri());
+            unregisterEdge(REGION, EDGE_BASE);
+        }
     }
 }
