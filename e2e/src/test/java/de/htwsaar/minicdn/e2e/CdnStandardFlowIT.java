@@ -265,7 +265,7 @@ class CdnStandardFlowIT extends AbstractE2E {
                 // Hinweis: Falls die Datei im Test-Setup fehlt, käme 404 zurück.
                 assertEquals(200, status, errorMsg + " | Einer der Statuscodes war: " + status);
             }
-
+//
             System.out.println("NFA-S1 erfüllt: Alle Anfragen erfolgreich verarbeitet.");
         } finally {
             cleanupOriginFile(tf.originAdminFileUri());
