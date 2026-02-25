@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.edge.web;
 import de.htwsaar.minicdn.edge.cache.ReplacementStrategy;
 import de.htwsaar.minicdn.edge.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.config.EdgeRuntimeConfig;
+import de.htwsaar.minicdn.edge.config.EdgeRuntimeStateStore;
 import de.htwsaar.minicdn.edge.config.TtlPolicyService;
 import java.util.Map;
 import org.springframework.context.annotation.Profile;
@@ -28,6 +29,7 @@ public class EdgeAdminConfigController {
 
     private final EdgeConfigService configService;
     private final TtlPolicyService ttlPolicyService;
+    private final EdgeRuntimeStateStore runtimeStateStore;
 
     /**
      * Constructor Injection.
@@ -35,9 +37,13 @@ public class EdgeAdminConfigController {
      * @param configService    Live-Konfiguration
      * @param ttlPolicyService TTL-Policies
      */
-    public EdgeAdminConfigController(EdgeConfigService configService, TtlPolicyService ttlPolicyService) {
+    public EdgeAdminConfigController(
+            EdgeConfigService configService,
+            TtlPolicyService ttlPolicyService,
+            EdgeRuntimeStateStore runtimeStateStore) {
         this.configService = configService;
         this.ttlPolicyService = ttlPolicyService;
+        this.runtimeStateStore = runtimeStateStore;
     }
 
     /** @return aktuelle {@link EdgeRuntimeConfig} */
@@ -54,12 +60,19 @@ public class EdgeAdminConfigController {
      */
     @PutMapping
     public ResponseEntity<EdgeRuntimeConfig> updateConfig(@RequestBody ConfigDto dto) {
+        if (dto == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        EdgeRuntimeConfig current = configService.current();
+        ReplacementStrategy strategy =
+                dto.replacementStrategy() != null ? dto.replacementStrategy() : current.replacementStrategy();
         EdgeRuntimeConfig next = new EdgeRuntimeConfig(
-                dto.region(),
+                dto.region() != null ? dto.region() : current.region(),
                 Math.max(0, dto.defaultTtlMs()),
                 Math.max(0, dto.maxEntries()),
-                dto.replacementStrategy());
+                strategy);
         configService.update(next);
+        persistRuntimeState();
         return ResponseEntity.ok(next);
     }
 
@@ -71,8 +84,12 @@ public class EdgeAdminConfigController {
      */
     @PatchMapping
     public ResponseEntity<EdgeRuntimeConfig> patchConfig(@RequestBody ConfigPatchDto dto) {
+        if (dto == null) {
+            return ResponseEntity.badRequest().build();
+        }
         EdgeRuntimeConfig updated =
                 configService.patch(dto.region(), dto.defaultTtlMs(), dto.maxEntries(), dto.replacementStrategy());
+        persistRuntimeState();
         return ResponseEntity.ok(updated);
     }
 
@@ -91,6 +108,7 @@ public class EdgeAdminConfigController {
     @PutMapping("/ttl")
     public ResponseEntity<Map<String, Object>> setTtlPolicy(@RequestBody TtlPolicyDto dto) {
         ttlPolicyService.setPrefixTtlMs(dto.prefix(), dto.ttlMs());
+        persistRuntimeState();
         return ResponseEntity.ok(Map.of("prefix", dto.prefix(), "ttlMs", dto.ttlMs()));
     }
 
@@ -103,7 +121,12 @@ public class EdgeAdminConfigController {
     @DeleteMapping("/ttl")
     public ResponseEntity<Map<String, Object>> removeTtlPolicy(@RequestParam("prefix") String prefix) {
         boolean removed = ttlPolicyService.removePrefix(prefix);
+        persistRuntimeState();
         return ResponseEntity.ok(Map.of("prefix", prefix, "removed", removed));
+    }
+
+    private void persistRuntimeState() {
+        runtimeStateStore.save(configService.current(), ttlPolicyService.snapshot());
     }
 
     /**
