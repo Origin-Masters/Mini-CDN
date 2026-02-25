@@ -46,8 +46,7 @@ public class AdminUserServiceTest {
                 int id = adminUserService.addUser("Alice", 1);
                 assertTrue(id > 0, "expected generated id > 0");
 
-                Record3<Integer, String, Integer> rec = dsl
-                        .select(
+                Record3<Integer, String, Integer> rec = dsl.select(
                                 DSL.field(DSL.name("id"), Integer.class),
                                 DSL.field(DSL.name("name"), String.class),
                                 DSL.field(DSL.name("role"), Integer.class))
@@ -94,8 +93,7 @@ public class AdminUserServiceTest {
 
             assertTrue(id > 0, "expected generated id > 0");
 
-            Record3<Integer, String, Integer> rec = dsl
-                    .select(
+            Record3<Integer, String, Integer> rec = dsl.select(
                             DSL.field(DSL.name("id"), Integer.class),
                             DSL.field(DSL.name("name"), String.class),
                             DSL.field(DSL.name("role"), Integer.class))
