@@ -1,9 +1,12 @@
 package de.htwsaar.minicdn.router.service;
 
 import de.htwsaar.minicdn.router.dto.EdgeNode;
+import de.htwsaar.minicdn.router.util.UrlUtil;
+import jakarta.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,8 +18,42 @@ import org.springframework.stereotype.Service;
 @Service
 public class RoutingIndex {
 
+    /** Persistenter Speicher für den Routing-Zustand. */
+    private final RouterRoutingStateStore stateStore;
+    /** Registrierte Edge-Knoten pro Region. */
     private final Map<String, List<EdgeNode>> regionToNodes = new ConcurrentHashMap<>();
+    /** Round-Robin-Zähler pro Region. */
     private final Map<String, AtomicInteger> regionCounters = new ConcurrentHashMap<>();
+
+    /**
+     * Erstellt einen RoutingIndex mit dem erforderlichen State-Store.
+     *
+     * @param stateStore Speicher für persistente Sicherungen des Index */
+    public RoutingIndex(RouterRoutingStateStore stateStore) {
+        this.stateStore = Objects.requireNonNull(stateStore, "stateStore must not be null");
+    }
+
+    /**
+     * Lädt beim Start den gespeicherten Zustand und baut den in-Memo index auf.
+     */
+    @PostConstruct
+    void recoverOnStartup() {
+        Map<String, List<String>> recovered = stateStore.load();
+        recovered.forEach((region, urls) -> {
+            if (region == null || region.isBlank() || urls == null || urls.isEmpty()) {
+                return;
+            }
+            List<EdgeNode> nodes = new CopyOnWriteArrayList<>();
+            for (String url : urls) {
+                if (url == null || url.isBlank()) continue;
+                nodes.add(new EdgeNode(UrlUtil.ensureTrailingSlash(url.trim())));
+            }
+            if (!nodes.isEmpty()) {
+                regionToNodes.put(region.trim(), nodes);
+                regionCounters.put(region.trim(), new AtomicInteger(0));
+            }
+        });
+    }
 
     /**
      * Fügt einen Knoten für eine Region hinzu, sofern er noch nicht existiert.
@@ -29,12 +66,18 @@ public class RoutingIndex {
             return;
         }
 
-        List<EdgeNode> nodes = regionToNodes.computeIfAbsent(region, ignored -> new CopyOnWriteArrayList<>());
-        if (!nodes.contains(node)) {
-            nodes.add(node);
+        String cleanRegion = region.trim();
+        if (cleanRegion.isBlank() || node.url() == null || node.url().isBlank()) {
+            return;
+        }
+        List<EdgeNode> nodes = regionToNodes.computeIfAbsent(cleanRegion, ignored -> new CopyOnWriteArrayList<>());
+        EdgeNode cleanNode = new EdgeNode(UrlUtil.ensureTrailingSlash(node.url()));
+        if (!nodes.contains(cleanNode)) {
+            nodes.add(cleanNode);
+            persistState();
         }
 
-        regionCounters.putIfAbsent(region, new AtomicInteger(0));
+        regionCounters.putIfAbsent(cleanRegion, new AtomicInteger(0));
     }
 
     /**
@@ -44,12 +87,19 @@ public class RoutingIndex {
      * @return nächster Knoten oder {@code null}, falls keiner vorhanden ist
      */
     public EdgeNode getNextNode(String region) {
-        List<EdgeNode> nodes = regionToNodes.get(region);
+        if (region == null) {
+            return null;
+        }
+        String cleanRegion = region.trim();
+        if (cleanRegion.isBlank()) {
+            return null;
+        }
+        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
         if (nodes == null || nodes.isEmpty()) {
             return null;
         }
 
-        AtomicInteger counter = regionCounters.computeIfAbsent(region, ignored -> new AtomicInteger(0));
+        AtomicInteger counter = regionCounters.computeIfAbsent(cleanRegion, ignored -> new AtomicInteger(0));
         int index = Math.abs(counter.getAndIncrement() % nodes.size());
         return nodes.get(index);
     }
@@ -63,16 +113,24 @@ public class RoutingIndex {
      * @return {@code true}, wenn der Knoten entfernt wurde
      */
     public boolean removeEdge(String region, EdgeNode node, boolean removeIfEmpty) {
-        List<EdgeNode> nodes = regionToNodes.get(region);
+        if (region == null || node == null || node.url() == null || node.url().isBlank()) {
+            return false;
+        }
+        String cleanRegion = region.trim();
+        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
         if (nodes == null) {
             return false;
         }
 
-        boolean removed = nodes.remove(node);
+        EdgeNode cleanNode = new EdgeNode(UrlUtil.ensureTrailingSlash(node.url()));
+        boolean removed = nodes.remove(cleanNode);
 
         if (removed && nodes.isEmpty() && removeIfEmpty) {
-            regionToNodes.remove(region);
-            regionCounters.remove(region);
+            regionToNodes.remove(cleanRegion);
+            regionCounters.remove(cleanRegion);
+        }
+        if (removed) {
+            persistState();
         }
         return removed;
     }
@@ -92,6 +150,7 @@ public class RoutingIndex {
     public void clear() {
         regionToNodes.clear();
         regionCounters.clear();
+        persistState();
     }
 
     /**
@@ -101,7 +160,24 @@ public class RoutingIndex {
      * @return Anzahl Knoten (0, wenn Region unbekannt)
      */
     public int getNodeCount(String region) {
-        List<EdgeNode> nodes = regionToNodes.get(region);
+        if (region == null) {
+            return 0;
+        }
+        String cleanRegion = region.trim();
+        if (cleanRegion.isBlank()) {
+            return 0;
+        }
+        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
         return nodes != null ? nodes.size() : 0;
+    }
+
+    /**
+     * Persistiert den aktuellen in-memo zustand im State-Store.
+     */
+    private void persistState() {
+        Map<String, List<String>> snapshot = new ConcurrentHashMap<>();
+        regionToNodes.forEach((region, nodes) -> snapshot.put(
+                region, nodes.stream().map(EdgeNode::url).distinct().toList()));
+        stateStore.save(snapshot);
     }
 }
