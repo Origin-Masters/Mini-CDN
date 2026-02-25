@@ -3,26 +3,27 @@
  */
 package de.htwsaar.minicdn.edge.db;
 
-
 import de.htwsaar.minicdn.edge.db.tables.CacheEntries;
 import de.htwsaar.minicdn.edge.db.tables.records.CacheEntriesRecord;
-
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.Internal;
 
-
 /**
  * A class modelling foreign key relationships and constraints of tables in the
  * default schema.
  */
-@SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
+@SuppressWarnings({"all", "unchecked", "rawtypes", "this-escape"})
 public class Keys {
 
     // -------------------------------------------------------------------------
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final UniqueKey<CacheEntriesRecord> CACHE_ENTRIES__PK_CACHE_ENTRIES = Internal.createUniqueKey(CacheEntries.CACHE_ENTRIES, DSL.name("pk_cache_entries"), new TableField[] { CacheEntries.CACHE_ENTRIES.PATH }, true);
+    public static final UniqueKey<CacheEntriesRecord> CACHE_ENTRIES__PK_CACHE_ENTRIES = Internal.createUniqueKey(
+            CacheEntries.CACHE_ENTRIES,
+            DSL.name("pk_cache_entries"),
+            new TableField[] {CacheEntries.CACHE_ENTRIES.PATH},
+            true);
 }
