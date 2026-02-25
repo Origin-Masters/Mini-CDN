@@ -4,6 +4,10 @@
 .AppleDouble
 .LSOverride
 
+# environment variable files
+.env
+
+
 # Windows thumbnail cached files
 Thumbs.db
 ehthumbs.db

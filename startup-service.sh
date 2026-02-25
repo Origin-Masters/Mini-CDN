@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Lade den Token aus der Umgebungsvariable// fallback : secret-token
+ADMIN_TOKEN="${MINICDN_ADMIN_TOKEN:-secret-token}"
+
 echo -e "Starting [MINI-CDN] servers...\n"
 
 cd origin
@@ -28,13 +31,13 @@ echo -e "[ORIGIN]: 8080 (PID: $ORIGIN_PID) \n"
 echo -e "[EDGE]:   8081 (PID: $EDGE_PID) \n"
 echo -e "[ROUTER]: 8082 (PID: $ROUTER_PID) \n"
 
-
-until curl -sf -H "X-Admin-Token: secret-token" http://localhost:8082/api/cdn/health > /dev/null 2>&1; do
+# Warte auf den Router (hier wird der ADMIN_TOKEN verwendet)
+until curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" http://localhost:8082/api/cdn/health > /dev/null 2>&1; do
     sleep 2
 done
 
-# Edge registrieren
+# Edge registrieren (hier wird der ADMIN_TOKEN verwendet)
 echo -e "\nRegistering [EDGE] at [ROUTER]..."
-curl -sf -X POST -H "X-Admin-Token: secret-token" \
+curl -sf -X POST -H "X-Admin-Token: $ADMIN_TOKEN" \
   "http://localhost:8082/api/cdn/routing?region=EU&url=http://localhost:8081" > /dev/null
 echo "[EDGE] registered for region [EU]"

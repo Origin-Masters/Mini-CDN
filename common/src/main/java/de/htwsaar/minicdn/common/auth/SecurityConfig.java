@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SecurityConfig {
 
-    @Value("${minicdn.admin.token:secret-token}")
+    @Value("${minicdn.admin.token}")
     private String adminToken;
 
     @Bean
