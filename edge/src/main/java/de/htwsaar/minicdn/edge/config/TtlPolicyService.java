@@ -47,6 +47,11 @@ public class TtlPolicyService {
         return Map.copyOf(ttlByPrefixMs);
     }
 
+    /** Removes all configured TTL prefix overrides. */
+    public void clear() {
+        ttlByPrefixMs.clear();
+    }
+
     /**
      * Bestimmt die effektive TTL für einen Pfad.
      * Längster passender Prefix gewinnt; Fallback ist {@code defaultTtlMs}.
