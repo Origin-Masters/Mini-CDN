@@ -2,7 +2,7 @@ package de.htwsaar.minicdn.cli.service;
 
 import junit.framework.TestCase;
 
-public class AdminResourceServiceTest extends TestCase {
+public class AdminFileServiceTest extends TestCase {
 
     public void testCreate() {}
 

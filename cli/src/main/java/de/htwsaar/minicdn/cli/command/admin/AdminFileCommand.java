@@ -2,7 +2,7 @@ package de.htwsaar.minicdn.cli.command.admin;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
-import de.htwsaar.minicdn.cli.service.admin.AdminResourceService;
+import de.htwsaar.minicdn.cli.service.admin.AdminFileService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
@@ -27,17 +27,17 @@ import picocli.CommandLine.Option;
             "  admin file download --origin http://localhost:8080 --path docs/Lebenslauf.pdf --out ./downloads/Lebenslauf.pdf"
         },
         subcommands = {
-            AdminResourceCommand.AdminResourceUploadCommand.class,
-            AdminResourceCommand.AdminResourceListCommand.class,
-            AdminResourceCommand.AdminResourceShowCommand.class,
-            AdminResourceCommand.AdminResourceDownloadCommand.class,
-            AdminResourceCommand.AdminResourceDeleteCommand.class
+            AdminFileCommand.AdminFileUploadCommand.class,
+            AdminFileCommand.AdminFileListCommand.class,
+            AdminFileCommand.AdminFileShowCommand.class,
+            AdminFileCommand.AdminFileDownloadCommand.class,
+            AdminFileCommand.AdminFileDeleteCommand.class
         })
-public class AdminResourceCommand implements Runnable {
+public class AdminFileCommand implements Runnable {
 
     final CliContext ctx;
 
-    public AdminResourceCommand(CliContext ctx) {
+    public AdminFileCommand(CliContext ctx) {
         this.ctx = ctx;
     }
 
@@ -46,8 +46,8 @@ public class AdminResourceCommand implements Runnable {
         ConsoleUtils.info(ctx.out(), new CommandLine(this).getUsageMessage());
     }
 
-    AdminResourceService service() {
-        return new AdminResourceService(ctx.httpClient(), ctx.defaultRequestTimeout());
+    AdminFileService service() {
+        return new AdminFileService(ctx.httpClient(), ctx.defaultRequestTimeout());
     }
 
     @Command(
@@ -58,10 +58,10 @@ public class AdminResourceCommand implements Runnable {
             footer = {
                 "  admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf"
             })
-    public static class AdminResourceUploadCommand implements Callable<Integer> {
+    public static class AdminFileUploadCommand implements Callable<Integer> {
 
         @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+        AdminFileCommand parent;
 
         @Option(
                 names = "--path",
@@ -135,10 +135,10 @@ public class AdminResourceCommand implements Runnable {
                 "  admin file list --origin http://localhost:8080",
                 "  admin file list --origin http://localhost:8080 --page 2 --size 50"
             })
-    public static class AdminResourceListCommand implements Callable<Integer> {
+    public static class AdminFileListCommand implements Callable<Integer> {
 
         @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+        AdminFileCommand parent;
 
         @Option(
                 names = "--origin",
@@ -196,10 +196,10 @@ public class AdminResourceCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {"  admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"})
-    public static class AdminResourceShowCommand implements Callable<Integer> {
+    public static class AdminFileShowCommand implements Callable<Integer> {
 
         @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+        AdminFileCommand parent;
 
         @Option(
                 names = "--origin",
@@ -265,10 +265,10 @@ public class AdminResourceCommand implements Runnable {
             footer = {
                 "  admin file download --origin http://localhost:8080 --path docs/Lebenslauf.pdf --out ./downloads/Lebenslauf.pdf"
             })
-    public static class AdminResourceDownloadCommand implements Callable<Integer> {
+    public static class AdminFileDownloadCommand implements Callable<Integer> {
 
         @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+        AdminFileCommand parent;
 
         @Option(
                 names = "--origin",
@@ -333,10 +333,10 @@ public class AdminResourceCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {"  admin file delete --origin http://localhost:8080 --path docs/Lebenslauf.pdf"})
-    public static class AdminResourceDeleteCommand implements Callable<Integer> {
+    public static class AdminFileDeleteCommand implements Callable<Integer> {
 
         @CommandLine.ParentCommand
-        AdminResourceCommand parent;
+        AdminFileCommand parent;
 
         @Option(
                 names = "--origin",

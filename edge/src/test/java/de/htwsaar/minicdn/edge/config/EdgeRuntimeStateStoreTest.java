@@ -9,12 +9,12 @@ import java.nio.file.Path;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-    /**
-     * Unit tests for {@link EdgeRuntimeStateStore}.
-     *
-     * <p>Verifies that the store correctly persists and restores edge runtime
-     * configuration and TTL policies to and from a properties file.
-     */
+/**
+ * Unit tests for {@link EdgeRuntimeStateStore}.
+ *
+ * <p>Verifies that the store correctly persists and restores edge runtime
+ * configuration and TTL policies to and from a properties file.
+ */
 class EdgeRuntimeStateStoreTest {
 
     /**

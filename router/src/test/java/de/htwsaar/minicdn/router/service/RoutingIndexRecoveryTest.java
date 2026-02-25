@@ -8,13 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
-    /**
-     * Unit tests for verifying the persistence and recovery behavior of {@link RoutingIndex}.
-     *
-     * <p>These tests ensure that routing state (edge nodes and their associated regions)
-     * can be persisted to a backing store and correctly recovered upon a subsequent
-     * instantiation of {@link RoutingIndex}, simulating a router restart scenario.
-     */
+/**
+ * Unit tests for verifying the persistence and recovery behavior of {@link RoutingIndex}.
+ *
+ * <p>These tests ensure that routing state (edge nodes and their associated regions)
+ * can be persisted to a backing store and correctly recovered upon a subsequent
+ * instantiation of {@link RoutingIndex}, simulating a router restart scenario.
+ */
 class RoutingIndexRecoveryTest {
 
     /**

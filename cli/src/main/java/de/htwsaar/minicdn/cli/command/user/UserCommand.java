@@ -1,7 +1,9 @@
 package de.htwsaar.minicdn.cli.command.user;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
+
 import java.util.Objects;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
@@ -14,7 +16,10 @@ import picocli.CommandLine.Spec;
 @Command(
         name = "user",
         description = "User operations",
-        subcommands = {UserResourceCommand.class, UserCacheCommand.class, UserFileCommand.class, UserStatsCommand.class
+        subcommands = {
+                UserCacheCommand.class,
+                UserFileCommand.class,
+                UserStatsCommand.class
         })
 public final class UserCommand implements Runnable {
 
