@@ -147,7 +147,8 @@ public final class AdminStatsCommand implements Runnable {
                         err.println(response.body());
                     }
                     if (response.statusCode() == 401) {
-                        err.println("[ADMIN] Hint: pass --admin-token <TOKEN> or set MINICDN_ADMIN_TOKEN / -Dminicdn.admin.token.");
+                        err.println(
+                                "[ADMIN] Hint: pass --admin-token <TOKEN> or set MINICDN_ADMIN_TOKEN / -Dminicdn.admin.token.");
                     }
                     err.flush();
                     return 2;
@@ -169,14 +170,24 @@ public final class AdminStatsCommand implements Runnable {
                 out.println("[ADMIN] Mini-CDN Stats");
                 out.printf("  timestamp         : %s%n", root.path("timestamp").asText("n/a"));
                 out.printf("  windowSec         : %d%n", root.path("windowSec").asInt(safeWindow));
-                out.printf("  totalRequests     : %d%n", router.path("totalRequests").asLong());
-                out.printf("  requestsPerMinute : %d%n", router.path("requestsPerMinute").asLong());
-                out.printf("  activeClients     : %d%n", router.path("activeClients").asLong());
-                out.printf("  routingErrors     : %d%n", router.path("routingErrors").asLong());
+                out.printf(
+                        "  totalRequests     : %d%n",
+                        router.path("totalRequests").asLong());
+                out.printf(
+                        "  requestsPerMinute : %d%n",
+                        router.path("requestsPerMinute").asLong());
+                out.printf(
+                        "  activeClients     : %d%n",
+                        router.path("activeClients").asLong());
+                out.printf(
+                        "  routingErrors     : %d%n",
+                        router.path("routingErrors").asLong());
                 out.printf("  cacheHits         : %d%n", cache.path("hits").asLong());
                 out.printf("  cacheMisses       : %d%n", cache.path("misses").asLong());
-                out.printf("  cacheHitRatio     : %.4f%n", cache.path("hitRatio").asDouble());
-                out.printf("  filesLoaded       : %d%n", cache.path("filesLoaded").asLong());
+                out.printf(
+                        "  cacheHitRatio     : %.4f%n", cache.path("hitRatio").asDouble());
+                out.printf(
+                        "  filesLoaded       : %d%n", cache.path("filesLoaded").asLong());
                 out.printf("  nodesTotal        : %d%n", nodes.path("total").asLong());
 
                 printDownloadTotals(out, downloads.path("byFileTotal"));
