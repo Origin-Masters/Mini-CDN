@@ -16,12 +16,12 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
 
-public final class AdminResourceService {
+public final class AdminFileService {
 
     private final HttpClient httpClient;
     private final Duration requestTimeout;
 
-    public AdminResourceService(HttpClient httpClient, Duration requestTimeout) {
+    public AdminFileService(HttpClient httpClient, Duration requestTimeout) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
     }

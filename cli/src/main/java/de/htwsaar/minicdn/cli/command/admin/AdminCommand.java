@@ -16,7 +16,7 @@ import picocli.CommandLine.Spec;
         name = "admin",
         description = "mini-Cdn Administration",
         subcommands = {
-            AdminResourceCommand.class,
+            AdminFileCommand.class,
             AdminEdgeCommand.class,
             AdminUserMgmtCommand.class,
             AdminConfigCommand.class,
