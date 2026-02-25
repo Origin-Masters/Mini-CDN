@@ -9,8 +9,8 @@ import de.htwsaar.minicdn.router.util.UrlUtil;
 import java.net.URI;
 import java.time.Duration;
 import java.util.UUID;
-import org.slf4j.Logger;                //für das Logging
-import org.slf4j.LoggerFactory;         // für das Logging
+import org.slf4j.Logger; // für das Logging
+import org.slf4j.LoggerFactory; // für das Logging
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -73,7 +73,10 @@ public class CdnRoutingController {
             @RequestHeader(value = "X-Client-Id", required = false) String clientIdHeader) {
 
         // Log-Eintrag beim Start der Anfrage (Nachweis der Parallelität)
-        log.info("START: Empfange Routing-Anfrage für Datei: {} [Region: {}]", path, regionQuery != null ? regionQuery : regionHeader);
+        log.info(
+                "START: Empfange Routing-Anfrage für Datei: {} [Region: {}]",
+                path,
+                regionQuery != null ? regionQuery : regionHeader);
 
         String region = (regionQuery != null && !regionQuery.isBlank()) ? regionQuery : regionHeader;
         String clientId = firstNonBlank(clientIdQuery, clientIdHeader);
@@ -122,7 +125,8 @@ public class CdnRoutingController {
                 headers.set(HEADER_RETRY_COUNT, String.valueOf(attempts));
 
                 // Log-Eintrag vor dem erfolgreichen Redirect (Ende der Verarbeitung)
-                log.info("FINISH: Routing-Entscheidung erfolgreich für Datei: {} -> Edge: {}", path, selectedNode.url());
+                log.info(
+                        "FINISH: Routing-Entscheidung erfolgreich für Datei: {} -> Edge: {}", path, selectedNode.url());
 
                 return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT)
                         .headers(headers)
