@@ -130,7 +130,6 @@ public class RouterStatsService {
                 downloadsByFileByEdgeSnapshot);
     }
 
-
     /**
      * Normalisiert einen Dateipfad für die Statistik-Zählung.
      *
