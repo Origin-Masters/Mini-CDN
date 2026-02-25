@@ -124,7 +124,7 @@ public class EdgeHttpClient {
      * and propagates the TraceId header when available for request correlation.
      *
      * @param builder HttpRequest.Builder to enrich with headers * @return the same builder with added headers */
-    @org.springframework.beans.factory.annotation.Value("${minicdn.admin.token:secret-token}")
+    @org.springframework.beans.factory.annotation.Value("${minicdn.admin.token}")
     private String adminToken;
 
     private HttpRequest.Builder withCurrentTraceId(HttpRequest.Builder builder) {
