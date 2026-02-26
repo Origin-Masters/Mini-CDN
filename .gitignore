@@ -5,7 +5,7 @@
 .LSOverride
 
 # environment variable files
-#.env
+.env
 
 
 # Windows thumbnail cached files
