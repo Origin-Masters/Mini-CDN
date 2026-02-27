@@ -117,7 +117,7 @@ class CdnStandardFlowIT extends AbstractE2E {
         URI adminUri = uri(ORIGIN_BASE + "/api/origin/admin/files/" + fileName);
 
         HttpRequest putReq = HttpRequest.newBuilder(adminUri)
-                .header("X-Admin-Token", "secret-token")
+                .header("X-Admin-Token", ADMIN_TOKEN)
                 .PUT(HttpRequest.BodyPublishers.ofString(content))
                 .header("Content-Type", "application/octet-stream")
                 .build();
@@ -135,7 +135,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     private static void registerEdgeInRouter() throws Exception {
         URI addEdgeUri = uri(ROUTER_BASE + "/api/cdn/routing?region=" + REGION + "&url=" + EDGE_BASE);
         HttpRequest addEdgeReq = HttpRequest.newBuilder(addEdgeUri)
-                .header("X-Admin-Token", "secret-token")
+                .header("X-Admin-Token", ADMIN_TOKEN)
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -147,7 +147,7 @@ class CdnStandardFlowIT extends AbstractE2E {
         URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
         CLIENT.send(
                 HttpRequest.newBuilder(uri)
-                        .header("X-Admin-Token", "secret-token")
+                        .header("X-Admin-Token", ADMIN_TOKEN)
                         .POST(HttpRequest.BodyPublishers.noBody())
                         .build(),
                 HttpResponse.BodyHandlers.discarding());
@@ -156,7 +156,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     private static void cleanupRouterEdgeRegistration() throws Exception {
         URI delEdgeUri = uri(ROUTER_BASE + "/api/cdn/routing?region=" + REGION + "&url=" + EDGE_BASE);
         HttpRequest delReq = HttpRequest.newBuilder(delEdgeUri)
-                .header("X-Admin-Token", "secret-token")
+                .header("X-Admin-Token", ADMIN_TOKEN)
                 .DELETE()
                 .build();
 
@@ -190,7 +190,7 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static void cleanupOriginFile(URI originAdminFileUri) throws Exception {
         HttpRequest deleteReq = HttpRequest.newBuilder(originAdminFileUri)
-                .header("X-Admin-Token", "secret-token")
+                .header("X-Admin-Token", ADMIN_TOKEN)
                 .DELETE()
                 .build();
         HttpResponse<Void> deleteResp = CLIENT.send(deleteReq, HttpResponse.BodyHandlers.discarding());
@@ -206,7 +206,7 @@ class CdnStandardFlowIT extends AbstractE2E {
         URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
         CLIENT.send(
                 HttpRequest.newBuilder(uri)
-                        .header("X-Admin-Token", "secret-token")
+                        .header("X-Admin-Token", ADMIN_TOKEN)
                         .DELETE()
                         .build(),
                 HttpResponse.BodyHandlers.discarding());
