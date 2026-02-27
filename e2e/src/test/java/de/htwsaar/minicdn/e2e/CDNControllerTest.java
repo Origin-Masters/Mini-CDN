@@ -22,7 +22,7 @@ class CDNControllerTest extends AbstractE2E {
         RestTemplate template = new RestTemplate();
         template.getInterceptors().add((request, body, execution) -> {
             if (!request.getHeaders().containsKey("X-Admin-Token")) {
-                request.getHeaders().add("X-Admin-Token", "ADMIN_TOKEN");
+                request.getHeaders().add("X-Admin-Token", ADMIN_TOKEN);
             }
             return execution.execute(request, body);
         });
