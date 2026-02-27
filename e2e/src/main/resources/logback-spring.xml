@@ -3,12 +3,15 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                {"timestamp":"%d{ISO8601}","level":"%level","traceId":"%X{traceId}","logger":"%logger","message":"%msg"}%n
+                {"timestamp":"%d{ISO8601}","level":"%level","thread":"%thread","traceId":"%X{traceId}","logger":"%logger","message":"%msg"}%n
             </pattern>
         </encoder>
     </appender>
 
     <root level="INFO">
+        <logger name="de.htwsaar.minicdn" level="DEBUG" additivity="false">
+            <appender-ref ref="STDOUT" />
+        </logger>
         <appender-ref ref="STDOUT"/>
     </root>
 
