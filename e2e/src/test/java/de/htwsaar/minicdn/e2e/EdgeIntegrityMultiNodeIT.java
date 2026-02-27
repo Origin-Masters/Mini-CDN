@@ -14,11 +14,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 class EdgeIntegrityMultiNodeIT extends AbstractE2E {
 
-    private static final int EDGE2_PORT = 8083;
-    private static final int EDGE3_PORT = 8084;
-
-    private static final String EDGE2_BASE = "http://localhost:" + EDGE2_PORT;
-    private static final String EDGE3_BASE = "http://localhost:" + EDGE3_PORT;
+    private static String edge2Base;
+    private static String edge3Base;
 
     private static ConfigurableApplicationContext edge2Ctx;
     private static ConfigurableApplicationContext edge3Ctx;
@@ -43,25 +40,23 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
 
         edge2Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
-                .properties(
-                        "server.port=" + EDGE2_PORT,
-                        "origin.base-url=" + ORIGIN_BASE,
-                        "edge.cache.ttl-ms=60000",
-                        "edge.cache.max-entries=100",
-                        "minicdn.admin.token=secret-token")
-                .build()
-                .run("--server.port=" + EDGE2_PORT);
+                .run(
+                        "--server.port=0",
+                        "--origin.base-url=" + ORIGIN_BASE,
+                        "--edge.cache.ttl-ms=60000",
+                        "--edge.cache.max-entries=100",
+                        "--minicdn.admin.token=" + ADMIN_TOKEN);
+        edge2Base = "http://localhost:" + localPort(edge2Ctx);
 
         edge3Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
-                .properties(
-                        "server.port=" + EDGE3_PORT,
-                        "origin.base-url=" + ORIGIN_BASE,
-                        "edge.cache.ttl-ms=60000",
-                        "edge.cache.max-entries=100",
-                        "minicdn.admin.token=secret-token")
-                .build()
-                .run("--server.port=" + EDGE3_PORT);
+                .run(
+                        "--server.port=0",
+                        "--origin.base-url=" + ORIGIN_BASE,
+                        "--edge.cache.ttl-ms=60000",
+                        "--edge.cache.max-entries=100",
+                        "--minicdn.admin.token=" + ADMIN_TOKEN);
+        edge3Base = "http://localhost:" + localPort(edge3Ctx);
 
         String fileName = "integrity-" + System.currentTimeMillis() + ".bin";
         URI adminUri = URI.create(ORIGIN_BASE + "/api/origin/admin/files/" + fileName);
@@ -69,7 +64,7 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
         byte[] payload = new byte[128_000];
         CLIENT.send(
                 HttpRequest.newBuilder(adminUri)
-                        .header("X-Admin-Token", "secret-token")
+                        .header("X-Admin-Token", ADMIN_TOKEN)
                         .PUT(HttpRequest.BodyPublishers.ofByteArray(payload))
                         .build(),
                 HttpResponse.BodyHandlers.discarding());
@@ -79,8 +74,8 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
             assertNotNull(originSha);
 
             String edge1Sha = fetchSha(EDGE_BASE + "/api/edge/files/" + fileName);
-            String edge2Sha = fetchSha(EDGE2_BASE + "/api/edge/files/" + fileName);
-            String edge3Sha = fetchSha(EDGE3_BASE + "/api/edge/files/" + fileName);
+            String edge2Sha = fetchSha(edge2Base + "/api/edge/files/" + fileName);
+            String edge3Sha = fetchSha(edge3Base + "/api/edge/files/" + fileName);
 
             assertEquals(originSha, edge1Sha);
             assertEquals(originSha, edge2Sha);
@@ -89,7 +84,7 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
         } finally {
             CLIENT.send(
                     HttpRequest.newBuilder(adminUri)
-                            .header("X-Admin-Token", "secret-token")
+                            .header("X-Admin-Token", ADMIN_TOKEN)
                             .DELETE()
                             .build(),
                     HttpResponse.BodyHandlers.discarding());
