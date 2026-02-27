@@ -33,25 +33,25 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-02-27 14:32:52,974","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.1 with PID 95184 (/Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router/target/classes started by michalroziel in /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-02-27 14:32:52,975","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
-{"timestamp":"2026-02-27 14:32:53,409","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
-{"timestamp":"2026-02-27 14:32:53,415","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
-{"timestamp":"2026-02-27 14:32:53,416","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-02-27 14:32:53,416","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-02-27 14:32:53,442","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-02-27 14:32:53,442","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 443 ms"}
-{"timestamp":"2026-02-27 14:32:53,712","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
-{"timestamp":"2026-02-27 14:32:53,721","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
-{"timestamp":"2026-02-27 14:32:53,725","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 0.982 seconds (process running for 1.194)"}
-{"timestamp":"2026-02-27 14:32:56,913","level":"INFO","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-02-27 14:32:56,913","level":"INFO","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-02-27 14:32:56,914","level":"INFO","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-02-27 14:50:16,536","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.1 with PID 98290 (/Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router/target/classes started by michalroziel in /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-02-27 14:50:16,538","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
+{"timestamp":"2026-02-27 14:50:17,006","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
+{"timestamp":"2026-02-27 14:50:17,011","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-02-27 14:50:17,012","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-02-27 14:50:17,012","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-02-27 14:50:17,035","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-02-27 14:50:17,036","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 472 ms"}
+{"timestamp":"2026-02-27 14:50:17,292","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-02-27 14:50:17,302","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
+{"timestamp":"2026-02-27 14:50:17,307","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 0.977 seconds (process running for 1.172)"}
+{"timestamp":"2026-02-27 14:50:20,329","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-02-27 14:50:20,329","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-02-27 14:50:20,330","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  10.843 s
-[INFO] Finished at: 2026-02-27T14:32:50+01:00
+[INFO] Total time:  15.306 s
+[INFO] Finished at: 2026-02-27T14:50:14+01:00
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.5:run (default-cli) on project router: Process terminated with exit code: 143 -> [Help 1]
 [ERROR] 
