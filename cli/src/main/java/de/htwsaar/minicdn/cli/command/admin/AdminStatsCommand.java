@@ -6,17 +6,14 @@ import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.admin.AdminStatsService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import de.htwsaar.minicdn.cli.util.StatsFormatter;
-
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Objects;
 import java.util.concurrent.Callable;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Spec;
-
 
 /**
  * Admin-Command zum Abruf von Router/Edge-Statistiken über die Admin-API.
@@ -30,9 +27,9 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-                "  admin stats show -H http://localhost:8080",
-                "  admin stats show -H http://localhost:8080 --window-sec 120 --aggregate-edge=false",
-                "  admin stats show -H http://localhost:8080 --json"
+            "  admin stats show -H http://localhost:8080",
+            "  admin stats show -H http://localhost:8080 --window-sec 120 --aggregate-edge=false",
+            "  admin stats show -H http://localhost:8080 --json"
         },
         subcommands = {AdminStatsCommand.AdminStatsShowCommand.class})
 public final class AdminStatsCommand implements Runnable {
@@ -71,10 +68,10 @@ public final class AdminStatsCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                    "  admin stats show -H http://localhost:8080",
-                    "  admin stats show -H http://localhost:8080 --window-sec 10",
-                    "  admin stats show -H http://localhost:8080 --aggregate-edge=false",
-                    "  admin stats show -H http://localhost:8080 --json"
+                "  admin stats show -H http://localhost:8080",
+                "  admin stats show -H http://localhost:8080 --window-sec 10",
+                "  admin stats show -H http://localhost:8080 --aggregate-edge=false",
+                "  admin stats show -H http://localhost:8080 --json"
             })
     public static final class AdminStatsShowCommand implements Callable<Integer> {
 
@@ -130,8 +127,8 @@ public final class AdminStatsCommand implements Runnable {
             int safeWindow = Math.max(1, windowSec);
 
             try {
-                AdminStatsService.StatsResponse response = adminStatsService.fetchStats(
-                        effectiveHost, safeWindow, aggregateEdge, token);
+                AdminStatsService.StatsResponse response =
+                        adminStatsService.fetchStats(effectiveHost, safeWindow, aggregateEdge, token);
 
                 if (!response.isSuccess()) {
                     ConsoleUtils.error(err, "[ADMIN] Stats request failed: HTTP %d", response.getStatusCode());
@@ -141,7 +138,8 @@ public final class AdminStatsCommand implements Runnable {
                     }
 
                     if (response.getStatusCode() == 401) {
-                        ConsoleUtils.error(err,
+                        ConsoleUtils.error(
+                                err,
                                 "[ADMIN] Hint: pass --admin-token <TOKEN> or set MINICDN_ADMIN_TOKEN / -Dminicdn.admin.token.");
                     }
                     return 2;
@@ -164,7 +162,6 @@ public final class AdminStatsCommand implements Runnable {
                 return 1;
             }
         }
-
 
         /**
          * Formatiert die relevanten Statistiken aus der JSON-Antwort und gibt sie lesbar aus.
