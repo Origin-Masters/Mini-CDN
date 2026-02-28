@@ -2,7 +2,8 @@ package de.htwsaar.minicdn.cli.command.user;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.dto.DownloadResult;
-import de.htwsaar.minicdn.cli.service.user.UserFileDownloadService;
+import de.htwsaar.minicdn.cli.service.user.UserFileService;
+import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.net.URI;
@@ -55,8 +56,8 @@ public final class UserFileCommand implements Runnable {
         ctx.out().flush();
     }
 
-    UserFileDownloadService downloadService() {
-        return new UserFileDownloadService(ctx.httpClient(), ctx.defaultRequestTimeout());
+    UserFileService downloadService() {
+        return new UserFileService(ctx.httpClient(), ctx.defaultRequestTimeout());
     }
 
     /**
@@ -133,32 +134,28 @@ public final class UserFileCommand implements Runnable {
         public Integer call() {
             String cleanRemote =
                     PathUtils.stripLeadingSlash(Objects.toString(remotePath, "").trim());
-            if (cleanRemote.isBlank() || isUnsafeRemotePath(cleanRemote)) {
-                parent.ctx.err().println("[FILE] Invalid remotePath (must be a safe, non-blank relative path)");
-                parent.ctx.err().flush();
+            if (cleanRemote.isBlank() || PathUtils.isUnsafeRemotePath(cleanRemote)) {
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[FILE] Invalid remotePath (must be a safe, non-blank relative path)");
                 return 3;
             }
 
             String cleanRegion = Objects.toString(region, "").trim();
             if (cleanRegion.isBlank()) {
-                parent.ctx.err().println("[FILE] Missing/blank --region");
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[FILE] Missing/blank --region");
                 return 3;
             }
 
             if (out == null) {
-                parent.ctx.err().println("[FILE] Missing --out");
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[FILE] Missing --out");
                 return 3;
             }
             if (Files.exists(out) && !overwrite) {
-                parent.ctx.err().printf("[FILE] Output file already exists (use --overwrite): %s%n", out);
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[FILE] Output file already exists (use --overwrite): %s", out);
                 return 3;
             }
             if (Files.exists(out) && Files.isDirectory(out)) {
-                parent.ctx.err().printf("[FILE] Output path is a directory: %s%n", out);
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[FILE] Output path is a directory: %s", out);
                 return 3;
             }
 
@@ -167,33 +164,28 @@ public final class UserFileCommand implements Runnable {
                     .downloadViaRouter(base, cleanRemote, cleanRegion, clientId, out, overwrite);
 
             if (result.error() != null) {
-                parent.ctx.err().printf("[FILE] Download failed: %s%n", result.error());
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[FILE] Download failed: %s", result.error());
                 return 1;
             }
 
             int sc = Objects.requireNonNull(result.statusCode(), "statusCode");
             if (sc >= 200 && sc < 300) {
-                parent.ctx
-                        .out()
-                        .printf("[FILE] Downloaded '%s' -> %s (%d bytes)%n", cleanRemote, out, result.bytesWritten());
-                parent.ctx.out().flush();
+                ConsoleUtils.info(
+                        parent.ctx.out(),
+                        "[FILE] Downloaded '%s' -> %s (%d bytes)",
+                        cleanRemote,
+                        out,
+                        result.bytesWritten());
                 return 0;
             }
 
             if (sc >= 400 && sc < 500) {
-                parent.ctx.err().printf("[FILE] Request rejected (HTTP %d) for '%s'%n", sc, cleanRemote);
-                parent.ctx.err().flush();
+                ConsoleUtils.error(parent.ctx.err(), "[FILE] Request rejected (HTTP %d) for '%s'", sc, cleanRemote);
                 return 4;
             }
 
-            parent.ctx.err().printf("[FILE] Server error (HTTP %d) for '%s'%n", sc, cleanRemote);
-            parent.ctx.err().flush();
+            ConsoleUtils.error(parent.ctx.err(), "[FILE] Server error (HTTP %d) for '%s'", sc, cleanRemote);
             return 2;
-        }
-
-        private static boolean isUnsafeRemotePath(String p) {
-            return p.startsWith("/") || p.contains("..") || p.contains("\\");
         }
     }
 }

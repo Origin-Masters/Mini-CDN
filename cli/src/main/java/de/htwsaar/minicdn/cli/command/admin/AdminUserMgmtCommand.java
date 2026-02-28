@@ -61,7 +61,9 @@ public final class AdminUserMgmtCommand implements Runnable {
             description = "Create a new user",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {"  admin user add --name alice --role ADMIN", "  admin user add --name bob --role USER"})
+            footer = {
+                    "  admin user add --name alice --role ADMIN",
+                    "  admin user add --name bob --role USER"})
     public static final class AdminUserAddCommand implements Runnable {
 
         public static final Map<String, Integer> ROLE_MAP = Map.of("ADMIN", 1, "USER", 2);
@@ -96,9 +98,6 @@ public final class AdminUserMgmtCommand implements Runnable {
                 ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Database error: %s", e.getMessage());
             }
         }
-
-        // Hilfsfunktion zum Parsen der Rolle aus String, unterstützt sowohl benannte Rollen als auch numerische IDs
-
     }
 
     @Command(

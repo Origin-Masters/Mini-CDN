@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.cli.di;
 
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Objects;
@@ -25,6 +26,8 @@ public final class CliContext {
     private final PrintWriter err;
     private final HttpClient httpClient;
     private final Duration defaultRequestTimeout;
+    private final String adminToken;
+    private final URI routerBaseUrl;
 
     /**
      * Erzeugt einen neuen CLI-Kontext.
@@ -40,12 +43,16 @@ public final class CliContext {
             PrintWriter out,
             PrintWriter err,
             HttpClient httpClient,
-            Duration defaultRequestTimeout) {
+            Duration defaultRequestTimeout,
+            String adminToken,
+            URI routerBaseUrl) {
         this.terminal = Objects.requireNonNull(terminal);
         this.out = Objects.requireNonNull(out);
         this.err = Objects.requireNonNull(err);
         this.httpClient = Objects.requireNonNull(httpClient);
         this.defaultRequestTimeout = Objects.requireNonNull(defaultRequestTimeout);
+        this.adminToken = Objects.requireNonNull(adminToken);
+        this.routerBaseUrl = Objects.requireNonNull(routerBaseUrl);
     }
 
     public Terminal terminal() {
@@ -70,5 +77,13 @@ public final class CliContext {
 
     public Scanner in() {
         return new Scanner(terminal.input());
+    }
+
+    public String adminToken() {
+        return adminToken;
+    }
+
+    public URI routerBaseUrl() {
+        return routerBaseUrl;
     }
 }

@@ -25,7 +25,7 @@ import java.util.Objects;
  *
  * <p>Schreibt erfolgreiche Downloads atomar: erst in eine .part-Datei, dann Move auf Zielpfad.
  */
-public final class UserFileDownloadService {
+public final class UserFileService {
 
     private static final String HEADER_REGION = "X-Client-Region";
     private static final String HEADER_CLIENT_ID = "X-Client-Id";
@@ -33,7 +33,7 @@ public final class UserFileDownloadService {
     private final HttpClient httpClient;
     private final Duration requestTimeout;
 
-    public UserFileDownloadService(HttpClient httpClient, Duration requestTimeout) {
+    public UserFileService(HttpClient httpClient, Duration requestTimeout) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
     }

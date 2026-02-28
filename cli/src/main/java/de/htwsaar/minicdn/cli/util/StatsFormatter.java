@@ -1,7 +1,6 @@
 package de.htwsaar.minicdn.cli.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,8 +28,7 @@ public final class StatsFormatter {
             return;
         }
 
-        JsonUtils.toSortedLongMap(byFileTotal)
-                .forEach((path, count) -> out.printf("    %s : %d%n", path, count));
+        JsonUtils.toSortedLongMap(byFileTotal).forEach((path, count) -> out.printf("    %s : %d%n", path, count));
     }
 
     /**
@@ -55,8 +53,7 @@ public final class StatsFormatter {
 
         sortedByFile.forEach((path, node) -> {
             out.printf("    %s%n", path);
-            JsonUtils.toSortedLongMap(node)
-                    .forEach((edgeUrl, count) -> out.printf("      %s : %d%n", edgeUrl, count));
+            JsonUtils.toSortedLongMap(node).forEach((edgeUrl, count) -> out.printf("      %s : %d%n", edgeUrl, count));
         });
     }
 }
