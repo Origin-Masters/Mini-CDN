@@ -128,13 +128,13 @@ public class EdgeHttpClient {
     private String adminToken;
 
     private HttpRequest.Builder withCurrentTraceId(HttpRequest.Builder builder) {
+        builder.header("X-Admin-Token", adminToken);
+
         String traceId = MDC.get(TraceIdFilter.TRACE_ID_KEY);
-
-        // Always add admin token for internal edge calls builder.header("X-Admin-Token", adminToken);
-
-        if (traceId == null || traceId.isBlank()) {
-            return builder;
+        if (traceId != null && !traceId.isBlank()) {
+            builder.header(TraceIdFilter.TRACE_ID_HEADER, traceId);
         }
-        return builder.header(TraceIdFilter.TRACE_ID_HEADER, traceId);
+
+        return builder;
     }
 }

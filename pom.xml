@@ -102,6 +102,7 @@
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
                         <encoding>${project.build.sourceEncoding}</encoding>
+                        <parameters>true</parameters>
                         <fork>true</fork>
                         <compilerArgs>
                             <arg>-XDcompilePolicy=simple</arg>

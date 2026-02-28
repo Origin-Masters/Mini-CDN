@@ -23,7 +23,6 @@ class SmokeTest extends AbstractE2E {
 
         byte[] data = new byte[150_000];
 
-
         CLIENT.send(
                 HttpRequest.newBuilder(adminUri)
                         .header("X-Admin-Token", ADMIN_TOKEN)

@@ -2,10 +2,13 @@ package de.htwsaar.minicdn.e2e;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.*;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -43,20 +46,38 @@ class CDNControllerTest extends AbstractE2E {
     @Order(2)
     @DisplayName("E2E: Registrierung einer Edge-Node und anschließendes Routing")
     void testRegistrationAndRouting() {
-        // 1. Edge-Node beim Router registrieren
         String registrationUrl = ROUTER_BASE + "/api/cdn/routing?region=EU&url=" + EDGE_BASE;
         ResponseEntity<Void> regResponse = restTemplate.postForEntity(registrationUrl, null, Void.class);
         assertEquals(HttpStatus.CREATED, regResponse.getStatusCode());
 
-        // 2. Datei über den Router anfragen
         String routerFileUrl = ROUTER_BASE + "/api/cdn/files/test.txt?region=EU";
 
-        // Wir nutzen execute, um den Redirect-Header manuell zu prüfen (RestTemplate folgt sonst automatisch)
-        ResponseEntity<String> routeResponse = restTemplate.getForEntity(routerFileUrl, String.class);
+        ResponseEntity<String> routeResponse = awaitRoutingOk(routerFileUrl, Duration.ofSeconds(5));
 
-        // Da RestTemplate standardmäßig Redirects folgt, prüfen wir, ob wir am Ende beim Edge gelandet sind
-        // Falls dein Edge-Controller die Datei wirklich ausliefert:
         assertEquals(HttpStatus.OK, routeResponse.getStatusCode());
+    }
+
+    private ResponseEntity<String> awaitRoutingOk(String url, Duration timeout) {
+        Instant deadline = Instant.now().plus(timeout);
+        HttpServerErrorException last = null;
+
+        while (Instant.now().isBefore(deadline)) {
+            try {
+                return restTemplate.getForEntity(url, String.class);
+            } catch (HttpServerErrorException e) {
+                last = e;
+                if (e.getStatusCode() != HttpStatus.SERVICE_UNAVAILABLE) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException(ie);
+                }
+            }
+        }
+        throw last != null ? last : new IllegalStateException("Routing did not succeed in time");
     }
 
     @Test
