@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
-import de.htwsaar.minicdn.cli.service.admin.AdminEdgeLauncherService;
+import de.htwsaar.minicdn.cli.service.admin.AdminEdgeService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import java.net.URI;
 import java.util.Objects;
@@ -53,8 +53,8 @@ public final class AdminEdgeCommand implements Runnable {
         ctx.out().flush();
     }
 
-    private AdminEdgeLauncherService service() {
-        return new AdminEdgeLauncherService(ctx.httpClient(), ctx.defaultRequestTimeout());
+    private AdminEdgeService service() {
+        return new AdminEdgeService(ctx.httpClient(), ctx.defaultRequestTimeout());
     }
 
     @Command(
