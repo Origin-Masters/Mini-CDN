@@ -3,10 +3,12 @@ package de.htwsaar.minicdn.edge.web;
 import de.htwsaar.minicdn.edge.EdgeMetricsService;
 import de.htwsaar.minicdn.edge.domain.CacheDecision;
 import de.htwsaar.minicdn.edge.domain.FilePayload;
+import de.htwsaar.minicdn.edge.domain.IntegrityCheckFailedException;
+import de.htwsaar.minicdn.edge.domain.OriginAccessException;
 import de.htwsaar.minicdn.edge.service.EdgeFileService;
-import de.htwsaar.minicdn.edge.service.EdgeUpstreamException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,8 +52,12 @@ public class EdgeFileController {
             FilePayload payload = fileService.getFile(path);
             recordDecision(path, payload.cache());
             return ResponseEntity.ok().headers(buildHeaders(payload)).body(payload.body());
-        } catch (EdgeUpstreamException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        } catch (IntegrityCheckFailedException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+        } catch (OriginAccessException ex) {
+            return ResponseEntity.status(mapStatus(ex)).build();
         }
     }
 
@@ -67,8 +73,12 @@ public class EdgeFileController {
             FilePayload payload = fileService.headFile(path);
             recordDecision(null, payload.cache());
             return ResponseEntity.ok().headers(buildHeaders(payload)).build();
-        } catch (EdgeUpstreamException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        } catch (IntegrityCheckFailedException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+        } catch (OriginAccessException ex) {
+            return ResponseEntity.status(mapStatus(ex)).build();
         }
     }
 
@@ -82,6 +92,12 @@ public class EdgeFileController {
         return h;
     }
 
+    private HttpStatus mapStatus(OriginAccessException ex) {
+        return switch (ex.getReason()) {
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case UNAVAILABLE, INVALID_RESPONSE -> HttpStatus.BAD_GATEWAY;
+        };
+    }
     /**
      * Erfasst die Cache-Entscheidung zusammen mit dem Dateipfad für Download-Statistiken.
      *
