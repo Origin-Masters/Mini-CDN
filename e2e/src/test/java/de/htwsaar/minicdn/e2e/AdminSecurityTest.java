@@ -61,7 +61,7 @@ class AdminSecurityTest extends AbstractE2E {
         String adminUrl = ROUTER_BASE + "/api/cdn/admin/stats";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Admin-Token", "secret-token");
+        headers.set("X-Admin-Token", ADMIN_TOKEN);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         // sending the correct token
