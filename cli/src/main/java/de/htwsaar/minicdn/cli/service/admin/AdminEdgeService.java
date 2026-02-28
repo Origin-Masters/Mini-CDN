@@ -17,7 +17,7 @@ import java.util.Objects;
  * <p>Diese Klasse kapselt URL-Aufbau, JSON-Payloads und HTTP-Error-Handling (IO vs. HTTP-Status),
  * damit Picocli-Commands schlank bleiben (SRP).
  */
-public final class AdminEdgeLauncherService {
+public final class AdminEdgeService {
 
     private final HttpClient httpClient;
     private final Duration requestTimeout;
@@ -28,7 +28,7 @@ public final class AdminEdgeLauncherService {
      * @param httpClient gemeinsamer HTTP-Client
      * @param requestTimeout Timeout pro Request
      */
-    public AdminEdgeLauncherService(HttpClient httpClient, Duration requestTimeout) {
+    public AdminEdgeService(HttpClient httpClient, Duration requestTimeout) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
     }
@@ -167,6 +167,10 @@ public final class AdminEdgeLauncherService {
         return HttpUtils.sendForStringBody(httpClient, req);
     }
 
+    /**
+     * Validiert die Instance-ID auf sichere Zeichen (alphanumerisch, Unterstrich, Bindestrich).
+     * Verhindert potenzielle Probleme mit URL-Pfaden oder Log-Ausgaben.
+     */
     private static boolean isSafeInstanceId(String s) {
         return !s.isBlank() && s.matches("[A-Za-z0-9_-]+");
     }
