@@ -1,24 +1,26 @@
 package de.htwsaar.minicdn.edge.domain;
 
 /**
- * Port zur Abstraktion der Transport-Schicht zum Origin.
- * HTTP heute – gRPC morgen; die Fachlogik bleibt unberührt.
+ * Fachlicher Port zum Lesen von Inhalten und Metadaten vom Origin.
+ *
+ * <p>Der Port ist bewusst transport-agnostisch modelliert:
+ * weder HTTP-Statuscodes noch HEAD/GET-Semantik tauchen hier auf.</p>
  */
 public interface OriginClient {
 
     /**
-     * Lädt eine Datei vom Origin.
+     * Lädt den vollständigen Dateiinhalt vom Origin.
      *
-     * @param path relativer Pfad (ohne führenden Slash)
-     * @return Origin-Antwort inkl. Status, Body und Integritäts-Headern
+     * @param path relativer Dateipfad
+     * @return fachlicher Inhalt der Datei
      */
-    OriginFileResponse fetchFile(String path);
+    OriginContent fetchFile(String path);
 
     /**
-     * Führt einen HEAD-Call für Metadaten aus.
+     * Lädt nur die Metadaten einer Datei vom Origin.
      *
-     * @param path relativer Pfad (ohne führenden Slash)
-     * @return Origin-Antwort mit Status und Headern, i. d. R. ohne Body
+     * @param path relativer Dateipfad
+     * @return fachliche Metadaten der Datei
      */
-    OriginFileResponse headFile(String path);
+    OriginMetadata fetchMetadata(String path);
 }

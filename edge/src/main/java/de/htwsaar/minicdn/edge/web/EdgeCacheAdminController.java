@@ -40,8 +40,12 @@ public class EdgeCacheAdminController {
      */
     @DeleteMapping("/files/{path:.+}")
     public ResponseEntity<Map<String, String>> invalidateFile(@PathVariable("path") String path) {
-        boolean removed = fileService.invalidateFile(path);
-        return ResponseEntity.ok(Map.of("path", path, "status", removed ? "invalidated" : "not in cache"));
+        try {
+            boolean removed = fileService.invalidateFile(path);
+            return ResponseEntity.ok(Map.of("path", path, "status", removed ? "invalidated" : "not in cache"));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        }
     }
 
     /**
@@ -52,10 +56,14 @@ public class EdgeCacheAdminController {
      */
     @DeleteMapping("/prefix")
     public ResponseEntity<Map<String, Object>> invalidateByPrefix(@RequestParam("value") String value) {
-        int count = fileService.invalidatePrefix(value);
-        return ResponseEntity.ok(Map.of(
-                "prefix", value,
-                "invalidatedCount", count));
+        try {
+            int count = fileService.invalidatePrefix(value);
+            return ResponseEntity.ok(Map.of(
+                    "prefix", value,
+                    "invalidatedCount", count));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        }
     }
 
     /**
