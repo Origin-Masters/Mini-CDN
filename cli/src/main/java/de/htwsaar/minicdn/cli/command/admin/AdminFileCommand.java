@@ -47,7 +47,7 @@ public class AdminFileCommand implements Runnable {
     }
 
     AdminFileService service() {
-        return new AdminFileService(ctx.httpClient(), ctx.defaultRequestTimeout());
+        return new AdminFileService(ctx.transportClient(), ctx.defaultRequestTimeout());
     }
 
     @Command(

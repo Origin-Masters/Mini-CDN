@@ -17,9 +17,6 @@ import picocli.CommandLine.Spec;
 
 /**
  * Admin-Command zum Abruf von Router/Edge-Statistiken über die Admin-API.
- *
- * <p>Hinweis: Dieser Command selbst hat keine Default-Aktion und zeigt nur Usage an.
- * Für die eigentliche Ausführung {@code stats show} verwenden.</p>
  */
 @Command(
         name = "stats",
@@ -39,11 +36,6 @@ public final class AdminStatsCommand implements Runnable {
     @Spec
     private CommandSpec spec;
 
-    /**
-     * Konstruktor für Constructor Injection via {@code ContextFactory}.
-     *
-     * @param ctx CLI-Kontext (Output, HTTP-Client, Timeouts, ...)
-     */
     public AdminStatsCommand(CliContext ctx) {
         this.ctx = Objects.requireNonNull(ctx, "ctx");
     }
@@ -54,14 +46,6 @@ public final class AdminStatsCommand implements Runnable {
         ctx.out().flush();
     }
 
-    /**
-     * Ruft {@code GET /api/cdn/admin/stats} auf und gibt die Daten formatiert aus.
-     *
-     * <p>Exit-Codes:
-     * - 0: OK
-     * - 2: HTTP-Fehlerstatus (non-2xx)
-     * - 1: Exception/Netzwerkfehler</p>
-     */
     @Command(
             name = "show",
             description = "Fetch and display structured stats from the router",
@@ -115,7 +99,7 @@ public final class AdminStatsCommand implements Runnable {
 
         public AdminStatsShowCommand(CliContext ctx) {
             this.ctx = Objects.requireNonNull(ctx, "ctx");
-            this.adminStatsService = new AdminStatsService(ctx);
+            this.adminStatsService = new AdminStatsService(ctx.transportClient(), ctx.defaultRequestTimeout());
         }
 
         @Override
@@ -163,9 +147,6 @@ public final class AdminStatsCommand implements Runnable {
             }
         }
 
-        /**
-         * Formatiert die relevanten Statistiken aus der JSON-Antwort und gibt sie lesbar aus.
-         */
         private void formatAndPrintStats(PrintWriter out, JsonNode root, int safeWindow) {
             JsonNode router = root.path("router");
             JsonNode cache = root.path("cache");

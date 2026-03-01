@@ -1,49 +1,32 @@
 package de.htwsaar.minicdn.cli.service.admin;
 
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
-import de.htwsaar.minicdn.cli.util.HttpUtils;
+import de.htwsaar.minicdn.cli.transport.TransportClient;
+import de.htwsaar.minicdn.cli.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 
 /**
- * HTTP-Client-Service für die Admin-API des Routers zum Starten/Stoppen und Auflisten
- * von "managed" Edge-Instanzen (Edge-Lifecycle).
+ * Fachlicher Service für die Admin-API des Routers zum Starten/Stoppen und Auflisten
+ * von "managed" Edge-Instanzen.
  *
- * <p>Diese Klasse kapselt URL-Aufbau, JSON-Payloads und HTTP-Error-Handling (IO vs. HTTP-Status),
- * damit Picocli-Commands schlank bleiben (SRP).
+ * <p>Die Klasse kennt keine konkrete Transportschicht mehr.
  */
 public final class AdminEdgeService {
 
-    private final HttpClient httpClient;
+    private final TransportClient transportClient;
     private final Duration requestTimeout;
 
-    /**
-     * Erstellt den Service.
-     *
-     * @param httpClient gemeinsamer HTTP-Client
-     * @param requestTimeout Timeout pro Request
-     */
-    public AdminEdgeService(HttpClient httpClient, Duration requestTimeout) {
-        this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
+    public AdminEdgeService(TransportClient transportClient, Duration requestTimeout) {
+        this.transportClient = Objects.requireNonNull(transportClient, "transportClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
     }
 
-    /**
-     * POST /api/cdn/admin/edges/start
-     *
-     * @param routerBaseUrl Router Base-URL, z.B. http://localhost:8080
-     * @param region Zielregion (nicht blank)
-     * @param port Edge-Port (1..65535)
-     * @param originBaseUrl Origin Base-URL (http/https)
-     * @param autoRegister ob nach dem Start im RoutingIndex registriert wird
-     * @param waitUntilReady ob der Router aktiv auf /api/edge/ready warten soll
-     * @return HTTP-Ergebnis (Status/Body) oder IO-Error
-     */
     public HttpCallResult startEdge(
             URI routerBaseUrl,
             String region,
@@ -67,23 +50,15 @@ public final class AdminEdgeService {
                 + "\"waitUntilReady\":" + waitUntilReady
                 + "}";
 
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
+        TransportResponse response = transportClient.send(TransportRequest.postJson(
+                url,
+                requestTimeout,
+                Map.of("X-Admin-Token", resolveAdminToken(), "Content-Type", "application/json"),
+                json));
 
-        return HttpUtils.sendForStringBody(httpClient, req);
+        return toHttpCallResult(response);
     }
 
-    /**
-     * DELETE /api/cdn/admin/edges/{instanceId}?deregister=true|false
-     *
-     * @param routerBaseUrl Router Base-URL
-     * @param instanceId Instance-ID, z.B. edge-12345 (nur sichere Zeichen erlaubt)
-     * @param deregister ob die Edge aus dem RoutingIndex deregistriert werden soll
-     * @return HTTP-Ergebnis (Status/Body) oder IO-Error
-     */
     public HttpCallResult stopEdge(URI routerBaseUrl, String instanceId, boolean deregister) {
         Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
         Objects.requireNonNull(instanceId, "instanceId");
@@ -96,45 +71,24 @@ public final class AdminEdgeService {
         URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
         URI url = base.resolve("api/cdn/admin/edges/" + trimmed + "?deregister=" + deregister);
 
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .DELETE()
-                .build();
+        TransportResponse response = transportClient.send(
+                TransportRequest.delete(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
 
-        return HttpUtils.sendForStringBody(httpClient, req);
+        return toHttpCallResult(response);
     }
 
-    /**
-     * GET /api/cdn/admin/edges/managed
-     *
-     * @param routerBaseUrl Router Base-URL
-     * @return HTTP-Ergebnis (Status/Body) oder IO-Error
-     */
     public HttpCallResult listManaged(URI routerBaseUrl) {
         Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
 
         URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
         URI url = base.resolve("api/cdn/admin/edges/managed");
 
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .GET()
-                .build();
+        TransportResponse response = transportClient.send(
+                TransportRequest.get(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
 
-        return HttpUtils.sendForStringBody(httpClient, req);
+        return toHttpCallResult(response);
     }
 
-    /**
-     * Startet mehrere Edge-Prozesse mit automatischer Portvergabe über den Router.
-     *
-     * @param routerBaseUrl Basis-URL des Routers (z.B. http://localhost:8082)
-     * @param region Zielregion (z.B. EU)
-     * @param count Anzahl zu startender Edges (> 0)
-     * @param originBaseUrl Origin-Basis-URL (z.B. http://localhost:8080)
-     * @param autoRegister Wenn true, registriert der Router die gestarteten Edges automatisch
-     * @param waitUntilReady Wenn true, wartet der Router pro Edge auf Readiness
-     * @return HTTP-Ergebnis inkl. Body oder Fehlertext
-     */
     public HttpCallResult startEdgesAuto(
             URI routerBaseUrl,
             String region,
@@ -152,25 +106,39 @@ public final class AdminEdgeService {
 
         String json = String.format(
                 "{\"region\":\"%s\",\"count\":%d,\"originBaseUrl\":\"%s\",\"autoRegister\":%s,\"waitUntilReady\":%s}",
-                JsonUtils.escapeJson(region),
+                JsonUtils.escapeJson(region.trim()),
                 count,
                 JsonUtils.escapeJson(originBaseUrl.toString()),
                 autoRegister,
                 waitUntilReady);
 
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
+        TransportResponse response = transportClient.send(TransportRequest.postJson(
+                url,
+                requestTimeout,
+                Map.of("X-Admin-Token", resolveAdminToken(), "Content-Type", "application/json"),
+                json));
 
-        return HttpUtils.sendForStringBody(httpClient, req);
+        return toHttpCallResult(response);
     }
 
-    /**
-     * Validiert die Instance-ID auf sichere Zeichen (alphanumerisch, Unterstrich, Bindestrich).
-     * Verhindert potenzielle Probleme mit URL-Pfaden oder Log-Ausgaben.
-     */
+    private static HttpCallResult toHttpCallResult(TransportResponse response) {
+        if (response.error() != null) {
+            return HttpCallResult.ioError(response.error());
+        }
+        return HttpCallResult.http(Objects.requireNonNull(response.statusCode(), "statusCode"), response.body());
+    }
+
+    private static String resolveAdminToken() {
+        String token = System.getenv("MINICDN_ADMIN_TOKEN");
+        if (token == null || token.isBlank()) {
+            token = System.getProperty("minicdn.admin.token");
+        }
+        if (token == null || token.isBlank()) {
+            token = "secret-token";
+        }
+        return token;
+    }
+
     private static boolean isSafeInstanceId(String s) {
         return !s.isBlank() && s.matches("[A-Za-z0-9_-]+");
     }

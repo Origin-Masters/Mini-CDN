@@ -1,24 +1,20 @@
 package de.htwsaar.minicdn.cli.command.admin;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
+import de.htwsaar.minicdn.cli.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * Admin-Command für einen einfachen Health-Check gegen einen HTTP-Endpunkt.
- *
- * <p>Exit-Codes:
- * - 0: HTTP 2xx
- * - 2: HTTP non-2xx
- * - 1: Exception/Netzwerkfehler
+ * Admin-Command für einen einfachen Health-Check gegen einen Endpunkt.
  */
 @Command(
         name = "ping",
@@ -61,18 +57,21 @@ public final class PingCommand implements Callable<Integer> {
             URI base = UriUtils.ensureTrailingSlash(Objects.requireNonNull(host, "host"));
             URI url = base.resolve(PathUtils.stripLeadingSlash(path));
 
-            HttpRequest req = HttpRequest.newBuilder(url)
-                    .timeout(ctx.defaultRequestTimeout())
-                    .GET()
-                    .build();
+            TransportResponse response =
+                    ctx.transportClient().send(TransportRequest.get(url, ctx.defaultRequestTimeout(), Map.of()));
 
-            HttpResponse<String> resp = ctx.httpClient().send(req, HttpResponse.BodyHandlers.ofString());
+            if (response.error() != null) {
+                err.println("[ADMIN] Ping failed: " + response.error());
+                err.flush();
+                return 1;
+            }
 
-            out.println("Status: " + resp.statusCode());
-            out.println(resp.body());
+            int statusCode = Objects.requireNonNull(response.statusCode(), "statusCode");
+            out.println("Status: " + statusCode);
+            out.println(response.body() == null ? "" : response.body());
             out.flush();
 
-            return (resp.statusCode() >= 200 && resp.statusCode() < 300) ? 0 : 2;
+            return (statusCode >= 200 && statusCode < 300) ? 0 : 2;
         } catch (Exception ex) {
             err.println("[ADMIN] Ping failed: " + ex.getMessage());
             err.flush();
