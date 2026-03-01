@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.router.service;
+package de.htwsaar.minicdn.router.adapter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- *  persistence for routing table using a .properties file.
+ * Persistenz für den Routing-Index via .properties-Datei.
  * Format:
  *   region.eu-west=http://localhost:8081,http://localhost:8083
  */
@@ -21,18 +21,19 @@ public class RouterRoutingStateStore {
     private final Path stateFile;
 
     /**
-     * Creates a store bound to the configured state file path.
+     * Erstellt einen Store mit dem konfigurierten State-File-Pfad.
      *
-     * @param stateFile path to the properties file (defaults to data/routing-state.properties)
+     * @param stateFile Pfad zur Properties-Datei (Default: data/routing-state.properties)
      */
     public RouterRoutingStateStore(@Value("${cdn.routing.state-file:data/routing-state.properties}") String stateFile) {
         this.stateFile = Path.of(stateFile);
     }
 
     /**
-     * Persists the given routing state to the properties file.
+     * Persistiert den gegebenen Routing-Status in der Properties-Datei.
      *
-     * @param routingState map of region identifier to a list of endpoint URLs * @throws Exception if state cannot be written */
+     * @param routingState Map von Region zu Liste von Endpoint-URLs
+     */
     public synchronized void save(Map<String, List<String>> routingState) {
         Properties props = new Properties();
         if (routingState != null) {
@@ -61,9 +62,10 @@ public class RouterRoutingStateStore {
     }
 
     /**
-     * Loads the routing state from the properties file.
+     * Lädt den Routing-Status aus der Properties-Datei.
      *
-     * @return a map of region identifiers to lists of endpoint URLs; empty if the file is missing or unreadable */
+     * @return Map von Region zu Liste von Endpoint-URLs; leer bei fehlender Datei
+     */
     public synchronized Map<String, List<String>> load() {
         Map<String, List<String>> result = new HashMap<>();
         if (!Files.exists(stateFile)) return result;
@@ -92,9 +94,11 @@ public class RouterRoutingStateStore {
     }
 
     /**
-     * Parses a comma-separated string into a list of URLs.
+     * Parst eine kommaseparierte Liste von URLs.
      *
-     * @param value comma-separated URLs * @return list of trimmed, non-blank URLs */
+     * @param value kommaseparierte URLs
+     * @return Liste getrimmter, nicht-leerer URLs
+     */
     private static List<String> parseUrls(String value) {
         List<String> urls = new ArrayList<>();
         if (value == null || value.isBlank()) return urls;

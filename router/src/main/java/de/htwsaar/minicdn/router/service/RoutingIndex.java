@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.router.service;
 
+import de.htwsaar.minicdn.router.adapter.RouterRoutingStateStore;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.util.UrlUtil;
 import jakarta.annotation.PostConstruct;

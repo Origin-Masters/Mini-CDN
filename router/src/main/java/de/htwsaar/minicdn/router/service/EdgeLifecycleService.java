@@ -1,18 +1,13 @@
 package de.htwsaar.minicdn.router.service;
 
-import de.htwsaar.minicdn.common.logging.TraceIdFilter;
-import de.htwsaar.minicdn.router.dto.AutoStartEdgesRequest;
+import de.htwsaar.minicdn.router.domain.EdgeGateway;
 import de.htwsaar.minicdn.router.dto.AutoStartEdgesResponse;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
-import de.htwsaar.minicdn.router.dto.StartEdgeRequest;
 import de.htwsaar.minicdn.router.dto.StartEdgeResponse;
 import de.htwsaar.minicdn.router.util.UrlUtil;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -22,15 +17,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
- * Kapselt das Starten/Stoppen und Verwalten "managed" Edge-Prozesse.
+ * Fachlicher Use Case zum Starten und Stoppen verwalteter Edge-Prozesse.
  *
- * <p>Wichtig: Diese Klasse enthält absichtlich die komplette Ablauf-Logik,
- * damit der Controller nur noch HTTP-Übersetzung macht (SRP).</p>
+ * <p>Die HTTP-Readiness-Prüfung erfolgt über den EdgeGateway-Port. Die konkrete
+ * HTTP-Implementierung ist damit aus der Fachlogik entfernt.</p>
  */
 @Service
 public class EdgeLifecycleService {
@@ -38,7 +32,7 @@ public class EdgeLifecycleService {
     /**
      * Interne Meta-Informationen zu einer managed Edge.
      *
-     * @param instanceId Instance-ID (z.B. {@code edge-184647})
+     * @param instanceId Instance-ID
      * @param region Region der Edge
      * @param url Basis-URL der Edge
      * @param pid Prozess-ID
@@ -46,7 +40,7 @@ public class EdgeLifecycleService {
     public record ManagedEdge(String instanceId, String region, String url, long pid) {}
 
     private final RoutingIndex routingIndex;
-    private final HttpClient httpClient;
+    private final EdgeGateway edgeGateway;
     private final boolean enabled;
     private final Path edgeJarPath;
 
@@ -60,14 +54,14 @@ public class EdgeLifecycleService {
 
     public EdgeLifecycleService(
             RoutingIndex routingIndex,
-            HttpClient httpClient,
+            EdgeGateway edgeGateway,
             @Value("${cdn.edge-launcher.enabled:false}") boolean enabled,
             @Value("${cdn.edge-launcher.jar-path:edge/target/edge.jar}") String edgeJarPath,
             @Value("${cdn.edge-launcher.auto-port.range-start:10000}") int autoPortRangeStart,
             @Value("${cdn.edge-launcher.auto-port.range-end:20000}") int autoPortRangeEnd,
             @Value("${cdn.edge-launcher.auto-port.max-count:200}") int maxAutoStartCount) {
         this.routingIndex = Objects.requireNonNull(routingIndex, "routingIndex must not be null");
-        this.httpClient = Objects.requireNonNull(httpClient, "httpClient must not be null");
+        this.edgeGateway = Objects.requireNonNull(edgeGateway, "edgeGateway must not be null");
         this.enabled = enabled;
         this.edgeJarPath = Path.of(edgeJarPath);
         this.autoPortRangeStart = autoPortRangeStart;
@@ -75,32 +69,53 @@ public class EdgeLifecycleService {
         this.maxAutoStartCount = maxAutoStartCount;
     }
 
-    /** Wirft eine Exception, wenn das Feature deaktiviert ist. */
+    /**
+     * Wirft eine Exception, wenn das Feature deaktiviert ist.
+     */
     public void ensureEnabled() {
         if (!enabled) {
             throw new UnsupportedOperationException("Edge-Launcher ist deaktiviert (cdn.edge-launcher.enabled=false).");
         }
     }
 
-    /** Startet genau eine Edge (serialisiert per Lock, inkl. Cleanup). */
-    public StartEdgeResponse start(StartEdgeRequest req) throws Exception {
-        validateStart(req);
+    /**
+     * Startet genau eine Edge.
+     *
+     * @param region Zielregion
+     * @param port Port fuer die neue Instanz
+     * @param originBaseUrl Basis-URL des Origin
+     * @param autoRegister ob die Instanz automatisch registriert wird
+     * @param waitUntilReady ob auf Readiness gewartet wird
+     * @return Ergebnis des Starts
+     */
+    public StartEdgeResponse start(
+            String region, int port, URI originBaseUrl, boolean autoRegister, boolean waitUntilReady) throws Exception {
 
-        final String region = req.region().trim();
-        final int port = req.port();
+        validateStart(region, port, originBaseUrl);
 
         synchronized (startLock) {
             cleanupDeadManagedProcesses();
-            return startSingleEdgeLocked(region, port, req.originBaseUrl(), req.autoRegister(), req.waitUntilReady());
+            return startSingleEdgeLocked(region.trim(), port, originBaseUrl, autoRegister, waitUntilReady);
         }
     }
 
-    /** Startet mehrere Edges atomar (Rollback bei Fehlern). */
-    public AutoStartEdgesResponse startAuto(AutoStartEdgesRequest req) throws Exception {
-        validateAutoStart(req);
+    /**
+     * Startet mehrere Edges atomar mit Rollback bei Fehlern.
+     *
+     * @param region Zielregion
+     * @param count Anzahl der Instanzen
+     * @param originBaseUrl Basis-URL des Origin
+     * @param autoRegister ob die Instanzen automatisch registriert werden
+     * @param waitUntilReady ob auf Readiness gewartet wird
+     * @return Ergebnis des Auto-Starts
+     */
+    public AutoStartEdgesResponse startAuto(
+            String region, int count, URI originBaseUrl, boolean autoRegister, boolean waitUntilReady)
+            throws Exception {
 
-        final String region = req.region().trim();
-        final int count = req.count();
+        validateAutoStart(region, count, originBaseUrl);
+
+        final String cleanRegion = region.trim();
 
         synchronized (startLock) {
             cleanupDeadManagedProcesses();
@@ -113,51 +128,54 @@ public class EdgeLifecycleService {
 
             try {
                 for (int port : ports) {
-                    StartEdgeResponse started = startSingleEdgeLocked(
-                            region, port, req.originBaseUrl(), req.autoRegister(), req.waitUntilReady());
+                    StartEdgeResponse started =
+                            startSingleEdgeLocked(cleanRegion, port, originBaseUrl, autoRegister, waitUntilReady);
 
                     startedEdges.add(started);
 
                     ManagedEdge meta = managedMeta.get(started.instanceId());
-                    Process p = managed.get(started.instanceId());
-                    if (meta != null && p != null) {
+                    Process process = managed.get(started.instanceId());
+                    if (meta != null && process != null) {
                         startedMeta.add(meta);
-                        startedProc.add(p);
+                        startedProc.add(process);
                     }
                 }
             } catch (Exception ex) {
-                if (req.autoRegister()) {
+                if (autoRegister) {
                     for (ManagedEdge meta : startedMeta) {
                         routingIndex.removeEdge(
                                 meta.region(), new EdgeNode(UrlUtil.ensureTrailingSlash(meta.url())), true);
                     }
                 }
-                for (Process p : startedProc) {
-                    stopBestEffort(p);
+
+                for (Process process : startedProc) {
+                    stopBestEffort(process);
                 }
+
                 for (ManagedEdge meta : startedMeta) {
                     managed.remove(meta.instanceId());
                     managedMeta.remove(meta.instanceId());
                 }
+
                 throw ex;
             }
 
-            return new AutoStartEdgesResponse(region, count, startedEdges.size(), startedEdges);
+            return new AutoStartEdgesResponse(cleanRegion, count, startedEdges.size(), startedEdges);
         }
     }
 
     /**
      * Stoppt eine managed Edge.
      *
-     * @param instanceId Instance-ID aus {@code /api/cdn/admin/edges/managed}
-     * @param deregister wenn {@code true}, wird die Edge aus dem RoutingIndex entfernt
-     * @return {@code true}, wenn die Edge existierte und gestoppt wurde
+     * @param instanceId Instance-ID
+     * @param deregister ob die Instanz deregistriert werden soll
+     * @return true bei Erfolg
      */
     public boolean stop(String instanceId, boolean deregister) {
         ManagedEdge meta = managedMeta.remove(instanceId);
-        Process p = managed.remove(instanceId);
+        Process process = managed.remove(instanceId);
 
-        if (meta == null || p == null) {
+        if (meta == null || process == null) {
             return false;
         }
 
@@ -165,42 +183,50 @@ public class EdgeLifecycleService {
             routingIndex.removeEdge(meta.region(), new EdgeNode(UrlUtil.ensureTrailingSlash(meta.url())), true);
         }
 
-        stopBestEffort(p);
+        stopBestEffort(process);
         return true;
     }
 
-    /** Liefert die aktuell managed Edges (Meta-Daten) und räumt vorher stale Einträge auf. */
+    /**
+     * Liefert die aktuell verwalteten Edge-Instanzen.
+     *
+     * @return Liste der Instanzen
+     */
     public List<ManagedEdge> listManaged() {
         cleanupDeadManagedProcesses();
         return List.copyOf(managedMeta.values());
     }
 
-    private void validateStart(StartEdgeRequest req) {
-        if (req == null
-                || req.region() == null
-                || req.region().isBlank()
-                || req.port() <= 0
-                || req.port() > 65535
-                || req.originBaseUrl() == null) {
+    /**
+     * Validiert Eingaben fuer den Start einer einzelnen Edge.
+     */
+    private void validateStart(String region, int port, URI originBaseUrl) {
+        if (region == null || region.isBlank() || port <= 0 || port > 65535 || originBaseUrl == null) {
             throw new IllegalArgumentException("Ungültige StartEdgeRequest-Daten.");
         }
         assertEdgeJarExists();
     }
 
-    private void validateAutoStart(AutoStartEdgesRequest req) {
-        if (req == null || req.region() == null || req.region().isBlank() || req.originBaseUrl() == null) {
+    /**
+     * Validiert Eingaben fuer den Auto-Start.
+     */
+    private void validateAutoStart(String region, int count, URI originBaseUrl) {
+        if (region == null || region.isBlank() || originBaseUrl == null) {
             throw new IllegalArgumentException("Ungültige AutoStartEdgesRequest-Daten.");
         }
-        if (req.count() <= 0) {
+        if (count <= 0) {
             throw new IllegalArgumentException("count muss > 0 sein.");
         }
-        if (req.count() > maxAutoStartCount) {
+        if (count > maxAutoStartCount) {
             throw new IllegalArgumentException("count ist zu groß (max=" + maxAutoStartCount + ").");
         }
         validatePortRangeOrThrow();
         assertEdgeJarExists();
     }
 
+    /**
+     * Validiert den Auto-Port-Range.
+     */
     private void validatePortRangeOrThrow() {
         if (autoPortRangeStart <= 0
                 || autoPortRangeStart > 65535
@@ -212,6 +238,9 @@ public class EdgeLifecycleService {
         }
     }
 
+    /**
+     * Stellt sicher, dass das Edge-JAR existiert.
+     */
     private void assertEdgeJarExists() {
         if (!Files.exists(edgeJarPath)) {
             throw new IllegalStateException(
@@ -219,6 +248,9 @@ public class EdgeLifecycleService {
         }
     }
 
+    /**
+     * Startet eine Edge unter Lock und registriert sie optional.
+     */
     private StartEdgeResponse startSingleEdgeLocked(
             String region, int port, URI originBaseUrl, boolean autoRegister, boolean waitUntilReady) throws Exception {
 
@@ -232,9 +264,9 @@ public class EdgeLifecycleService {
             throw new IllegalStateException("Port " + port + " ist bereits in Benutzung (anderer Prozess).");
         }
 
-        final String url = "http://localhost:" + port;
+        String url = "http://localhost:" + port;
 
-        Process p = new ProcessBuilder(
+        Process process = new ProcessBuilder(
                         "java",
                         "-jar",
                         edgeJarPath.toString(),
@@ -245,32 +277,35 @@ public class EdgeLifecycleService {
                 .inheritIO()
                 .start();
 
-        String instanceId = "edge-" + p.pid();
+        String instanceId = "edge-" + process.pid();
 
-        if (!p.isAlive()) {
+        if (!process.isAlive()) {
             throw new IllegalStateException(
                     "Edge-Prozess ist direkt nach Start beendet (siehe Logs). instanceId=" + instanceId);
         }
 
         try {
             if (waitUntilReady) {
-                waitUntilReady(p, URI.create(url), Duration.ofSeconds(8));
+                waitUntilReady(process, URI.create(url), Duration.ofSeconds(8));
             }
         } catch (Exception startupEx) {
-            stopBestEffort(p);
+            stopBestEffort(process);
             throw startupEx;
         }
 
-        managed.put(instanceId, p);
-        managedMeta.put(instanceId, new ManagedEdge(instanceId, region, url, p.pid()));
+        managed.put(instanceId, process);
+        managedMeta.put(instanceId, new ManagedEdge(instanceId, region, url, process.pid()));
 
         if (autoRegister) {
             routingIndex.addEdge(region, new EdgeNode(UrlUtil.ensureTrailingSlash(url)));
         }
 
-        return new StartEdgeResponse(instanceId, url, p.pid(), region);
+        return new StartEdgeResponse(instanceId, url, process.pid(), region);
     }
 
+    /**
+     * Allokiert freie Ports innerhalb des Ranges.
+     */
     private List<Integer> allocateFreePortsLocked(int count, int rangeStart, int rangeEnd) {
         List<Integer> ports = new ArrayList<>(count);
 
@@ -292,26 +327,20 @@ public class EdgeLifecycleService {
         return ports;
     }
 
-    private void waitUntilReady(Process p, URI baseUrl, Duration timeout) throws Exception {
-        URI ready = URI.create(UrlUtil.ensureTrailingSlash(baseUrl.toString()) + "api/edge/ready");
+    /**
+     * Wartet bis die Edge ready ist oder der Timeout ablaeuft.
+     */
+    private void waitUntilReady(Process process, URI baseUrl, Duration timeout) throws Exception {
         long deadline = System.currentTimeMillis() + timeout.toMillis();
 
         while (System.currentTimeMillis() < deadline) {
-            if (!p.isAlive()) {
+            if (!process.isAlive()) {
                 throw new IllegalStateException(
-                        "Edge-Prozess ist während des Startups gestorben! Exit-Code: " + p.exitValue());
+                        "Edge-Prozess ist während des Startups gestorben! Exit-Code: " + process.exitValue());
             }
 
-            try {
-                HttpRequest req = withCurrentTraceId(
-                                HttpRequest.newBuilder(ready).timeout(Duration.ofSeconds(1)))
-                        .GET()
-                        .build();
-                HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-                if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
-                    return;
-                }
-            } catch (Exception ignored) {
+            if (edgeGateway.isReady(baseUrl, Duration.ofSeconds(1))) {
+                return;
             }
 
             Thread.sleep(150);
@@ -320,6 +349,9 @@ public class EdgeLifecycleService {
         throw new IllegalStateException("Edge wurde nicht ready innerhalb " + timeout.toMillis() + "ms: " + baseUrl);
     }
 
+    /**
+     * Prueft, ob ein TCP-Port frei ist.
+     */
     private static boolean isTcpPortAvailable(int port) {
         try (ServerSocket socket = new ServerSocket()) {
             socket.setReuseAddress(false);
@@ -330,51 +362,52 @@ public class EdgeLifecycleService {
         }
     }
 
+    /**
+     * Sucht eine managed Edge anhand des Ports.
+     */
     private ManagedEdge findManagedByPort(int port) {
-        for (ManagedEdge m : managedMeta.values()) {
+        for (ManagedEdge managedEdge : managedMeta.values()) {
             try {
-                if (URI.create(m.url()).getPort() == port) {
-                    return m;
+                if (URI.create(managedEdge.url()).getPort() == port) {
+                    return managedEdge;
                 }
             } catch (Exception ignored) {
-                // malformed URL -> ignorieren
+                // ignorieren
             }
         }
         return null;
     }
 
+    /**
+     * Entfernt nicht mehr laufende Prozesse aus den Maps.
+     */
     private void cleanupDeadManagedProcesses() {
         for (String id : List.copyOf(managed.keySet())) {
-            Process p = managed.get(id);
-            if (p != null && !p.isAlive()) {
+            Process process = managed.get(id);
+            if (process != null && !process.isAlive()) {
                 managed.remove(id);
                 managedMeta.remove(id);
             }
         }
     }
 
-    private static void stopBestEffort(Process p) {
+    /**
+     * Stoppt einen Prozess best-effort mit Fallback auf destroyForcibly.
+     */
+    private static void stopBestEffort(Process process) {
         try {
-            if (p.isAlive()) {
-                p.destroy();
-                p.waitFor(800, TimeUnit.MILLISECONDS);
-                if (p.isAlive()) {
-                    p.destroyForcibly();
+            if (process.isAlive()) {
+                process.destroy();
+                process.waitFor(800, TimeUnit.MILLISECONDS);
+                if (process.isAlive()) {
+                    process.destroyForcibly();
                 }
             }
-        } catch (InterruptedException ie) {
+        } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            if (p.isAlive()) {
-                p.destroyForcibly();
+            if (process.isAlive()) {
+                process.destroyForcibly();
             }
         }
-    }
-
-    private static HttpRequest.Builder withCurrentTraceId(HttpRequest.Builder builder) {
-        String traceId = MDC.get(TraceIdFilter.TRACE_ID_KEY);
-        if (traceId == null || traceId.isBlank()) {
-            return builder;
-        }
-        return builder.header(TraceIdFilter.TRACE_ID_HEADER, traceId);
     }
 }

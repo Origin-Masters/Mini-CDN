@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.router.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import de.htwsaar.minicdn.router.adapter.RouterRoutingStateStore;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import java.nio.file.Files;
 import java.nio.file.Path;
