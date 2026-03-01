@@ -30,3 +30,5 @@ origin.log
 
 target
 cli/data/users.db
+e2e/data/routing-state.properties
+e2e/data/users.db

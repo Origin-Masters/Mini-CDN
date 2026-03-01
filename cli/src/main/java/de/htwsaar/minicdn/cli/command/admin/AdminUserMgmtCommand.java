@@ -1,13 +1,14 @@
 package de.htwsaar.minicdn.cli.command.admin;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwsaar.minicdn.cli.di.CliContext;
+import de.htwsaar.minicdn.cli.dto.HttpCallResult;
+import de.htwsaar.minicdn.cli.dto.UserResult;
 import de.htwsaar.minicdn.cli.service.admin.AdminUserService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
-import de.htwsaar.minicdn.cli.util.DatabaseUtils;
-import java.sql.SQLException;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -15,9 +16,10 @@ import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
 /**
- * Admin-Command zur Benutzerverwaltung.
+ * Admin-Command zur Verwaltung von System-Usern über die Admin-API.
  *
- * <p>Ohne Subcommand wird die Usage angezeigt.
+ * <p>Hinweis: Dieser Command selbst hat keine Default-Aktion und zeigt nur Usage an.
+ * Für die eigentliche Ausführung {@code user add}, {@code user list} oder {@code user delete} verwenden.</p>
  */
 @Command(
         name = "user",
@@ -25,29 +27,29 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  admin user add --name alice --role ADMIN",
+            "  admin user add --name alice --role 1",
             "  admin user list --role USER --page 1 --size 20",
             "  admin user remove --id 42 --force"
         },
         subcommands = {
-            AdminUserMgmtCommand.AdminUserAddCommand.class,
-            AdminUserMgmtCommand.AdminUserRemoveCommand.class,
-            AdminUserMgmtCommand.AdminUserListCommand.class
+            AdminUserMgmtCommand.AddCommand.class,
+            AdminUserMgmtCommand.ListCommand.class,
+            AdminUserMgmtCommand.DeleteCommand.class
         })
-public final class AdminUserMgmtCommand implements Runnable {
+public class AdminUserMgmtCommand implements Runnable {
 
-    private final CliContext ctx;
+    final CliContext ctx;
+    final AdminUserService service;
 
     @Spec
-    private CommandSpec spec;
+    CommandSpec spec;
 
-    /**
-     * Konstruktor für Constructor Injection via {@code ContextFactory}.
-     *
-     * @param ctx CLI-Kontext (Output, HTTP-Client, Timeouts, ...)
-     */
+    private static final Map<Integer, String> VALID_ROLES = Map.of(0, "USER", 1, "ADMIN");
+
     public AdminUserMgmtCommand(CliContext ctx) {
-        this.ctx = Objects.requireNonNull(ctx, "ctx");
+        this.ctx = ctx;
+        this.service = new AdminUserService(
+                ctx.transportClient(), ctx.defaultRequestTimeout(), ctx.routerBaseUrl(), ctx.adminToken());
     }
 
     @Override
@@ -56,171 +58,148 @@ public final class AdminUserMgmtCommand implements Runnable {
         ctx.out().flush();
     }
 
+    /**
+     * Command zum Anlegen eines neuen Users. Führt einen POST-Request gegen die Admin-API aus.
+     *
+     * <p>Exit-Codes:
+     * - 0: OK
+     * - 2: HTTP-Fehlerstatus (non-2xx) oder ungültige Eingabe
+     * - 1: Exception/Netzwerkfehler</p>
+     */
     @Command(
             name = "add",
             description = "Create a new user",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {"  admin user add --name alice --role ADMIN", "  admin user add --name bob --role USER"})
-    public static final class AdminUserAddCommand implements Runnable {
-
-        public static final Map<String, Integer> ROLE_MAP = Map.of("ADMIN", 1, "USER", 2);
+            footer = {"  admin user add --name alice --role 1", "  admin user add --name bob --role 0"})
+    public static class AddCommand implements Runnable {
 
         @ParentCommand
         private AdminUserMgmtCommand parent;
 
-        @Option(names = "--name", required = true, paramLabel = "NAME", description = "User name")
-        private String name;
+        @Option(names = "--name", required = true, description = "User name")
+        String name;
 
-        @Option(names = "--role", required = true, paramLabel = "ROLE", description = "Role, e.g. ADMIN or USER")
-        private String role;
+        @Option(names = "--role", required = true, description = "User role id (e.g. 0=USER, 1=ADMIN)")
+        int role;
 
         @Override
         public void run() {
-            String jdbcUrl = DatabaseUtils.resolveJdbcUrl();
-            int roleId = AdminUserService.parseRole(role);
-
-            try (AdminUserService svc = new AdminUserService(jdbcUrl)) {
-                int id = svc.addUser(name, roleId);
-                if (id > 0) {
-                    ConsoleUtils.info(
-                            parent.ctx.out(),
-                            "[ADMIN] User added successfully: id=%d name=%s role=%d",
-                            id,
-                            name,
-                            roleId);
-                } else {
-                    ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Failed to add user: name=%s role=%d", name, roleId);
-                }
-            } catch (SQLException e) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Database error: %s", e.getMessage());
+            if (!parent.VALID_ROLES.containsKey(role)) {
+                ConsoleUtils.error(
+                        parent.ctx.err(),
+                        "[ADMIN] Invalid role: %d. Valid roles: %s",
+                        role,
+                        parent.VALID_ROLES.values());
+                return;
             }
+
+            HttpCallResult res = parent.service.addUser(name, role);
+            if (res.error() != null) {
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] User add failed: %s", res.error());
+                return;
+            }
+            if (!res.is2xx()) {
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] User add failed HTTP %d body=%s", res.statusCode(), res.body());
+                return;
+            }
+            ConsoleUtils.info(parent.ctx.out(), "[ADMIN] User added: %s", res.body());
         }
     }
 
+    /**
+     * Command zum Auflisten aller User. Führt einen GET-Request gegen die Admin-API aus und gibt die Daten formatiert aus.
+     *
+     * <p>Exit-Codes:
+     * - 0: OK
+     * - 2: HTTP-Fehlerstatus (non-2xx)
+     * - 1: Exception/Netzwerkfehler</p>
+     */
     @Command(
             name = "list",
             description = "List users in the system",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {"  admin user list", "  admin user list --role ADMIN --page 1 --size 50"})
-    public static final class AdminUserListCommand implements Runnable {
+            footer = {"  admin user list", "  admin user list --role 1 --page 1 --size 50"})
+    public static class ListCommand implements Runnable {
 
         @ParentCommand
         private AdminUserMgmtCommand parent;
 
-        @Option(names = "--role", paramLabel = "ROLE", description = "Filter by role, e.g. ADMIN or USER")
-        private String role;
-
-        @Option(names = "--page", description = "Page number", defaultValue = "1")
-        private int page;
-
-        @Option(names = "--size", description = "Page size", defaultValue = "20")
-        private int size;
-
         @Override
         public void run() {
-            if (page <= 0 || size <= 0) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Page or Size must be greater than 0");
+            HttpCallResult res = parent.service.listUsersRaw();
+            if (res.error() != null) {
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] User list failed: %s", res.error());
                 return;
             }
-            String jdbcUrl = DatabaseUtils.resolveJdbcUrl();
-
-            try (AdminUserService svc = new AdminUserService(jdbcUrl)) {
-                Object data = svc.listUsers(role, page, size);
-
-                if (data instanceof Collection<?> collection) {
-                    if (collection.isEmpty()) {
-                        ConsoleUtils.info(
-                                parent.ctx.out(),
-                                "[ADMIN] No users found (role=%s, page=%d, size=%d)",
-                                role == null ? "*" : role,
-                                page,
-                                size);
-                        return;
-                    }
-
-                    ConsoleUtils.info(
-                            parent.ctx.out(),
-                            "[ADMIN] Users (role=%s, page=%d, size=%d)",
-                            role == null ? "*" : role,
-                            page,
-                            size);
-                    int index = 1;
-                    for (Object entry : collection) {
-                        parent.ctx.out().printf("%d) %s%n", index++, entry);
-                    }
-                    parent.ctx.out().flush();
-                } else {
-                    ConsoleUtils.info(parent.ctx.out(), "[ADMIN] %s", data);
-                }
-            } catch (SQLException ex) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Database error: %s", ex.getMessage());
+            if (!res.is2xx()) {
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] User list failed HTTP %d body=%s", res.statusCode(), res.body());
+                return;
             }
+
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                List<UserResult> users = mapper.readValue(res.body(), new TypeReference<List<UserResult>>() {});
+
+                if (users.isEmpty()) {
+                    parent.ctx.out().println("[ADMIN] No users found.");
+                    return;
+                }
+
+                parent.ctx.out().printf("%-6s %-15s %-10s%n", "ID", "NAME", "ROLE");
+                parent.ctx.out().println("----------------------------------------");
+
+                for (UserResult u : users) {
+                    String roleName = parent.VALID_ROLES.getOrDefault(u.role(), "UNKNOWN");
+                    parent.ctx.out().printf("%-6d %-15s %-10s%n", u.id(), u.name(), roleName);
+                }
+            } catch (Exception e) {
+                ConsoleUtils.error(parent.ctx.err(), "ADMIN Parse error: %s", e.getMessage());
+            }
+            parent.ctx.out().flush();
         }
     }
 
+    /**
+     * Command zum Löschen eines Users anhand der ID. Führt einen DELETE-Request gegen die Admin-API aus.
+     *
+     * <p>Exit-Codes:
+     * - 0: OK
+     * - 2: HTTP-Fehlerstatus (non-2xx) oder ungültige Eingabe
+     * - 1: Exception/Netzwerkfehler</p>
+     */
     @Command(
-            name = "remove",
-            description = "Remove an existing user from the system",
+            name = "delete",
+            description = "delete a user by id",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {"  admin user remove --id 42 --force"})
-    public static final class AdminUserRemoveCommand implements Runnable {
+            footer = {"  admin user delete --id 42 --force"})
+    public static class DeleteCommand implements Runnable {
 
         @ParentCommand
         private AdminUserMgmtCommand parent;
 
-        @Option(names = "--id", description = "User ID to remove")
-        private Long userId;
-
-        @Option(names = "--force", description = "Do not ask for confirmation")
-        private boolean force;
+        @Option(names = "--id", required = true, description = "User id")
+        long id;
 
         @Override
         public void run() {
-            String target = "id=" + userId;
-            String jdbcUrl = DatabaseUtils.resolveJdbcUrl();
-
-            try (AdminUserService svc = new AdminUserService(jdbcUrl)) {
-                Map<String, Object> existing = svc.findUser(userId);
-                if (existing == null) {
-                    ConsoleUtils.error(parent.ctx.err(), "[ADMIN] User not found: %s", target);
-                    return;
-                }
-
-                if (!force && !confirmRemoval(target, existing)) {
-                    ConsoleUtils.info(parent.ctx.out(), "[ADMIN] Aborted removal of %s", target);
-                    parent.ctx.out().flush();
-                    return;
-                }
-
-                if (svc.removeUser(userId)) {
-                    ConsoleUtils.info(
-                            parent.ctx.out(),
-                            "[ADMIN] Removed user: id=%s name=%s role=%s",
-                            existing.get("id"),
-                            existing.get("name"),
-                            existing.get("role"));
-                } else {
-                    ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Failed to remove user: %s", target);
-                }
-            } catch (SQLException ex) {
-                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Database error: %s", ex.getMessage());
+            HttpCallResult res = parent.service.deleteUser(id);
+            if (res.error() != null) {
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] User delete failed: %s", res.error());
+                return;
             }
-        }
-
-        private boolean confirmRemoval(String target, Map<String, Object> user) {
-            parent.ctx
-                    .out()
-                    .printf(
-                            "[ADMIN] Removing user: %s (id=%s name=%s role=%s)%n",
-                            target, user.get("id"), user.get("name"), user.get("role"));
-            parent.ctx.out().print("[ADMIN] Are you sure? (y/N): ");
-            parent.ctx.out().flush();
-
-            String response = parent.ctx.in().nextLine().trim().toLowerCase();
-            return response.equals("y") || response.equals("yes");
+            Integer sc = res.statusCode();
+            if (sc != null && sc == 204) {
+                ConsoleUtils.info(parent.ctx.out(), "[ADMIN] User %d deleted", id);
+            } else if (sc != null && sc == 404) {
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] User %d not found", id);
+            } else {
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] User delete HTTP %d body=%s", sc, res.body());
+            }
         }
     }
 }
