@@ -1,7 +1,7 @@
 package de.htwsaar.minicdn.cli.dto;
 
 /**
- * Result of an HTTP call, encapsulating status code, response body, and any error message.
+ * Ergebnis eines HTTP-Aufrufs, z.B. für die Admin-API oder die Edge-API.
  */
 public record HttpCallResult(Integer statusCode, String body, String error) {
 
