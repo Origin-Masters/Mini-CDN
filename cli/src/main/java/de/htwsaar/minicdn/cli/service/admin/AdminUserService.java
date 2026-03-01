@@ -19,7 +19,7 @@ import java.util.Objects;
  * <p>
  * Endpunkte (Router):
  * - POST /api/cdn/admin/users        (CreateUserRequest)
- * - GET  /api/cdn/admin/users        (List<UserDto>)
+ * - GET  /api/cdn/admin/users        (List<UserResult>)
  * - DELETE /api/cdn/admin/users/{id} (Delete user)
  * <p>
  * Alle Requests werden mit X-Admin-Token gesendet.
@@ -86,7 +86,8 @@ public final class AdminUserService {
         if (body == null || body.isBlank()) {
             return List.of();
         }
-        return MAPPER.readValue(body, new TypeReference<List<UserResult>>() {});
+        return MAPPER.readValue(body, new TypeReference<>() {
+        });
     }
 
     /**

@@ -1,14 +1,12 @@
 package de.htwsaar.minicdn.cli.command.admin;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
-import de.htwsaar.minicdn.cli.dto.UserResult;
 import de.htwsaar.minicdn.cli.service.admin.AdminUserService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
-import java.util.List;
+
 import java.util.Map;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -27,14 +25,14 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  admin user add --name alice --role 1",
-            "  admin user list --role USER --page 1 --size 20",
-            "  admin user remove --id 42 --force"
+                "  admin user add --name alice --role 1",
+                "  admin user list --role USER --page 1 --size 20",
+                "  admin user remove --id 42 --force"
         },
         subcommands = {
-            AdminUserMgmtCommand.AddCommand.class,
-            AdminUserMgmtCommand.ListCommand.class,
-            AdminUserMgmtCommand.DeleteCommand.class
+                AdminUserMgmtCommand.AddCommand.class,
+                AdminUserMgmtCommand.ListCommand.class,
+                AdminUserMgmtCommand.DeleteCommand.class
         })
 public class AdminUserMgmtCommand implements Runnable {
 
@@ -140,26 +138,25 @@ public class AdminUserMgmtCommand implements Runnable {
                 return;
             }
 
+            // Erwartet wird ein JSON-Array von UserResult-Objekten. Beispiel: [{"id":1,"name":"alice","role":1}, ...]
+            String body = res.body();
             try {
-                ObjectMapper mapper = new ObjectMapper();
-                List<UserResult> users = mapper.readValue(res.body(), new TypeReference<List<UserResult>>() {});
-
+                var users = parent.service.parseUsers(body);
                 if (users.isEmpty()) {
-                    parent.ctx.out().println("[ADMIN] No users found.");
-                    return;
+                    parent.ctx.out().println("[ADMIN] Users: (none)");
+                } else {
+                    parent.ctx.out().println("[ADMIN] Users:");
+                    for (var u : users) {
+                        parent.ctx.out().printf("  - id=%d name=%s role=%d%n",
+                                u.id(), u.name(), u.role());
+                    }
                 }
-
-                parent.ctx.out().printf("%-6s %-15s %-10s%n", "ID", "NAME", "ROLE");
-                parent.ctx.out().println("----------------------------------------");
-
-                for (UserResult u : users) {
-                    String roleName = parent.VALID_ROLES.getOrDefault(u.role(), "UNKNOWN");
-                    parent.ctx.out().printf("%-6d %-15s %-10s%n", u.id(), u.name(), roleName);
-                }
+                parent.ctx.out().flush();
             } catch (Exception e) {
-                ConsoleUtils.error(parent.ctx.err(), "ADMIN Parse error: %s", e.getMessage());
+                ConsoleUtils.error(parent.ctx.err(),
+                        "[ADMIN] User list: failed to parse JSON (%s), raw body:%n%s",
+                        e.getMessage(), body);
             }
-            parent.ctx.out().flush();
         }
     }
 
