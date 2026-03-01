@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.edge.config;
 
+import de.htwsaar.minicdn.edge.service.EdgeFileService;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -27,6 +28,9 @@ public class EdgeRecoveryBootstrap {
     /** Service to manage TTL policies for cached content prefixes. */
     private final TtlPolicyService ttlPolicyService;
 
+    /** Service to restore cache content. */
+    private final EdgeFileService edgeFileService;
+
     /**
      * Creates a recovery bootstrap that can restore edge runtime state.
      * @param runtimeStateStore store for persisted runtime state
@@ -36,10 +40,12 @@ public class EdgeRecoveryBootstrap {
     public EdgeRecoveryBootstrap(
             EdgeRuntimeStateStore runtimeStateStore,
             EdgeConfigService edgeConfigService,
-            TtlPolicyService ttlPolicyService) {
+            TtlPolicyService ttlPolicyService,
+            EdgeFileService edgeFileService) {
         this.runtimeStateStore = runtimeStateStore;
         this.edgeConfigService = edgeConfigService;
         this.ttlPolicyService = ttlPolicyService;
+        this.edgeFileService = edgeFileService;
     }
 
     /**
@@ -59,5 +65,6 @@ public class EdgeRecoveryBootstrap {
                     "Recovered edge runtime config and {} TTL policies",
                     restored.ttlPolicies().size());
         }
+        edgeFileService.restoreCacheFromDisk();
     }
 }

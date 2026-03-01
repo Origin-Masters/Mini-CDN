@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import de.htwsaar.minicdn.common.util.Sha256Util;
+import de.htwsaar.minicdn.edge.cache.EdgeCacheStateStore;
 import de.htwsaar.minicdn.edge.cache.ReplacementStrategy;
 import de.htwsaar.minicdn.edge.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.config.EdgeRuntimeConfig;
@@ -14,6 +15,7 @@ import de.htwsaar.minicdn.edge.domain.OriginClient;
 import de.htwsaar.minicdn.edge.domain.OriginContent;
 import de.htwsaar.minicdn.edge.domain.OriginMetadata;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -22,7 +24,7 @@ import org.junit.jupiter.api.Test;
 class EdgeFileServiceTest {
 
     @Test
-    void shouldWorkAgainstPortAndNotAgainstHttpImplementation() {
+    void shouldWorkAgainstPortAndNotAgainstHttpImplementation() throws Exception {
         byte[] body = "hello edge".getBytes(StandardCharsets.UTF_8);
         String sha256 = Sha256Util.sha256Hex(body);
 
@@ -32,10 +34,14 @@ class EdgeFileServiceTest {
         EdgeConfigService configService =
                 new EdgeConfigService(new EdgeRuntimeConfig("eu-west", 60_000, 100, ReplacementStrategy.LRU));
 
+        EdgeCacheStateStore stateStore = new EdgeCacheStateStore(
+                Files.createTempFile("edge-cache-state-test", ".properties").toString());
+
         EdgeFileService service = new EdgeFileService(
                 fakeOrigin,
                 configService,
                 new TtlPolicyService(),
+                stateStore,
                 new FixedClock(Instant.parse("2026-01-01T00:00:00Z")));
 
         FilePayload first = service.getFile("/docs/readme.txt");

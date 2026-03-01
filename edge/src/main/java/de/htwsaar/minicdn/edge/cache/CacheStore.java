@@ -50,4 +50,11 @@ public interface CacheStore {
      * @return Eintragsanzahl
      */
     int size();
+
+    /**
+     * Snapshot des aktuellen Cache-Inhalts.
+     *
+     * @return Map aus Cache-Key zu {@link CachedFile}
+     */
+    java.util.Map<String, CachedFile> snapshot();
 }

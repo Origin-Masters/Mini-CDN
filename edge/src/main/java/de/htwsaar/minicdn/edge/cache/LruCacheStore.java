@@ -56,6 +56,11 @@ public final class LruCacheStore implements CacheStore {
         return map.size();
     }
 
+    @Override
+    public synchronized Map<String, CachedFile> snapshot() {
+        return Map.copyOf(map);
+    }
+
     private void evictIfNeeded(int maxEntries, long nowMs) {
         if (maxEntries <= 0) return;
         // opportunistisch abgelaufene Einträge entfernen

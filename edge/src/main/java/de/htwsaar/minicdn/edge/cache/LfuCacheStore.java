@@ -79,6 +79,13 @@ public final class LfuCacheStore implements CacheStore {
         return map.size();
     }
 
+    @Override
+    public synchronized Map<String, CachedFile> snapshot() {
+        Map<String, CachedFile> out = new HashMap<>();
+        map.forEach((k, v) -> out.put(k, v.value));
+        return Map.copyOf(out);
+    }
+
     private void evictIfNeeded(int maxEntries, long nowMs) {
         if (maxEntries <= 0) return;
         map.entrySet().removeIf(e -> e.getValue().value.expiresAtMs() <= nowMs);
