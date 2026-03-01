@@ -15,11 +15,10 @@ import org.springframework.web.client.RestTemplate;
 class CDNControllerTest extends AbstractE2E {
 
     private final RestTemplate restTemplate = createAuthenticatedTemplate();
+
     /**
      * Builds a RestTemplate with an interceptor that ensures the `X-Admin-Token` header is present.
      * If the header is missing, a default token is added before the request is executed.
-     *
-     *
      */
     private RestTemplate createAuthenticatedTemplate() {
         RestTemplate template = new RestTemplate();
@@ -106,18 +105,38 @@ class CDNControllerTest extends AbstractE2E {
 
     @Test
     @Order(4)
-    @DisplayName("E2E: Metriken prüfen nach Traffic")
-    void testMetricsIntegration() {
-        String metricsUrl = ROUTER_BASE + "/api/cdn/routing/metrics";
+    @DisplayName("E2E: Router-Statistiken prüfen nach Traffic")
+    @SuppressWarnings("unchecked")
+    void testAdminStatsIntegration() {
+        String statsUrl = ROUTER_BASE + "/api/cdn/admin/stats?windowSec=60&aggregateEdge=false";
 
-        // Metriken abrufen
-        Map<String, Object> metrics = restTemplate.getForObject(metricsUrl, Map.class);
+        Map<String, Object> stats = restTemplate.getForObject(statsUrl, Map.class);
 
-        assertNotNull(metrics);
-        assertTrue(metrics.containsKey("totalRequests"));
-        // Da vorherige Tests bereits Anfragen gemacht haben, sollte der Counter > 0 sein
-        Integer totalRequests = (Integer) metrics.get("totalRequests");
-        assertTrue(totalRequests > 0);
+        assertNotNull(stats);
+        assertTrue(stats.containsKey("timestamp"));
+        assertTrue(stats.containsKey("windowSec"));
+        assertTrue(stats.containsKey("router"));
+        assertTrue(stats.containsKey("downloads"));
+        assertTrue(stats.containsKey("nodes"));
+        assertTrue(stats.containsKey("edgeAggregation"));
+
+        Map<String, Object> router = (Map<String, Object>) stats.get("router");
+        assertNotNull(router);
+        assertTrue(router.containsKey("totalRequests"));
+        assertTrue(router.containsKey("routingErrors"));
+        assertTrue(router.containsKey("requestsByRegion"));
+
+        Number totalRequests = (Number) router.get("totalRequests");
+        assertNotNull(totalRequests);
+        assertTrue(totalRequests.longValue() > 0, "Es sollten bereits Requests gezählt worden sein");
+
+        Map<String, Object> requestsByRegion = (Map<String, Object>) router.get("requestsByRegion");
+        assertNotNull(requestsByRegion);
+        assertTrue(requestsByRegion.containsKey("EU"), "Die Region EU sollte nach dem Routing-Test vorhanden sein");
+
+        Map<String, Object> edgeAggregation = (Map<String, Object>) stats.get("edgeAggregation");
+        assertNotNull(edgeAggregation);
+        assertEquals(Boolean.FALSE, edgeAggregation.get("enabled"));
     }
 
     @Test

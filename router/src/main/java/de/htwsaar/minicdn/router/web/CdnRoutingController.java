@@ -2,7 +2,6 @@ package de.htwsaar.minicdn.router.web;
 
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.service.EdgeHttpClient;
-import de.htwsaar.minicdn.router.service.MetricsService;
 import de.htwsaar.minicdn.router.service.RouterStatsService;
 import de.htwsaar.minicdn.router.service.RoutingIndex;
 import de.htwsaar.minicdn.router.util.UrlUtil;
@@ -37,7 +36,6 @@ public class CdnRoutingController {
     private static final String HEADER_RETRY_COUNT = "X-CDN-Retry-Count";
 
     private final RoutingIndex routingIndex;
-    private final MetricsService metricsService;
     private final RouterStatsService routerStatsService;
     private final EdgeHttpClient edgeHttpClient;
 
@@ -47,7 +45,6 @@ public class CdnRoutingController {
 
     public CdnRoutingController(
             RoutingIndex routingIndex,
-            MetricsService metricsService,
             RouterStatsService routerStatsService,
             EdgeHttpClient edgeHttpClient,
             @Value("${cdn.delivery.ack-timeout-ms:500}") long ackTimeoutMs,
@@ -55,7 +52,6 @@ public class CdnRoutingController {
             @Value("${cdn.delivery.retry-interval-ms:100}") long retryIntervalMs) {
 
         this.routingIndex = routingIndex;
-        this.metricsService = metricsService;
         this.routerStatsService = routerStatsService;
         this.edgeHttpClient = edgeHttpClient;
 
@@ -82,19 +78,16 @@ public class CdnRoutingController {
         String clientId = firstNonBlank(clientIdQuery, clientIdHeader);
 
         if (region == null || region.isBlank()) {
-            metricsService.recordError();
             routerStatsService.recordError();
             log.warn("Anfrage abgebrochen: Region fehlt.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Fehler: Region fehlt. Bitte 'region' Query-Parameter oder 'X-Client-Region' Header setzen.");
         }
 
-        metricsService.recordRequest(region);
         routerStatsService.recordRequest(region, clientId);
 
         int nodeCount = routingIndex.getNodeCount(region);
         if (nodeCount <= 0) {
-            metricsService.recordError();
             routerStatsService.recordError();
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body("Fehler: Zustellgarantie konnte nicht erfüllt werden. Keine erreichbaren Knoten in Region '"
@@ -112,7 +105,6 @@ public class CdnRoutingController {
 
             boolean ack = edgeHttpClient.isNodeResponsive(selectedNode, Duration.ofMillis(ackTimeoutMs));
             if (ack) {
-                metricsService.recordNodeSelection(selectedNode.url());
                 routerStatsService.recordDownload(path, selectedNode.url());
 
                 URI baseUri = URI.create(UrlUtil.ensureTrailingSlash(selectedNode.url()));
@@ -140,7 +132,6 @@ public class CdnRoutingController {
             }
         }
 
-        metricsService.recordError();
         routerStatsService.recordError();
 
         // Log-Eintrag im Fehlerfall (Ende der Verarbeitung)

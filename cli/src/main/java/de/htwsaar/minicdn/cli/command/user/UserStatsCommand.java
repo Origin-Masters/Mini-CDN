@@ -3,9 +3,7 @@ package de.htwsaar.minicdn.cli.command.user;
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.user.UserStatsService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
-
 import java.util.Objects;
-
 import picocli.CommandLine.*;
 
 /**
@@ -16,9 +14,9 @@ import picocli.CommandLine.*;
         name = "stats",
         description = "Statistics for the current user",
         subcommands = {
-                UserStatsCommand.FileCommand.class,
-                UserStatsCommand.ListCommand.class,
-                UserStatsCommand.OverallCommand.class
+            UserStatsCommand.FileCommand.class,
+            UserStatsCommand.ListCommand.class,
+            UserStatsCommand.OverallCommand.class
         })
 public final class UserStatsCommand implements Runnable {
     private final CliContext ctx;
@@ -51,10 +49,7 @@ public final class UserStatsCommand implements Runnable {
             description = "Show stats for one of my files",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {
-                    "  user stats file --file-id 123",
-                    "  user stats file --file-id 456"
-            })
+            footer = {"  user stats file --file-id 123", "  user stats file --file-id 456"})
     public static final class FileCommand implements Runnable {
         @ParentCommand
         private UserStatsCommand parent;
@@ -84,10 +79,7 @@ public final class UserStatsCommand implements Runnable {
             description = "List my top file by activity",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {
-                    "  user stats list",
-                    "  user stats list --limit 20"
-            })
+            footer = {"  user stats list", "  user stats list --limit 20"})
     public static final class ListCommand implements Runnable {
         @ParentCommand
         private UserStatsCommand parent;
@@ -112,14 +104,12 @@ public final class UserStatsCommand implements Runnable {
     /**
      * Overall user statistics.
      */
-    @Command(name = "overall",
+    @Command(
+            name = "overall",
             description = "Overall statistics for current user",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {
-                    "  user stats overall",
-                    "  user stats overall --window-sec 7200"
-            })
+            footer = {"  user stats overall", "  user stats overall --window-sec 7200"})
     public static final class OverallCommand implements Runnable {
         @ParentCommand
         private UserStatsCommand parent;

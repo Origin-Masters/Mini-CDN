@@ -5,7 +5,6 @@ import de.htwsaar.minicdn.router.dto.BulkResponse;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.dto.EdgeNodeStatus;
 import de.htwsaar.minicdn.router.service.EdgeHttpClient;
-import de.htwsaar.minicdn.router.service.MetricsService;
 import de.htwsaar.minicdn.router.service.RoutingIndex;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,13 +26,10 @@ import org.springframework.web.bind.annotation.*;
 public class RoutingAdminController {
 
     private final RoutingIndex routingIndex;
-    private final MetricsService metricsService;
     private final EdgeHttpClient edgeHttpClient;
 
-    public RoutingAdminController(
-            RoutingIndex routingIndex, MetricsService metricsService, EdgeHttpClient edgeHttpClient) {
+    public RoutingAdminController(RoutingIndex routingIndex, EdgeHttpClient edgeHttpClient) {
         this.routingIndex = routingIndex;
-        this.metricsService = metricsService;
         this.edgeHttpClient = edgeHttpClient;
     }
 
@@ -137,15 +133,5 @@ public class RoutingAdminController {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         return ResponseEntity.ok(result);
-    }
-
-    /**
-     * Liefert eine Momentaufnahme der Router-Metriken.
-     *
-     * @return Metriken als Schlüssel/Wert-Struktur
-     */
-    @GetMapping("/metrics")
-    public ResponseEntity<Map<String, Object>> getMetrics() {
-        return ResponseEntity.ok(metricsService.getSnapshot());
     }
 }
