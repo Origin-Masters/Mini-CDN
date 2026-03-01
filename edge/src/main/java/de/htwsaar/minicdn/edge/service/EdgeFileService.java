@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.edge.service;
 import de.htwsaar.minicdn.common.util.Sha256Util;
 import de.htwsaar.minicdn.edge.cache.CacheStore;
 import de.htwsaar.minicdn.edge.cache.CachedFile;
+import de.htwsaar.minicdn.edge.cache.EdgeCacheStateStore;
 import de.htwsaar.minicdn.edge.cache.LfuCacheStore;
 import de.htwsaar.minicdn.edge.cache.LruCacheStore;
 import de.htwsaar.minicdn.edge.cache.ReplacementStrategy;
@@ -16,7 +17,10 @@ import de.htwsaar.minicdn.edge.domain.OriginClient;
 import de.htwsaar.minicdn.edge.domain.OriginContent;
 import de.htwsaar.minicdn.edge.domain.OriginMetadata;
 import java.time.Clock;
+import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,9 +32,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class EdgeFileService {
 
+    private static final Logger log = LoggerFactory.getLogger(EdgeFileService.class);
+
     private final OriginClient originClient;
     private final EdgeConfigService configService;
     private final TtlPolicyService ttlPolicyService;
+    private final EdgeCacheStateStore cacheStateStore;
     private final Clock clock;
 
     /**
@@ -43,11 +50,13 @@ public class EdgeFileService {
             OriginClient originClient,
             EdgeConfigService configService,
             TtlPolicyService ttlPolicyService,
+            EdgeCacheStateStore cacheStateStore,
             Clock clock) {
 
         this.originClient = Objects.requireNonNull(originClient, "originClient must not be null");
         this.configService = Objects.requireNonNull(configService, "configService must not be null");
         this.ttlPolicyService = Objects.requireNonNull(ttlPolicyService, "ttlPolicyService must not be null");
+        this.cacheStateStore = Objects.requireNonNull(cacheStateStore, "cacheStateStore must not be null");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
         this.cacheStore = new LruCacheStore();
     }
@@ -82,6 +91,7 @@ public class EdgeFileService {
                 new CachedFile(origin.body(), origin.contentType(), actualSha, now + ttlMs),
                 cfg.maxEntries(),
                 now);
+        persistCacheSnapshot(now);
 
         return new FilePayload(clean, origin.body(), origin.contentType(), actualSha, CacheDecision.MISS);
     }
@@ -109,19 +119,47 @@ public class EdgeFileService {
     }
 
     public boolean invalidateFile(String path) {
-        return cacheStore.remove(normalizePath(path));
+        boolean removed = cacheStore.remove(normalizePath(path));
+        persistCacheSnapshot(clock.millis());
+        return removed;
     }
 
     public int invalidatePrefix(String prefix) {
-        return cacheStore.removeByPrefix(normalizePath(prefix));
+        int removed = cacheStore.removeByPrefix(normalizePath(prefix));
+        persistCacheSnapshot(clock.millis());
+        return removed;
     }
 
     public void clearCache() {
         cacheStore.clear();
+        persistCacheSnapshot(clock.millis());
     }
 
     public int cacheSize() {
         return cacheStore.size();
+    }
+
+    /**
+     * Lädt persistierten Cache-Zustand und setzt ihn in den aktiven Cache.
+     */
+    public void restoreCacheFromDisk() {
+        ensureStrategy();
+        long now = clock.millis();
+        Map<String, CachedFile> restored = cacheStateStore.load();
+        if (restored.isEmpty()) return;
+        var cfg = configService.current();
+        int loaded = 0;
+        for (var e : restored.entrySet()) {
+            String key = e.getKey();
+            CachedFile value = e.getValue();
+            if (key == null || key.isBlank() || value == null) continue;
+            if (value.expiresAtMs() <= now) continue;
+            cacheStore.put(key, value, cfg.maxEntries(), now);
+            loaded++;
+        }
+        if (loaded > 0) {
+            log.info("Recovered {} cache entries", loaded);
+        }
     }
 
     private void ensureStrategy() {
@@ -137,6 +175,14 @@ public class EdgeFileService {
                     cacheStore = new LfuCacheStore();
                 }
             }
+        }
+    }
+
+    private void persistCacheSnapshot(long now) {
+        try {
+            cacheStateStore.save(cacheStore.snapshot(), now);
+        } catch (Exception ex) {
+            log.warn("Failed to persist cache state", ex);
         }
     }
 
