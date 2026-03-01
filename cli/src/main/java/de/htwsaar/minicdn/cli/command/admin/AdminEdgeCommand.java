@@ -54,7 +54,7 @@ public final class AdminEdgeCommand implements Runnable {
     }
 
     private AdminEdgeService service() {
-        return new AdminEdgeService(ctx.httpClient(), ctx.defaultRequestTimeout());
+        return new AdminEdgeService(ctx.transportClient(), ctx.defaultRequestTimeout());
     }
 
     @Command(

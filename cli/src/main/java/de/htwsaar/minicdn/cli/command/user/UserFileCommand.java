@@ -20,8 +20,6 @@ import picocli.CommandLine.Spec;
 
 /**
  * Datei-Operationen (Download über den Router).
- *
- * <p>Ohne Subcommand wird die Usage angezeigt.
  */
 @Command(
         name = "file",
@@ -41,11 +39,6 @@ public final class UserFileCommand implements Runnable {
     @Spec
     private CommandSpec spec;
 
-    /**
-     * Konstruktor für Constructor Injection via {@code ContextFactory}.
-     *
-     * @param ctx CLI-Kontext (Output, HTTP-Client, Timeouts, ...)
-     */
     public UserFileCommand(CliContext ctx) {
         this.ctx = Objects.requireNonNull(ctx, "ctx");
     }
@@ -57,28 +50,9 @@ public final class UserFileCommand implements Runnable {
     }
 
     UserFileService downloadService() {
-        return new UserFileService(ctx.httpClient(), ctx.defaultRequestTimeout());
+        return new UserFileService(ctx.transportClient(), ctx.defaultRequestTimeout());
     }
 
-    /**
-     * Lädt eine Datei über den Router herunter und speichert sie lokal.
-     *
-     * <p>HTTP-Flow:
-     * <ul>
-     *   <li>GET {routerBaseUrl}/api/cdn/files/{remotePath} mit Header X-Client-Region</li>
-     *   <li>Router antwortet i. d. R. mit 307 + Location auf Edge</li>
-     *   <li>CLI folgt Location und lädt vom Edge (GET {edgeBaseUrl}/api/edge/files/{remotePath})</li>
-     * </ul>
-     *
-     * <p>Exit-Codes:
-     * <ul>
-     *   <li>0 = OK</li>
-     *   <li>3 = Client-Validation (kein Request)</li>
-     *   <li>4 = HTTP 4xx</li>
-     *   <li>2 = HTTP 5xx</li>
-     *   <li>1 = Exception/IO</li>
-     * </ul>
-     */
     @Command(
             name = "download",
             description = "Download a file via router (handles redirect to edge)",

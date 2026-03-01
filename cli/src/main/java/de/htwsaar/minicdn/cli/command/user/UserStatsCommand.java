@@ -8,7 +8,6 @@ import picocli.CommandLine.*;
 
 /**
  * User-Commands für Statistiken des aktuellen Nutzers.
- * <p>Ohne Subcommand wird die Usage angezeigt.</p>
  */
 @Command(
         name = "stats",
@@ -25,14 +24,10 @@ public final class UserStatsCommand implements Runnable {
     @Spec
     private Model.CommandSpec spec;
 
-    /**
-     * Konstruktor für Constructor Injection via {@code ContextFactory}.
-     *
-     * @param ctx CLI-Kontext (Output, HTTP-Client, Timeouts, ...)
-     */
     public UserStatsCommand(CliContext ctx) {
         this.ctx = Objects.requireNonNull(ctx, "ctx");
-        this.statsService = new UserStatsService(ctx);
+        this.statsService = new UserStatsService(
+                ctx.transportClient(), ctx.defaultRequestTimeout(), ctx.routerBaseUrl(), ctx.adminToken());
     }
 
     @Override
@@ -41,9 +36,6 @@ public final class UserStatsCommand implements Runnable {
         ctx.out().flush();
     }
 
-    /**
-     * Show stats for one of my files.
-     */
     @Command(
             name = "file",
             description = "Show stats for one of my files",
@@ -63,17 +55,14 @@ public final class UserStatsCommand implements Runnable {
         @Override
         public void run() {
             var result = parent.statsService.fileStatsForCurrentUser(fileId);
-            if (result.statusCode() >= 400) {
-                ConsoleUtils.error(parent.ctx.err(), "[USER] Stats fetch failed: HTTP %d", result.statusCode());
+            if (result.statusCode() == null || result.statusCode() >= 400) {
+                ConsoleUtils.error(parent.ctx.err(), "[USER] Stats fetch failed: HTTP %s", result.statusCode());
                 return;
             }
             ConsoleUtils.info(parent.ctx.out(), "[USER] Stats fetch successful");
         }
     }
 
-    /**
-     * List top files by downloads.
-     */
     @Command(
             name = "list",
             description = "List my top file by activity",
@@ -93,17 +82,14 @@ public final class UserStatsCommand implements Runnable {
         @Override
         public void run() {
             var result = parent.statsService.listUserFilesStats(limit);
-            if (result.statusCode() >= 400) {
-                ConsoleUtils.error(parent.ctx.err(), "[USER] List fetch failed: HTTP %d", result.statusCode());
+            if (result.statusCode() == null || result.statusCode() >= 400) {
+                ConsoleUtils.error(parent.ctx.err(), "[USER] List fetch failed: HTTP %s", result.statusCode());
                 return;
             }
             ConsoleUtils.info(parent.ctx.out(), "[USER] List fetch successful");
         }
     }
 
-    /**
-     * Overall user statistics.
-     */
     @Command(
             name = "overall",
             description = "Overall statistics for current user",
@@ -123,8 +109,8 @@ public final class UserStatsCommand implements Runnable {
         @Override
         public void run() {
             var result = parent.statsService.overallStatsForCurrentUser(windowSec);
-            if (result.statusCode() >= 400) {
-                ConsoleUtils.error(parent.ctx.err(), "[USER] Overall stats failed: HTTP %d", result.statusCode());
+            if (result.statusCode() == null || result.statusCode() >= 400) {
+                ConsoleUtils.error(parent.ctx.err(), "[USER] Overall stats failed: HTTP %s", result.statusCode());
                 return;
             }
             ConsoleUtils.info(parent.ctx.out(), "[USER] Overall stats fetch successful");

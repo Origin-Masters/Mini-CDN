@@ -1,28 +1,27 @@
 package de.htwsaar.minicdn.cli.service.admin;
 
+import de.htwsaar.minicdn.cli.dto.DownloadResult;
 import de.htwsaar.minicdn.cli.dto.HttpCallResult;
-import de.htwsaar.minicdn.cli.util.HttpUtils;
+import de.htwsaar.minicdn.cli.transport.TransportClient;
+import de.htwsaar.minicdn.cli.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 
 public final class AdminFileService {
 
-    private final HttpClient httpClient;
+    private final TransportClient transportClient;
     private final Duration requestTimeout;
 
-    public AdminFileService(HttpClient httpClient, Duration requestTimeout) {
-        this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
+    public AdminFileService(TransportClient transportClient, Duration requestTimeout) {
+        this.transportClient = Objects.requireNonNull(transportClient, "transportClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
     }
 
@@ -42,14 +41,13 @@ public final class AdminFileService {
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve("api/origin/admin/files/" + cleanPath);
 
-        // Issue #24: Rollen
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .header("Content-Type", "application/octet-stream")
-                .PUT(HttpRequest.BodyPublishers.ofFile(localFile))
-                .build();
+        TransportResponse response = transportClient.send(TransportRequest.putFile(
+                url,
+                requestTimeout,
+                Map.of("X-Admin-Token", resolveAdminToken(), "Content-Type", "application/octet-stream"),
+                localFile));
 
-        return HttpUtils.sendForStringBody(httpClient, req);
+        return toHttpCallResult(response);
     }
 
     /**
@@ -57,18 +55,21 @@ public final class AdminFileService {
      */
     public HttpCallResult listOriginFiles(URI originBaseUrl, int page, int size) {
         Objects.requireNonNull(originBaseUrl, "originBaseUrl");
-        if (page < 1) return HttpCallResult.clientError("page must be >= 1");
-        if (size <= 0) return HttpCallResult.clientError("size must be > 0");
+
+        if (page < 1) {
+            return HttpCallResult.clientError("page must be >= 1");
+        }
+        if (size <= 0) {
+            return HttpCallResult.clientError("size must be > 0");
+        }
 
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve(String.format("api/origin/files?page=%d&size=%d", page, size));
 
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .GET()
-                .build();
+        TransportResponse response = transportClient.send(
+                TransportRequest.get(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
 
-        return HttpUtils.sendForStringBody(httpClient, req);
+        return toHttpCallResult(response);
     }
 
     /**
@@ -78,37 +79,32 @@ public final class AdminFileService {
         Objects.requireNonNull(originBaseUrl, "originBaseUrl");
 
         String cleanPath = PathUtils.stripLeadingSlash(Objects.toString(targetPath, ""));
-        if (cleanPath.isBlank()) return HttpCallResult.clientError("path must not be blank");
+        if (cleanPath.isBlank()) {
+            return HttpCallResult.clientError("path must not be blank");
+        }
 
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve("api/origin/files/" + cleanPath);
 
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .method("HEAD", HttpRequest.BodyPublishers.noBody())
-                .build();
+        TransportResponse response = transportClient.send(
+                TransportRequest.head(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
 
-        try {
-            HttpResponse<Void> resp = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
-
-            String len = resp.headers().firstValue("Content-Length").orElse(null);
-            String type = resp.headers().firstValue("Content-Type").orElse(null);
-            String sha = resp.headers().firstValue("X-Content-SHA256").orElse(null);
-
-            String json = String.format(
-                    "{\"path\":\"%s\",\"size\":%s,\"contentType\":%s,\"sha256\":%s}",
-                    JsonUtils.escapeJson(cleanPath),
-                    len == null ? "null" : len,
-                    type == null ? "null" : "\"" + JsonUtils.escapeJson(type) + "\"",
-                    sha == null ? "null" : "\"" + JsonUtils.escapeJson(sha) + "\"");
-
-            return HttpCallResult.http(resp.statusCode(), json);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return HttpCallResult.ioError("interrupted");
-        } catch (IOException e) {
-            return HttpCallResult.ioError(e.getMessage());
+        if (response.error() != null) {
+            return HttpCallResult.ioError(response.error());
         }
+
+        String len = response.firstHeader("Content-Length");
+        String type = response.firstHeader("Content-Type");
+        String sha = response.firstHeader("X-Content-SHA256");
+
+        String json = String.format(
+                "{\"path\":\"%s\",\"size\":%s,\"contentType\":%s,\"sha256\":%s}",
+                JsonUtils.escapeJson(cleanPath),
+                len == null ? "null" : len,
+                type == null ? "null" : "\"" + JsonUtils.escapeJson(type) + "\"",
+                sha == null ? "null" : "\"" + JsonUtils.escapeJson(sha) + "\"");
+
+        return HttpCallResult.http(Objects.requireNonNull(response.statusCode(), "statusCode"), json);
     }
 
     /**
@@ -119,49 +115,61 @@ public final class AdminFileService {
         Objects.requireNonNull(localTargetFile, "localTargetFile");
 
         String cleanPath = PathUtils.stripLeadingSlash(Objects.toString(targetPath, ""));
-        if (cleanPath.isBlank()) return HttpCallResult.clientError("path must not be blank");
-
-        try {
-            Path parent = localTargetFile.getParent();
-            if (parent != null) Files.createDirectories(parent);
-        } catch (IOException e) {
-            return HttpCallResult.ioError("failed to create output directory: " + e.getMessage());
+        if (cleanPath.isBlank()) {
+            return HttpCallResult.clientError("path must not be blank");
         }
 
         URI base = UriUtils.ensureTrailingSlash(originBaseUrl);
         URI url = base.resolve("api/origin/files/" + cleanPath);
 
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .GET()
-                .build();
+        DownloadResult result = transportClient.download(
+                TransportRequest.get(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())),
+                localTargetFile,
+                true);
 
-        try {
-            HttpResponse<Path> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofFile(localTargetFile));
-            return HttpCallResult.http(resp.statusCode(), String.valueOf(resp.body()));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return HttpCallResult.ioError("interrupted");
-        } catch (IOException e) {
-            return HttpCallResult.ioError(e.getMessage());
+        if (result.error() != null) {
+            return HttpCallResult.ioError(result.error());
         }
+
+        return HttpCallResult.http(
+                Objects.requireNonNull(result.statusCode(), "statusCode"), localTargetFile.toString());
     }
 
     /**
      * Lösche eine Datei auf dem Origin-Server (Admin-API): DELETE /api/origin/admin/files/{path}
      */
     public HttpCallResult deleteOriginFile(URI origin, String cleanPath) {
+        Objects.requireNonNull(origin, "origin");
+
         String path = PathUtils.stripLeadingSlash(Objects.toString(cleanPath, ""));
-        if (path.isBlank()) return HttpCallResult.clientError("path must not be blank");
+        if (path.isBlank()) {
+            return HttpCallResult.clientError("path must not be blank");
+        }
 
         URI base = UriUtils.ensureTrailingSlash(origin);
         URI url = base.resolve("api/origin/admin/files/" + path);
 
-        HttpRequest req = HttpUtils.newAdminRequestBuilder(url)
-                .timeout(requestTimeout)
-                .DELETE()
-                .build();
+        TransportResponse response = transportClient.send(
+                TransportRequest.delete(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
 
-        return HttpUtils.sendForStringBody(httpClient, req);
+        return toHttpCallResult(response);
+    }
+
+    private static HttpCallResult toHttpCallResult(TransportResponse response) {
+        if (response.error() != null) {
+            return HttpCallResult.ioError(response.error());
+        }
+        return HttpCallResult.http(Objects.requireNonNull(response.statusCode(), "statusCode"), response.body());
+    }
+
+    private static String resolveAdminToken() {
+        String token = System.getenv("MINICDN_ADMIN_TOKEN");
+        if (token == null || token.isBlank()) {
+            token = System.getProperty("minicdn.admin.token");
+        }
+        if (token == null || token.isBlank()) {
+            token = "secret-token";
+        }
+        return token;
     }
 }
