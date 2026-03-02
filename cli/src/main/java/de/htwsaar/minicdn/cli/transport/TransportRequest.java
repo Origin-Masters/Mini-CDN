@@ -46,6 +46,10 @@ public record TransportRequest(
         return new TransportRequest("POST", uri, headers, timeout, body, null);
     }
 
+    public static TransportRequest patchJson(URI uri, Duration timeout, Map<String, String> headers, String body) {
+        return new TransportRequest("PATCH", uri, headers, timeout, body, null);
+    }
+
     public static TransportRequest putFile(URI uri, Duration timeout, Map<String, String> headers, Path bodyFile) {
         return new TransportRequest("PUT", uri, headers, timeout, null, bodyFile);
     }
