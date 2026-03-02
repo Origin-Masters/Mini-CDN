@@ -86,8 +86,7 @@ public final class AdminUserService {
         if (body == null || body.isBlank()) {
             return List.of();
         }
-        return MAPPER.readValue(body, new TypeReference<>() {
-        });
+        return MAPPER.readValue(body, new TypeReference<>() {});
     }
 
     /**

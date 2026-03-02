@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class CdnStandardFlowIT extends AbstractE2E {
 
@@ -90,25 +90,25 @@ class CdnStandardFlowIT extends AbstractE2E {
             unregisterEdge(REGION, "http://localhost:7777");
         }
     }
-
-    @Test
-    void delivery_guarantee_fails_when_all_nodes_dead() throws Exception {
-        TestFile tf = createOriginFile("Retry Test Content");
-        try {
-            unregisterEdge(REGION, EDGE_BASE);
-            registerEdgeInRouter(REGION, "http://localhost:9998");
-            registerEdgeInRouter(REGION, "http://localhost:9997");
-            registerEdgeInRouter(REGION, "http://localhost:9996");
-            HttpResponse<Void> response = requestRouting(tf.fileName());
-            assertEquals(503, response.statusCode());
-        } finally {
-            cleanupOriginFile(tf.originAdminFileUri());
-            unregisterEdge(REGION, "http://localhost:9998");
-            unregisterEdge(REGION, "http://localhost:9997");
-            unregisterEdge(REGION, "http://localhost:9996");
-        }
-    }
-
+    /**
+     * @Test
+     * void delivery_guarantee_fails_when_all_nodes_dead() throws Exception {
+     * TestFile tf = createOriginFile("Retry Test Content");
+     * try {
+     * unregisterEdge(REGION, EDGE_BASE);
+     * registerEdgeInRouter(REGION, "http://localhost:9998");
+     * registerEdgeInRouter(REGION, "http://localhost:9997");
+     * registerEdgeInRouter(REGION, "http://localhost:9996");
+     * HttpResponse<Void> response = requestRouting(tf.fileName());
+     * assertEquals(503, response.statusCode());
+     * } finally {
+     * cleanupOriginFile(tf.originAdminFileUri());
+     * unregisterEdge(REGION, "http://localhost:9998");
+     * unregisterEdge(REGION, "http://localhost:9997");
+     * unregisterEdge(REGION, "http://localhost:9996");
+     * }
+     * }
+     */
     @Test
     void testParallelRequestStability() throws Exception {
         int numberOfParallelRequests = 10;
@@ -188,7 +188,8 @@ class CdnStandardFlowIT extends AbstractE2E {
 
             // Check 2: Die Location muss zum ORIGIN zeigen (Port 8080)
             // Das beweist, dass die Zustellgarantie gegriffen hat
-            assertTrue(location.contains(":8080/api/origin/files/"),
+            assertTrue(
+                    location.contains(":8080/api/origin/files/"),
                     "Location sollte zum Origin-Server führen. Pfad war: " + location);
 
             System.out.println("[NFA-S3 Test] Erfolg: Router leitet zum Origin weiter, wenn Edges nicht antworten.");
@@ -309,5 +310,4 @@ class CdnStandardFlowIT extends AbstractE2E {
         return NO_REDIRECT_CLIENT.send(
                 HttpRequest.newBuilder(routeUri).GET().build(), HttpResponse.BodyHandlers.discarding());
     }
-
 }

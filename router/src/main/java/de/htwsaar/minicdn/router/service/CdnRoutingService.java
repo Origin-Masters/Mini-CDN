@@ -107,7 +107,10 @@ public class CdnRoutingService {
                     return new RouteFileResult(
                             RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
                 } else {
-                    log.warn("[NFA-S3] Kein ACK von Edge {}. Versuch {} fehlgeschlagen.", selectedNode.url(), attempts + 1);
+                    log.warn(
+                            "[NFA-S3] Kein ACK von Edge {}. Versuch {} fehlgeschlagen.",
+                            selectedNode.url(),
+                            attempts + 1);
                 }
             }
 
