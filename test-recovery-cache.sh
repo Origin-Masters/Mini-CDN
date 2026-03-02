@@ -14,8 +14,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
+now_ms() {
+  local ts
+  ts="$(date +%s%3N 2>/dev/null || true)"
+  case "$ts" in
+    *N*|"") echo "$(( $(date +%s) * 1000 ))" ;;
+    *) echo "$ts" ;;
+  esac
+}
+
 cache_header() {
-  curl -sI "$EDGE/api/edge/files/$FILE" \
+  # Use GET to exercise the real cache path (HEAD only checks metadata and does not warm cache).
+  curl -sD - "$EDGE/api/edge/files/$FILE" -o /dev/null \
     | tr -d '\r' \
     | awk -F': ' '/^X-Cache:/{print $2}'
 }
@@ -45,14 +55,14 @@ echo "  before restart #2: $CACHE_SECOND"
 [ "$CACHE_SECOND" = "HIT" ]
 
 echo "[5/6] Restart [SERVICES]..."
-start_ms="$(date +%s%3N)"
+start_ms="$(now_ms)"
 ./shutdown-services.sh >/dev/null
 ./startup-service.sh >/dev/null
 
 until curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$ROUTER/api/cdn/health" >/dev/null 2>&1; do
   sleep 1
 done
-end_ms="$(date +%s%3N)"
+end_ms="$(now_ms)"
 
 echo "[6/6] Verify [CACHE] recovery after restart (expect HIT)..."
 CACHE_AFTER_RESTART="$(cache_header)"
@@ -60,4 +70,3 @@ echo "  after restart #1: $CACHE_AFTER_RESTART"
 [ "$CACHE_AFTER_RESTART" = "HIT" ]
 
 echo "OK : [EDGE] [CACHE] recovered successfully (${start_ms} -> ${end_ms}, $((end_ms - start_ms)) ms)."
-

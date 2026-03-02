@@ -16,6 +16,7 @@ import de.htwsaar.minicdn.edge.domain.OriginContent;
 import de.htwsaar.minicdn.edge.domain.OriginMetadata;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -54,6 +55,53 @@ class EdgeFileServiceTest {
         assertArrayEquals(body, second.body());
         assertEquals("text/plain", first.contentType());
         assertEquals(sha256, first.sha256());
+    }
+
+    @Test
+    void shouldRestoreCachedEntryAfterRestart() throws Exception {
+
+        // adding extra test to verify that the cache recovery mechanism works correctly
+        // not only test persistence but also that the restored cache
+
+        // cache body in bytes
+        byte[] body = "cache recovery payload".getBytes(StandardCharsets.UTF_8);
+        // hash over body
+        String sha256 = Sha256Util.sha256Hex(body);
+        // fixed point in time
+        Instant now = Instant.parse("2026-01-01T00:00:00Z");
+
+        // create a temporary file for the state store to persist the cache state
+        Path stateFile = Files.createTempFile("edge-cache-recovery", ".properties");
+
+        // create the state store with the temporary file path
+        EdgeCacheStateStore stateStore = new EdgeCacheStateStore(stateFile.toString());
+
+        // this file survives both service instances
+        // and persists the cache state across restart
+
+        EdgeConfigService configService =
+                new EdgeConfigService(new EdgeRuntimeConfig("eu-west", 60_000, 100, ReplacementStrategy.LRU));
+
+        FakeOriginClient firstOrigin = new FakeOriginClient(
+                new OriginContent(body, "text/plain", sha256), new OriginMetadata("text/plain", sha256));
+        EdgeFileService firstService = new EdgeFileService(
+                firstOrigin, configService, new TtlPolicyService(), stateStore, new FixedClock(now));
+
+        FilePayload initial = firstService.getFile("docs/recovery.txt");
+        assertEquals(CacheDecision.MISS, initial.cache());
+        assertEquals(1, firstOrigin.fetchCalls);
+
+        FakeOriginClient restartedOrigin = new FakeOriginClient(
+                new OriginContent(body, "text/plain", sha256), new OriginMetadata("text/plain", sha256));
+        EdgeFileService restartedService = new EdgeFileService(
+                restartedOrigin, configService, new TtlPolicyService(), stateStore, new FixedClock(now));
+
+        restartedService.restoreCacheFromDisk();
+        FilePayload recovered = restartedService.getFile("docs/recovery.txt");
+
+        assertEquals(CacheDecision.HIT, recovered.cache());
+        assertArrayEquals(body, recovered.body());
+        assertEquals(0, restartedOrigin.fetchCalls);
     }
 
     private static final class FakeOriginClient implements OriginClient {
