@@ -14,11 +14,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 class EdgeIntegrityMultiNodeIT extends AbstractE2E {
 
-    private static final int EDGE2_PORT = 8083;
-    private static final int EDGE3_PORT = 8084;
-
-    private static final String EDGE2_BASE = "http://localhost:" + EDGE2_PORT;
-    private static final String EDGE3_BASE = "http://localhost:" + EDGE3_PORT;
+    private static String edge2Base;
+    private static String edge3Base;
 
     private static ConfigurableApplicationContext edge2Ctx;
     private static ConfigurableApplicationContext edge3Ctx;
@@ -41,57 +38,56 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
     @Test
     void integrity_is_identical_on_three_edges() throws Exception {
 
-        // 1) zusätzliche Edge-Server mit "edge"-Profil, aber überschriebenen Ports
         edge2Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
-                .properties(
-                        "server.port=" + EDGE2_PORT,
-                        "origin.base-url=" + ORIGIN_BASE,
-                        "edge.cache.ttl-ms=60000",
-                        "edge.cache.max-entries=100")
-                // Setze als Command-Line-Args mit höchster Priorität
-                .build()
-                .run("--server.port=" + EDGE2_PORT);
+                .run(
+                        "--server.port=0",
+                        "--origin.base-url=" + ORIGIN_BASE,
+                        "--edge.cache.ttl-ms=60000",
+                        "--edge.cache.max-entries=100",
+                        "--minicdn.admin.token=" + ADMIN_TOKEN);
+        edge2Base = "http://localhost:" + localPort(edge2Ctx);
 
         edge3Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
-                .properties(
-                        "server.port=" + EDGE3_PORT,
-                        "origin.base-url=" + ORIGIN_BASE,
-                        "edge.cache.ttl-ms=60000",
-                        "edge.cache.max-entries=100")
-                .build()
-                .run("--server.port=" + EDGE3_PORT);
+                .run(
+                        "--server.port=0",
+                        "--origin.base-url=" + ORIGIN_BASE,
+                        "--edge.cache.ttl-ms=60000",
+                        "--edge.cache.max-entries=100",
+                        "--minicdn.admin.token=" + ADMIN_TOKEN);
+        edge3Base = "http://localhost:" + localPort(edge3Ctx);
 
-        // 2) Testdatei im Origin anlegen
         String fileName = "integrity-" + System.currentTimeMillis() + ".bin";
         URI adminUri = URI.create(ORIGIN_BASE + "/api/origin/admin/files/" + fileName);
 
         byte[] payload = new byte[128_000];
         CLIENT.send(
                 HttpRequest.newBuilder(adminUri)
+                        .header("X-Admin-Token", ADMIN_TOKEN)
                         .PUT(HttpRequest.BodyPublishers.ofByteArray(payload))
                         .build(),
                 HttpResponse.BodyHandlers.discarding());
 
         try {
-            // 3) SHA direkt vom Origin holen (Referenz)
             String originSha = fetchSha(ORIGIN_BASE + "/api/origin/files/" + fileName);
             assertNotNull(originSha);
 
-            // 4) Datei über ALLE drei Edges abrufen
             String edge1Sha = fetchSha(EDGE_BASE + "/api/edge/files/" + fileName);
-            String edge2Sha = fetchSha(EDGE2_BASE + "/api/edge/files/" + fileName);
-            String edge3Sha = fetchSha(EDGE3_BASE + "/api/edge/files/" + fileName);
+            String edge2Sha = fetchSha(edge2Base + "/api/edge/files/" + fileName);
+            String edge3Sha = fetchSha(edge3Base + "/api/edge/files/" + fileName);
 
-            // 5) Vergleich: alle müssen exakt gleich sein
-            assertEquals(originSha, edge1Sha, "Edge #1 liefert veränderte Daten");
-            assertEquals(originSha, edge2Sha, "Edge #2 liefert veränderte Daten");
-            assertEquals(originSha, edge3Sha, "Edge #3 liefert veränderte Daten");
+            assertEquals(originSha, edge1Sha);
+            assertEquals(originSha, edge2Sha);
+            assertEquals(originSha, edge3Sha);
 
         } finally {
-            // 6) Cleanup im Origin
-            CLIENT.send(HttpRequest.newBuilder(adminUri).DELETE().build(), HttpResponse.BodyHandlers.discarding());
+            CLIENT.send(
+                    HttpRequest.newBuilder(adminUri)
+                            .header("X-Admin-Token", ADMIN_TOKEN)
+                            .DELETE()
+                            .build(),
+                    HttpResponse.BodyHandlers.discarding());
         }
     }
 

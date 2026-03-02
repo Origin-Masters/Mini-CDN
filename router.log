@@ -11,14 +11,18 @@
 [[1;34mINFO[m] Copying 3 resources
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.1:compile[m [1m(default-compile)[m @ [36mrouter[0;1m ---[m
-[[1;34mINFO[m] Nothing to compile - all classes are up to date.
+[[1;34mINFO[m] Recompiling the module because of [1mchanged source code[m.
+[[1;34mINFO[m] Compiling 32 source files with javac [forked debug parameters target 21] to target/classes
+[[1;33mWARNING[m] Unable to autodetect 'javac' path, using 'javac' from the environment.
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mrouter[0;1m ---[m
 [[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] skip non existing resourceDirectory /home/valle/Desktop/New Folder/gruppe-08-mini-cdn/router/src/test/resources
+[[1;34mINFO[m] skip non existing resourceDirectory /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router/src/test/resources
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.1:testCompile[m [1m(default-testCompile)[m @ [36mrouter[0;1m ---[m
-[[1;34mINFO[m] Nothing to compile - all classes are up to date.
+[[1;34mINFO[m] Recompiling the module because of [1mchanged dependency[m.
+[[1;34mINFO[m] Compiling 3 source files with javac [forked debug parameters target 21] to target/test-classes
+[[1;33mWARNING[m] Unable to autodetect 'javac' path, using 'javac' from the environment.
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36mrouter[0;1m <<<[m
 [[1;34mINFO[m] 
@@ -34,25 +38,510 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-02-18 16:05:49,263","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.10 with PID 152098 (/home/valle/Desktop/New Folder/gruppe-08-mini-cdn/router/target/classes started by valle in /home/valle/Desktop/New Folder/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-02-18 16:05:49,264","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
-{"timestamp":"2026-02-18 16:05:49,775","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
-{"timestamp":"2026-02-18 16:05:49,780","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
-{"timestamp":"2026-02-18 16:05:49,781","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-02-18 16:05:49,781","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-02-18 16:05:49,802","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-02-18 16:05:49,803","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 519 ms"}
-{"timestamp":"2026-02-18 16:05:50,006","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
-{"timestamp":"2026-02-18 16:05:50,012","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
-{"timestamp":"2026-02-18 16:05:50,016","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 0.951 seconds (process running for 1.071)"}
-{"timestamp":"2026-02-18 16:06:06,036","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-02-18 16:06:06,036","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-02-18 16:06:06,037","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-02 21:30:55,879","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.10 with PID 170634 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router/target/classes started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:30:55,880","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Running with Spring Boot v3.2.5, Spring v6.1.6"}
+{"timestamp":"2026-03-02 21:30:55,880","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
+{"timestamp":"2026-03-02 21:30:56,183","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
+{"timestamp":"2026-03-02 21:30:56,187","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-03-02 21:30:56,188","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:30:56,188","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:30:56,204","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:30:56,205","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 309 ms"}
+{"timestamp":"2026-03-02 21:30:56,225","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.logging.TraceIdFilter","message":"Filter 'traceIdFilter' configured for use"}
+{"timestamp":"2026-03-02 21:30:56,225","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.auth.AdminAuthFilter","message":"Filter 'adminAuthFilter' configured for use"}
+{"timestamp":"2026-03-02 21:30:56,454","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-03-02 21:30:56,459","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:30:56,462","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 0.763 seconds (process running for 0.89)"}
+{"timestamp":"2026-03-02 21:30:58,013","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:30:58,013","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:30:58,013","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected StandardServletMultipartResolver"}
+{"timestamp":"2026-03-02 21:30:58,013","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected AcceptHeaderLocaleResolver"}
+{"timestamp":"2026-03-02 21:30:58,013","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected FixedThemeResolver"}
+{"timestamp":"2026-03-02 21:30:58,014","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@6774f665"}
+{"timestamp":"2026-03-02 21:30:58,014","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.support.SessionFlashMapManager@1a37265"}
+{"timestamp":"2026-03-02 21:30:58,015","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data"}
+{"timestamp":"2026-03-02 21:30:58,015","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 2 ms"}
+{"timestamp":"2026-03-02 21:30:58,018","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"a9db1941-21d6-414f-aa54-02ef211948ea","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/health", parameters={}"}
+{"timestamp":"2026-03-02 21:30:58,036","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"a9db1941-21d6-414f-aa54-02ef211948ea","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-02 21:30:58,043","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"eb7fbc88-bd0a-4e29-84e3-cc3a32449c7e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/routing?region=EU&url=http://localhost:8081", parameters={masked}"}
+{"timestamp":"2026-03-02 21:30:58,054","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"eb7fbc88-bd0a-4e29-84e3-cc3a32449c7e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
+{"timestamp":"2026-03-02 21:32:11,135","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"71fdc5ad-7a42-436a-aacc-9f061361baea","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start/auto", parameters={}"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:11,736","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171189 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:11,737","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:12,267","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10000 (http)"}
+{"timestamp":"2026-03-02 21:32:12,272","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10000"]"}
+{"timestamp":"2026-03-02 21:32:12,274","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:12,274","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:12,295","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:12,296","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 502 ms"}
+{"timestamp":"2026-03-02 21:32:12,478","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10000"]"}
+{"timestamp":"2026-03-02 21:32:12,487","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10000 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:12,495","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.054 seconds (process running for 1.329)"}
+{"timestamp":"2026-03-02 21:32:12,583","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:12,583","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:12,584","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:13,077","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171251 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:13,079","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:13,551","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10001 (http)"}
+{"timestamp":"2026-03-02 21:32:13,557","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10001"]"}
+{"timestamp":"2026-03-02 21:32:13,558","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:13,558","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:13,573","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:13,574","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 463 ms"}
+{"timestamp":"2026-03-02 21:32:13,768","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10001"]"}
+{"timestamp":"2026-03-02 21:32:13,781","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10001 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:13,794","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.952 seconds (process running for 1.183)"}
+{"timestamp":"2026-03-02 21:32:13,850","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:13,850","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:13,851","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:14,348","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171312 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:14,350","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:14,870","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10002 (http)"}
+{"timestamp":"2026-03-02 21:32:14,876","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10002"]"}
+{"timestamp":"2026-03-02 21:32:14,877","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:14,878","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:14,893","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:14,894","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 498 ms"}
+{"timestamp":"2026-03-02 21:32:15,096","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10002"]"}
+{"timestamp":"2026-03-02 21:32:15,106","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10002 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:15,116","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.034 seconds (process running for 1.241)"}
+{"timestamp":"2026-03-02 21:32:15,266","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:15,266","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:15,267","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:15,747","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171372 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:15,749","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:16,226","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10003 (http)"}
+{"timestamp":"2026-03-02 21:32:16,231","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10003"]"}
+{"timestamp":"2026-03-02 21:32:16,232","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:16,232","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:16,247","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:16,248","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 451 ms"}
+{"timestamp":"2026-03-02 21:32:16,473","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10003"]"}
+{"timestamp":"2026-03-02 21:32:16,482","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10003 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:16,490","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.966 seconds (process running for 1.2)"}
+{"timestamp":"2026-03-02 21:32:16,526","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:16,526","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:16,527","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:17,026","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171432 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:17,028","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:17,551","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10004 (http)"}
+{"timestamp":"2026-03-02 21:32:17,556","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10004"]"}
+{"timestamp":"2026-03-02 21:32:17,557","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:17,557","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:17,571","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:17,572","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 505 ms"}
+{"timestamp":"2026-03-02 21:32:17,790","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10004"]"}
+{"timestamp":"2026-03-02 21:32:17,803","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10004 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:17,815","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.031 seconds (process running for 1.259)"}
+{"timestamp":"2026-03-02 21:32:17,944","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:17,944","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:17,945","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:18,421","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171493 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:18,422","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:18,925","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10005 (http)"}
+{"timestamp":"2026-03-02 21:32:18,931","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10005"]"}
+{"timestamp":"2026-03-02 21:32:18,932","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:18,932","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:18,946","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:18,946","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 479 ms"}
+{"timestamp":"2026-03-02 21:32:19,146","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10005"]"}
+{"timestamp":"2026-03-02 21:32:19,156","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10005 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:19,164","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.978 seconds (process running for 1.195)"}
+{"timestamp":"2026-03-02 21:32:19,214","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:19,214","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:19,214","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:19,699","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171552 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:19,700","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:20,239","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10006 (http)"}
+{"timestamp":"2026-03-02 21:32:20,245","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10006"]"}
+{"timestamp":"2026-03-02 21:32:20,246","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:20,246","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:20,262","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:20,263","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 516 ms"}
+{"timestamp":"2026-03-02 21:32:20,452","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10006"]"}
+{"timestamp":"2026-03-02 21:32:20,461","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10006 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:20,468","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.013 seconds (process running for 1.23)"}
+{"timestamp":"2026-03-02 21:32:20,627","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:20,628","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:20,628","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:21,088","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171613 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:21,089","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:21,625","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10007 (http)"}
+{"timestamp":"2026-03-02 21:32:21,632","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10007"]"}
+{"timestamp":"2026-03-02 21:32:21,633","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:21,633","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:21,649","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:21,649","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 514 ms"}
+{"timestamp":"2026-03-02 21:32:21,850","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10007"]"}
+{"timestamp":"2026-03-02 21:32:21,858","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10007 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:21,867","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.017 seconds (process running for 1.214)"}
+{"timestamp":"2026-03-02 21:32:21,890","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:21,890","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:21,891","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:22,417","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171673 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:22,418","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:22,937","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10008 (http)"}
+{"timestamp":"2026-03-02 21:32:22,942","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10008"]"}
+{"timestamp":"2026-03-02 21:32:22,943","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:22,943","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:22,957","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:22,958","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 504 ms"}
+{"timestamp":"2026-03-02 21:32:23,135","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10008"]"}
+{"timestamp":"2026-03-02 21:32:23,144","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10008 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:23,156","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.983 seconds (process running for 1.237)"}
+{"timestamp":"2026-03-02 21:32:23,309","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:23,310","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:23,310","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:32:23,792","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171732 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:32:23,793","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:32:24,335","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10009 (http)"}
+{"timestamp":"2026-03-02 21:32:24,340","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10009"]"}
+{"timestamp":"2026-03-02 21:32:24,342","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:32:24,342","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:32:24,356","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:32:24,356","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 509 ms"}
+{"timestamp":"2026-03-02 21:32:24,534","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10009"]"}
+{"timestamp":"2026-03-02 21:32:24,543","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10009 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:32:24,552","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.011 seconds (process running for 1.219)"}
+{"timestamp":"2026-03-02 21:32:24,590","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:24,590","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:32:24,591","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-02 21:32:24,633","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"71fdc5ad-7a42-436a-aacc-9f061361baea","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
+{"timestamp":"2026-03-02 21:32:28,370","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"08dc8762-7e09-4a2d-ae42-8af68f5d3187","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/edges/managed", parameters={}"}
+{"timestamp":"2026-03-02 21:32:28,372","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"08dc8762-7e09-4a2d-ae42-8af68f5d3187","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-02 21:33:32,033","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"17e4e532-8cb7-4d72-a57c-cd4da4566e3b","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start/auto", parameters={}"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:32,603","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171968 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:32,605","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:33,115","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10010 (http)"}
+{"timestamp":"2026-03-02 21:33:33,121","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10010"]"}
+{"timestamp":"2026-03-02 21:33:33,122","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:33,122","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:33,138","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:33,139","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 480 ms"}
+{"timestamp":"2026-03-02 21:33:33,309","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10010"]"}
+{"timestamp":"2026-03-02 21:33:33,317","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10010 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:33,324","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.019 seconds (process running for 1.285)"}
+{"timestamp":"2026-03-02 21:33:33,430","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:33,431","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:33,431","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:33,911","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172031 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:33,913","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:34,404","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10011 (http)"}
+{"timestamp":"2026-03-02 21:33:34,410","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10011"]"}
+{"timestamp":"2026-03-02 21:33:34,411","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:34,411","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:34,427","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:34,427","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 476 ms"}
+{"timestamp":"2026-03-02 21:33:34,611","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10011"]"}
+{"timestamp":"2026-03-02 21:33:34,621","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10011 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:34,629","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.949 seconds (process running for 1.175)"}
+{"timestamp":"2026-03-02 21:33:34,692","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:34,692","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:34,692","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:35,252","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172090 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:35,254","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:35,748","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10012 (http)"}
+{"timestamp":"2026-03-02 21:33:35,753","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10012"]"}
+{"timestamp":"2026-03-02 21:33:35,754","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:35,754","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:35,768","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:35,768","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 471 ms"}
+{"timestamp":"2026-03-02 21:33:35,951","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10012"]"}
+{"timestamp":"2026-03-02 21:33:35,960","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10012 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:35,968","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.991 seconds (process running for 1.248)"}
+{"timestamp":"2026-03-02 21:33:36,105","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:36,105","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:36,105","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:36,592","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172151 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:36,593","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:37,104","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10013 (http)"}
+{"timestamp":"2026-03-02 21:33:37,110","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10013"]"}
+{"timestamp":"2026-03-02 21:33:37,111","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:37,111","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:37,126","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:37,127","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 488 ms"}
+{"timestamp":"2026-03-02 21:33:37,309","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10013"]"}
+{"timestamp":"2026-03-02 21:33:37,318","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10013 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:37,326","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.981 seconds (process running for 1.194)"}
+{"timestamp":"2026-03-02 21:33:37,372","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:37,372","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:37,372","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:37,844","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172214 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:37,845","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:38,329","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10014 (http)"}
+{"timestamp":"2026-03-02 21:33:38,335","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10014"]"}
+{"timestamp":"2026-03-02 21:33:38,336","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:38,336","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:38,351","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:38,352","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 470 ms"}
+{"timestamp":"2026-03-02 21:33:38,528","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10014"]"}
+{"timestamp":"2026-03-02 21:33:38,535","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10014 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:38,542","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.937 seconds (process running for 1.144)"}
+{"timestamp":"2026-03-02 21:33:38,632","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:38,632","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:38,633","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:39,140","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172275 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:39,141","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:39,645","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10015 (http)"}
+{"timestamp":"2026-03-02 21:33:39,651","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10015"]"}
+{"timestamp":"2026-03-02 21:33:39,652","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:39,652","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:39,667","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:39,668","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 477 ms"}
+{"timestamp":"2026-03-02 21:33:39,857","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10015"]"}
+{"timestamp":"2026-03-02 21:33:39,866","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10015 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:39,874","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.988 seconds (process running for 1.22)"}
+{"timestamp":"2026-03-02 21:33:39,896","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:39,896","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:39,897","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:40,392","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172335 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:40,393","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:40,915","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10016 (http)"}
+{"timestamp":"2026-03-02 21:33:40,921","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10016"]"}
+{"timestamp":"2026-03-02 21:33:40,923","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:40,923","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:40,939","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:40,939","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 510 ms"}
+{"timestamp":"2026-03-02 21:33:41,143","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10016"]"}
+{"timestamp":"2026-03-02 21:33:41,151","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10016 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:41,160","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.009 seconds (process running for 1.231)"}
+{"timestamp":"2026-03-02 21:33:41,312","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:41,312","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:41,313","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:41,803","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172394 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:41,805","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:42,308","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10017 (http)"}
+{"timestamp":"2026-03-02 21:33:42,313","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10017"]"}
+{"timestamp":"2026-03-02 21:33:42,314","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:42,314","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:42,327","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:42,328","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 480 ms"}
+{"timestamp":"2026-03-02 21:33:42,510","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10017"]"}
+{"timestamp":"2026-03-02 21:33:42,520","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10017 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:42,528","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.948 seconds (process running for 1.192)"}
+{"timestamp":"2026-03-02 21:33:42,574","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:42,574","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:42,575","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:43,054","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172454 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:43,056","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:43,572","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10018 (http)"}
+{"timestamp":"2026-03-02 21:33:43,578","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10018"]"}
+{"timestamp":"2026-03-02 21:33:43,579","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:43,579","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:43,594","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:43,594","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 502 ms"}
+{"timestamp":"2026-03-02 21:33:43,813","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10018"]"}
+{"timestamp":"2026-03-02 21:33:43,826","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10018 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:43,838","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.014 seconds (process running for 1.233)"}
+{"timestamp":"2026-03-02 21:33:43,989","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:43,989","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:43,989","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-02 21:33:44,484","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172512 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 21:33:44,486","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-02 21:33:45,049","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10019 (http)"}
+{"timestamp":"2026-03-02 21:33:45,056","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10019"]"}
+{"timestamp":"2026-03-02 21:33:45,058","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 21:33:45,058","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 21:33:45,076","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 21:33:45,077","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 544 ms"}
+{"timestamp":"2026-03-02 21:33:45,266","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10019"]"}
+{"timestamp":"2026-03-02 21:33:45,275","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10019 (http) with context path ''"}
+{"timestamp":"2026-03-02 21:33:45,284","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.055 seconds (process running for 1.272)"}
+{"timestamp":"2026-03-02 21:33:45,396","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:45,396","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 21:33:45,397","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-02 21:33:45,418","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"17e4e532-8cb7-4d72-a57c-cd4da4566e3b","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
+{"timestamp":"2026-03-02 21:33:55,050","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"acdcd15f-b949-4d6c-b2d4-6ce19635b4bb","logger":"org.springframework.web.servlet.DispatcherServlet","message":"DELETE "/api/cdn/admin/edges/region/EU?deregister=true", parameters={masked}"}
+{"timestamp":"2026-03-02 21:33:55,739","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"acdcd15f-b949-4d6c-b2d4-6ce19635b4bb","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-02 21:34:09,362","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"169807eb-0c64-42ad-979a-dc158b5e811e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/edges/managed", parameters={}"}
+{"timestamp":"2026-03-02 21:34:09,364","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"169807eb-0c64-42ad-979a-dc158b5e811e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-02 21:34:23,425","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"e000e065-e27a-43a8-a0be-7609e6db31e8","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/stats?windowSec=60&aggregateEdge=true", parameters={masked}"}
+{"timestamp":"2026-03-02 21:34:23,517","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"e000e065-e27a-43a8-a0be-7609e6db31e8","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;31mBUILD FAILURE[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  11:04 min
-[[1;34mINFO[m] Finished at: 2026-02-18T16:16:52+01:00
+[[1;34mINFO[m] Total time:  03:46 min
+[[1;34mINFO[m] Finished at: 2026-03-02T21:34:39+01:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;31mERROR[m] Failed to execute goal [32morg.springframework.boot:spring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[m on project [36mrouter[m: [1;31mProcess terminated with exit code: 143[m -> [1m[Help 1][m
 [[1;31mERROR[m] 

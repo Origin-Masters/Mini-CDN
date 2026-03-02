@@ -31,7 +31,7 @@ test_job:
   image: maven:3.9-jdk-21
   script:
     - echo "Running unit tests..."
-    - mvn test -B
+    - mvn test -B -Dminicdn.admin.token=secret-token
   cache:
     paths:
       - .m2/repository/

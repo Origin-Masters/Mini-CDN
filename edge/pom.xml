@@ -108,7 +108,7 @@
                         </database>
                         <target>
                             <packageName>de.htwsaar.minicdn.edge.db</packageName>
-                            <directory>src/main/java</directory>
+                            <directory>target/generated-sources/jooq</directory>
                         </target>
                     </generator>
                 </configuration>

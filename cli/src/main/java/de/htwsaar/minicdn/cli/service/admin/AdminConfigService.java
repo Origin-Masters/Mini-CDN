@@ -1,70 +1,132 @@
 package de.htwsaar.minicdn.cli.service.admin;
 
-import java.util.List;
+import de.htwsaar.minicdn.cli.dto.HttpCallResult;
+import de.htwsaar.minicdn.cli.transport.TransportClient;
+import de.htwsaar.minicdn.cli.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.transport.TransportResponse;
+import de.htwsaar.minicdn.cli.util.JsonUtils;
+import de.htwsaar.minicdn.cli.util.UriUtils;
+import java.net.URI;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
- * In-Memory Konfigurationsspeicher für die CLI (Stub).
- *
- * <p>Hinweis: Diese Implementierung ist pro JVM-Prozess global (static) und
- * dient aktuell nur zu Demo-/Stub-Zwecken.
+ * Fachlicher Service für Remote-Konfiguration von Origin- und Edge-Servern.
  */
 public final class AdminConfigService {
 
-    private static final Map<String, String> CONFIG = new ConcurrentHashMap<>();
+    private final TransportClient transportClient;
+    private final Duration requestTimeout;
 
-    private AdminConfigService() {
-        // Utility class
+    public AdminConfigService(TransportClient transportClient, Duration requestTimeout) {
+        this.transportClient = Objects.requireNonNull(transportClient, "transportClient");
+        this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
     }
 
-    /**
-     * Setzt einen Konfigurationswert.
-     *
-     * @param key Konfigurationsschlüssel, darf nicht {@code null} oder blank sein
-     * @param value Wert (darf {@code null} sein, wird dann als null gespeichert)
-     * @return {@code true} wenn der Key valide war und gespeichert wurde, sonst {@code false}
-     */
-    public static boolean set(String key, String value) {
-        if (key == null || key.isBlank()) {
-            return false;
+    public HttpCallResult getOriginConfig(URI originBaseUrl) {
+        return sendGet(originBaseUrl, "api/origin/admin/config");
+    }
+
+    public HttpCallResult patchOriginConfig(URI originBaseUrl, Long maxUploadBytes, String logLevel) {
+        StringBuilder json = new StringBuilder("{");
+        boolean hasField = false;
+        if (maxUploadBytes != null) {
+            json.append("\"maxUploadBytes\":").append(maxUploadBytes);
+            hasField = true;
         }
-        CONFIG.put(key, value);
-        return true;
-    }
-
-    /**
-     * Liest einen Konfigurationswert.
-     *
-     * @param key Konfigurationsschlüssel
-     * @return Wert oder {@code null}, wenn nicht vorhanden/Key {@code null}
-     */
-    public static String get(String key) {
-        if (key == null) {
-            return null;
+        if (logLevel != null && !logLevel.isBlank()) {
+            if (hasField) {
+                json.append(',');
+            }
+            json.append("\"logLevel\":\"")
+                    .append(JsonUtils.escapeJson(logLevel.trim()))
+                    .append("\"");
+            hasField = true;
         }
-        return CONFIG.get(key);
+        if (!hasField) {
+            return HttpCallResult.clientError("at least one field must be provided");
+        }
+        json.append('}');
+        return sendPatch(originBaseUrl, "api/origin/admin/config", json.toString());
     }
 
-    /**
-     * Liefert eine unveränderliche Momentaufnahme aller Konfigurationen.
-     *
-     * @return immutable copy
-     */
-    public static Map<String, String> getAll() {
-        return Map.copyOf(CONFIG);
+    public HttpCallResult getEdgeConfig(URI edgeBaseUrl) {
+        return sendGet(edgeBaseUrl, "api/edge/admin/config");
     }
 
-    /**
-     * Formatiert die aktuelle Konfiguration für die Ausgabe (eine Zeile pro Eintrag).
-     *
-     * @return formatierte Zeilen, stabil sortiert nach Key
-     */
-    public static List<String> formatLines() {
-        return getAll().entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .map(e -> "%s=%s".formatted(e.getKey(), e.getValue()))
-                .collect(Collectors.toList());
+    public HttpCallResult patchEdgeConfig(
+            URI edgeBaseUrl, String region, Long defaultTtlMs, Integer maxEntries, String replacementStrategy) {
+        StringBuilder json = new StringBuilder("{");
+        boolean hasField = false;
+        if (region != null && !region.isBlank()) {
+            json.append("\"region\":\"")
+                    .append(JsonUtils.escapeJson(region.trim()))
+                    .append("\"");
+            hasField = true;
+        }
+        if (defaultTtlMs != null) {
+            if (hasField) {
+                json.append(',');
+            }
+            json.append("\"defaultTtlMs\":").append(defaultTtlMs);
+            hasField = true;
+        }
+        if (maxEntries != null) {
+            if (hasField) {
+                json.append(',');
+            }
+            json.append("\"maxEntries\":").append(maxEntries);
+            hasField = true;
+        }
+        if (replacementStrategy != null && !replacementStrategy.isBlank()) {
+            if (hasField) {
+                json.append(',');
+            }
+            json.append("\"replacementStrategy\":\"")
+                    .append(JsonUtils.escapeJson(replacementStrategy.trim().toUpperCase()))
+                    .append("\"");
+            hasField = true;
+        }
+        if (!hasField) {
+            return HttpCallResult.clientError("at least one field must be provided");
+        }
+        json.append('}');
+        return sendPatch(edgeBaseUrl, "api/edge/admin/config", json.toString());
+    }
+
+    private HttpCallResult sendGet(URI baseUrl, String path) {
+        URI url = UriUtils.ensureTrailingSlash(baseUrl).resolve(path);
+        TransportResponse response = transportClient.send(
+                TransportRequest.get(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
+        return toResult(response);
+    }
+
+    private HttpCallResult sendPatch(URI baseUrl, String path, String jsonBody) {
+        URI url = UriUtils.ensureTrailingSlash(baseUrl).resolve(path);
+        TransportResponse response = transportClient.send(TransportRequest.patchJson(
+                url,
+                requestTimeout,
+                Map.of("X-Admin-Token", resolveAdminToken(), "Content-Type", "application/json"),
+                jsonBody));
+        return toResult(response);
+    }
+
+    private static HttpCallResult toResult(TransportResponse response) {
+        if (response.error() != null) {
+            return HttpCallResult.ioError(response.error());
+        }
+        return HttpCallResult.http(Objects.requireNonNull(response.statusCode(), "statusCode"), response.body());
+    }
+
+    private static String resolveAdminToken() {
+        String token = System.getenv("MINICDN_ADMIN_TOKEN");
+        if (token == null || token.isBlank()) {
+            token = System.getProperty("minicdn.admin.token");
+        }
+        if (token == null || token.isBlank()) {
+            token = "secret-token";
+        }
+        return token;
     }
 }

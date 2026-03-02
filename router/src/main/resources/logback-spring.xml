@@ -3,10 +3,13 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                {"timestamp":"%d{ISO8601}","level":"%level","traceId":"%X{traceId}","logger":"%logger","message":"%msg"}%n
+                {"timestamp":"%d{ISO8601}","level":"%level","thread":"%thread","traceId":"%X{traceId}","logger":"%logger","message":"%msg"}%n
             </pattern>
         </encoder>
     </appender>
+
+    <logger name="org.springframework.web.servlet.DispatcherServlet" level="DEBUG" />
+    <logger name="de.htwsaar.minicdn" level="DEBUG" />
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

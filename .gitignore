@@ -4,6 +4,10 @@
 .AppleDouble
 .LSOverride
 
+# environment variable files
+.env
+
+
 # Windows thumbnail cached files
 Thumbs.db
 ehthumbs.db
@@ -26,3 +30,5 @@ origin.log
 
 target
 cli/data/users.db
+e2e/data/routing-state.properties
+e2e/data/users.db

@@ -16,4 +16,8 @@ public final class PathUtils {
         if (p == null || p.isBlank()) return "";
         return p.startsWith("/") ? p.substring(1) : p;
     }
+
+    public static boolean isUnsafeRemotePath(String p) {
+        return p.startsWith("/") || p.contains("..") || p.contains("\\");
+    }
 }
