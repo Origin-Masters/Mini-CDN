@@ -48,3 +48,62 @@
 1771856896978:exit
 1771858639417:admin stats show
 1772198597270:admin edge --help
+1772464251940:admin --help
+1772464267647:admin edge --help
+1772464289057:admin edge managed
+1772464314393:admin edge managed -H http://localhost:8082
+1772464363266:admin ping
+1772464372058:user --help
+1772464379563:admin --help
+1772464397499:admin stats
+1772464416637:admin stats show -H http://localhost:8080
+1772464826213:admin --help
+1772464835624:admin user --help
+1772465607901:admin edge
+1772465618496:admin edge managed
+1772465664864:admin edge
+1772465702326:admin edge start --region EU --port 8081 --origin
+1772465728812:admin edge start --region EU --port 8081 --wait-ready
+1772465755646:http://localhost:8080 --auto-register=true --wait-ready admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --auto-register=true --wait-ready
+1772465769691:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --auto-register=true --wait-ready
+1772465871072:admin edge managed
+1772465880034:admin edge
+1772465894606:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready
+1772466537315:admin edge managed
+1772466554547:admin edge
+1772466584249:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready
+1772466801558:admin edge managed
+1772466812192:admin edge
+1772466825120:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready
+1772466901182:admin
+1772466923182:admin file
+1772466973280:user
+1772466977846:user file
+1772467029473:user file download EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082
+1772467062612:user file download --region EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082
+1772467395293:admin stats show
+1772467431408:user file
+1772467511288:user file download EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082
+1772467524373:user file download --region EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082
+1772467567125:user file download --region EU data/htwsaar.jpg -o ./htwsaar.jpg -H http://localhost:8082
+1772468422731:user file download -r EU htwsaar.jpg -o ./htwsaar.jpg -H http://localhost:8082
+1772468590066:admin edge managed
+1772468606380:admin edge
+1772468636779:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready
+1772468972659:admin edge managed
+1772468977188:admin edge
+1772468998432:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready
+1772469121339:admin edge start -H http://localhost:8082 --region EU --port 8088 --origin http://localhost:8080 --wait-ready
+1772469139773:admin edge start -H http://localhost:8082 --region EU --port 8020 --origin http://localhost:8080 --wait-ready
+1772469148460:admin managed
+1772469185330:admin edge manged#
+1772469197368:admin edge managed
+1772469310849:admin
+1772469349718:admin config
+1772469356378:admin config origin show --origin http://localhost:8080
+1772469367668:admin config origin set --origin http://localhost:8080 --max-upload-bytes
+1772469369270:1048576admin config origin set --origin http://localhost:8080 --max-upload-bytes
+1772469390920:1048576admin config origin set --origin http://localhost:8080 --max-upload-bytes 1048576
+1772469438122:admin config origin set --origin http://localhost:8080 --max-upload-bytes 1048576
+1772469450474:admin config edge show --edge http://localhost:8081
+1772469464129:admin config edge set --edge http://localhost:8081 --default-ttl-ms 120000

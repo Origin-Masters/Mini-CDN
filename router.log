@@ -1,29 +1,30 @@
-[INFO] Scanning for projects...
-[INFO] 
-[INFO] ---------------------< de.htwsaar.minicdn:router >----------------------
-[INFO] Building mini-cdn-router 1.0-SNAPSHOT
-[INFO]   from pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO] 
-[INFO] >>> spring-boot:3.2.5:run (default-cli) > test-compile @ router >>>
-[INFO] 
-[INFO] --- resources:3.3.1:resources (default-resources) @ router ---
-[INFO] Copying 3 resources from src/main/resources to target/classes
-[INFO] 
-[INFO] --- compiler:3.14.1:compile (default-compile) @ router ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] --- resources:3.3.1:testResources (default-testResources) @ router ---
-[INFO] skip non existing resourceDirectory /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router/src/test/resources
-[INFO] 
-[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ router ---
-[INFO] Nothing to compile - all classes are up to date.
-[INFO] 
-[INFO] <<< spring-boot:3.2.5:run (default-cli) < test-compile @ router <<<
-[INFO] 
-[INFO] 
-[INFO] --- spring-boot:3.2.5:run (default-cli) @ router ---
-[INFO] Attaching agents: []
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m---------------------< [0;36mde.htwsaar.minicdn:router[0;1m >----------------------[m
+[[1;34mINFO[m] [1mBuilding mini-cdn-router 1.0-SNAPSHOT[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m>>> [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[0;1m > [0;1mtest-compile[m @ [36mrouter[0;1m >>>[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mrouter[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 3 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.1:compile[m [1m(default-compile)[m @ [36mrouter[0;1m ---[m
+[[1;34mINFO[m] Nothing to compile - all classes are up to date.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mrouter[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] skip non existing resourceDirectory /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router/src/test/resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.1:testCompile[m [1m(default-testCompile)[m @ [36mrouter[0;1m ---[m
+[[1;34mINFO[m] Nothing to compile - all classes are up to date.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m<<< [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36mrouter[0;1m <<<[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[m @ [36mrouter[0;1m ---[m
+[[1;34mINFO[m] Attaching agents: []
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -33,30 +34,40 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-02-27 14:50:16,536","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.1 with PID 98290 (/Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router/target/classes started by michalroziel in /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-02-27 14:50:16,538","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
-{"timestamp":"2026-02-27 14:50:17,006","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
-{"timestamp":"2026-02-27 14:50:17,011","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
-{"timestamp":"2026-02-27 14:50:17,012","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-02-27 14:50:17,012","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-02-27 14:50:17,035","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-02-27 14:50:17,036","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 472 ms"}
-{"timestamp":"2026-02-27 14:50:17,292","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
-{"timestamp":"2026-02-27 14:50:17,302","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
-{"timestamp":"2026-02-27 14:50:17,307","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 0.977 seconds (process running for 1.172)"}
-{"timestamp":"2026-02-27 14:50:20,329","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-02-27 14:50:20,329","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-02-27 14:50:20,330","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  15.306 s
-[INFO] Finished at: 2026-02-27T14:50:14+01:00
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.5:run (default-cli) on project router: Process terminated with exit code: 143 -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+{"timestamp":"2026-03-02 17:31:34,543","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.10 with PID 149696 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router/target/classes started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-02 17:31:34,544","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Running with Spring Boot v3.2.5, Spring v6.1.6"}
+{"timestamp":"2026-03-02 17:31:34,544","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
+{"timestamp":"2026-03-02 17:31:35,125","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
+{"timestamp":"2026-03-02 17:31:35,131","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-03-02 17:31:35,132","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-02 17:31:35,132","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-02 17:31:35,155","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-02 17:31:35,156","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 589 ms"}
+{"timestamp":"2026-03-02 17:31:35,189","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.logging.TraceIdFilter","message":"Filter 'traceIdFilter' configured for use"}
+{"timestamp":"2026-03-02 17:31:35,189","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.auth.AdminAuthFilter","message":"Filter 'adminAuthFilter' configured for use"}
+{"timestamp":"2026-03-02 17:31:35,487","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-03-02 17:31:35,493","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
+{"timestamp":"2026-03-02 17:31:35,497","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 1.189 seconds (process running for 1.324)"}
+{"timestamp":"2026-03-02 17:31:38,035","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 17:31:38,036","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-02 17:31:38,036","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected StandardServletMultipartResolver"}
+{"timestamp":"2026-03-02 17:31:38,036","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected AcceptHeaderLocaleResolver"}
+{"timestamp":"2026-03-02 17:31:38,036","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected FixedThemeResolver"}
+{"timestamp":"2026-03-02 17:31:38,036","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@613aa210"}
+{"timestamp":"2026-03-02 17:31:38,037","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.support.SessionFlashMapManager@e62a89b"}
+{"timestamp":"2026-03-02 17:31:38,038","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data"}
+{"timestamp":"2026-03-02 17:31:38,038","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 2 ms"}
+{"timestamp":"2026-03-02 17:31:38,042","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"641a3807-9cba-42f9-8344-ea3adf0ddd2f","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/health", parameters={}"}
+{"timestamp":"2026-03-02 17:31:38,068","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"641a3807-9cba-42f9-8344-ea3adf0ddd2f","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-02 17:31:38,076","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"0322f300-f8f8-4ff2-947d-94c350038ed6","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/routing?region=EU&url=http://localhost:8081", parameters={masked}"}
+{"timestamp":"2026-03-02 17:31:38,095","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"0322f300-f8f8-4ff2-947d-94c350038ed6","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
+{"timestamp":"2026-03-02 17:31:51,127","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"c9a89a7a-5eec-4b2a-b8f1-d06f3b22bf8b","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start", parameters={}"}
+{"timestamp":"2026-03-02 17:31:51,174","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"c9a89a7a-5eec-4b2a-b8f1-d06f3b22bf8b","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 409 CONFLICT"}
+{"timestamp":"2026-03-02 17:32:01,345","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"d24bf818-5eaa-42cf-afca-d1a667a3b457","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start", parameters={}"}
+no main manifest attribute, in ../edge/target/edge-1.0-SNAPSHOT.jar
+{"timestamp":"2026-03-02 17:32:01,529","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"d24bf818-5eaa-42cf-afca-d1a667a3b457","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 409 CONFLICT"}
+{"timestamp":"2026-03-02 17:32:19,778","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"ba25e554-ef0f-4fa1-9bb4-a1102a4499e4","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start", parameters={}"}
+no main manifest attribute, in ../edge/target/edge-1.0-SNAPSHOT.jar
+{"timestamp":"2026-03-02 17:32:19,936","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"ba25e554-ef0f-4fa1-9bb4-a1102a4499e4","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 409 CONFLICT"}
+{"timestamp":"2026-03-02 17:33:17,375","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"bd7b49a4-9d0d-4201-b0ed-2ffda0bfe708","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/edges/managed", parameters={}"}
+{"timestamp":"2026-03-02 17:33:17,384","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"bd7b49a4-9d0d-4201-b0ed-2ffda0bfe708","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
