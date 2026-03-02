@@ -6,40 +6,46 @@ import de.htwsaar.minicdn.cli.di.ContextFactory;
 import de.htwsaar.minicdn.cli.shell.MiniCdnInteractiveShell;
 import de.htwsaar.minicdn.cli.transport.HttpTransportClient;
 import de.htwsaar.minicdn.cli.transport.TransportClient;
+import io.github.cdimascio.dotenv.Dotenv;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.Objects;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 
 /**
  * Einstiegspunkt der Mini-CDN CLI-Anwendung.
- *
+ * <p>
  * Aufgaben:
  * <ul>
- *   <li>Initialisiert Terminal-IO (JLine) sowie gemeinsame Infrastruktur (TransportClient, Standard-Timeouts).</li>
+ *   <li>Initialisiert Terminal-IO (Jline) sowie gemeinsame Infrastruktur (TransportClient, Standard-Timeouts).</li>
  *   <li>Baut die Picocli-Command-Struktur inkl. {@link ContextFactory} für Constructor Injection.</li>
  *   <li>Wählt den Modus: einmalige Ausführung (Args vorhanden) oder interaktive Shell (keine Args).</li>
  * </ul>
  */
 public final class MiniCdnCliMain {
-
     public static void main(String[] args) throws Exception {
         Terminal terminal = TerminalBuilder.builder().system(true).build();
         PrintWriter out = terminal.writer();
         PrintWriter err = terminal.writer();
 
-        String adminToken = resolveAdminToken();
-        URI routerUrl = resolveRouterBaseUrl();
+        // Lade Umgebungsvariablen aus .env Datei
+        Dotenv dotenv = Dotenv.configure().directory(".").ignoreIfMissing().load();
+
+        String adminToken = dotenv.get("MINICDN_ADMIN_TOKEN");
+
+        String routerBaseUrlStr = dotenv.get("MINICDN_ROUTER_URL");
+        URI routerBaseUrl = URI.create(Objects.requireNonNull(routerBaseUrlStr));
 
         HttpClient httpClient =
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         Duration timeout = Duration.ofSeconds(5);
         TransportClient transportClient = new HttpTransportClient(httpClient);
 
-        CliContext ctx = new CliContext(terminal, out, err, transportClient, timeout, adminToken, routerUrl);
+        CliContext ctx = new CliContext(terminal, out, err, transportClient, timeout, adminToken, routerBaseUrl);
 
         CommandLine cmd = new CommandLine(MiniCdnRootCommand.class, new ContextFactory(ctx));
 
@@ -49,40 +55,5 @@ public final class MiniCdnCliMain {
         }
 
         new MiniCdnInteractiveShell(cmd, ctx).run();
-    }
-
-    /**
-     * Admin-Token:
-     * 1) System-Property: -Dminicdn.admin.token=...
-     * 2) ENV: MINICDNADMINTOKEN
-     * 3) Fallback: "secret-token"
-     */
-    private static String resolveAdminToken() {
-        String fromProp = System.getProperty("minicdn.admin.token");
-        if (fromProp != null && !fromProp.isBlank()) {
-            return fromProp.trim();
-        }
-        String fromEnv = System.getenv("MINICDNADMINTOKEN");
-        if (fromEnv != null && !fromEnv.isBlank()) {
-            return fromEnv.trim();
-        }
-        return "secret-token";
-    }
-
-    /**
-     * Router-Base-URL:
-     * 1) System-Property: -Dminicdn.router.url=...
-     * 2) ENV: MINICDN_ROUTER_URL
-     * 3) Fallback: "http://localhost:8082"
-     */
-    private static URI resolveRouterBaseUrl() {
-        String raw = System.getProperty("minicdn.router.url");
-        if (raw == null || raw.isBlank()) {
-            raw = System.getenv("MINICDN_ROUTER_URL");
-        }
-        if (raw == null || raw.isBlank()) {
-            raw = "http://localhost:8082";
-        }
-        return URI.create(raw.trim());
     }
 }
