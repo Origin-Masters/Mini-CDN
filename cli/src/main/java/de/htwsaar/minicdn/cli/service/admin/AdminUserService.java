@@ -1,69 +1,115 @@
 package de.htwsaar.minicdn.cli.service.admin;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.htwsaar.minicdn.cli.dto.HttpCallResult;
+import de.htwsaar.minicdn.cli.dto.UserResult;
+import de.htwsaar.minicdn.cli.transport.TransportClient;
+import de.htwsaar.minicdn.cli.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.transport.TransportResponse;
+import de.htwsaar.minicdn.cli.util.UriUtils;
+import java.net.URI;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
- * Simple jOOQ-backed AdminUserService.
+ * Admin-User-Service: spricht mit dem Router-Admin-API per TransportClient.
+ * <p>
+ * Endpunkte (Router):
+ * - POST /api/cdn/admin/users        (CreateUserRequest)
+ * - GET  /api/cdn/admin/users        (List<UserResult>)
+ * - DELETE /api/cdn/admin/users/{id} (Delete user)
+ * <p>
+ * Alle Requests werden mit X-Admin-Token gesendet.
  */
-public final class AdminUserService implements AutoCloseable {
-    private final DSLContext dsl;
-    private final Connection connection; // only set when constructed from JDBC URL
+public final class AdminUserService {
 
-    public AdminUserService(DSLContext dsl) {
-        this.dsl = dsl;
-        this.connection = null;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    private final TransportClient transportClient;
+    private final Duration requestTimeout;
+    private final URI routerBaseUrl;
+    private final String adminToken;
+
+    public AdminUserService(
+            TransportClient transportClient, Duration requestTimeout, URI routerBaseUrl, String adminToken) {
+        this.transportClient = Objects.requireNonNull(transportClient);
+        this.requestTimeout = Objects.requireNonNull(requestTimeout);
+        this.routerBaseUrl = Objects.requireNonNull(routerBaseUrl);
+        this.adminToken = Objects.requireNonNull(adminToken);
     }
 
-    public AdminUserService(String jdbcUrl) throws SQLException {
-        this.connection = DriverManager.getConnection(jdbcUrl);
-        this.dsl = DSL.using(this.connection, SQLDialect.SQLITE);
+    private URI base() {
+        return UriUtils.ensureTrailingSlash(routerBaseUrl);
     }
 
     /**
-     * Insert a user and return the generated id (>0) or -1 on failure.
+     * Fügt einen Benutzer hinzu.
      */
-    public int addUser(String name, int role) {
-        // Use generic table/field references instead of generated jOOQ classes
-        int affected = dsl.insertInto(DSL.table(DSL.name("users")))
-                .columns(DSL.field(DSL.name("name")), DSL.field(DSL.name("role")))
-                .values(name, role)
-                .execute();
+    public HttpCallResult addUser(String name, int role) {
+        try {
+            URI url = base().resolve("api/cdn/admin/users");
+            String json = MAPPER.writeValueAsString(Map.of("name", name, "role", role));
 
-        if (affected <= 0) {
-            return -1;
+            TransportRequest request = TransportRequest.postJson(
+                    url, requestTimeout, Map.of("X-Admin-Token", adminToken, "Content-Type", "application/json"), json);
+
+            TransportResponse response = transportClient.send(request);
+            return toHttpCallResult(response);
+        } catch (Exception ex) {
+            return HttpCallResult.ioError(ex.getMessage());
         }
-
-        // fallback for sqlite to obtain last inserted id
-        Record r = dsl.fetchOne("SELECT last_insert_rowid() AS id");
-        if (r != null) {
-            // try named retrieval first
-            Integer id = r.get("id", Integer.class);
-            if (id != null) {
-                return id;
-            }
-            // fall back to numeric retrieval and convert
-            Number n = r.get(0, Number.class);
-            if (n != null) {
-                return n.intValue();
-            }
-        }
-
-        return -1;
     }
 
-    @Override
-    public void close() {
-        if (connection != null) {
-            try {
-                connection.close();
-            } catch (SQLException ignored) {
-            }
+    /**
+     * Listet alle Benutzer (roher HTTP-Result).
+     */
+    public HttpCallResult listUsersRaw() {
+        try {
+            URI url = base().resolve("api/cdn/admin/users");
+
+            TransportRequest request = TransportRequest.get(url, requestTimeout, Map.of("X-Admin-Token", adminToken));
+
+            TransportResponse response = transportClient.send(request);
+            return toHttpCallResult(response);
+        } catch (Exception ex) {
+            return HttpCallResult.ioError(ex.getMessage());
         }
+    }
+
+    /**
+     * Parsed JSON-Body zu UserResult-Liste.
+     */
+    public List<UserResult> parseUsers(String body) throws Exception {
+        if (body == null || body.isBlank()) {
+            return List.of();
+        }
+        return MAPPER.readValue(body, new TypeReference<>() {});
+    }
+
+    /**
+     * Löscht einen Benutzer nach ID.
+     */
+    public HttpCallResult deleteUser(long id) {
+        try {
+            URI url = base().resolve("api/cdn/admin/users/" + id);
+
+            TransportRequest request =
+                    TransportRequest.delete(url, requestTimeout, Map.of("X-Admin-Token", adminToken));
+
+            TransportResponse response = transportClient.send(request);
+            return toHttpCallResult(response);
+        } catch (Exception ex) {
+            return HttpCallResult.ioError(ex.getMessage());
+        }
+    }
+
+    private static HttpCallResult toHttpCallResult(TransportResponse response) {
+        if (response.error() != null) {
+            return HttpCallResult.ioError(response.error());
+        }
+        return HttpCallResult.http(Objects.requireNonNull(response.statusCode(), "statusCode"), response.body());
     }
 }

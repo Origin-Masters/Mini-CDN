@@ -1,98 +1,221 @@
 package de.htwsaar.minicdn.cli.command.admin;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
+import de.htwsaar.minicdn.cli.dto.HttpCallResult;
 import de.htwsaar.minicdn.cli.service.admin.AdminConfigService;
+import de.htwsaar.minicdn.cli.util.ConsoleUtils;
+import java.net.URI;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
-import picocli.CommandLine.Spec;
 
 /**
- * Verwaltung der globalen Konfiguration für Admin-Zwecke.
- *
- * <p>Hinweis: Diese Klasse ist ein "Group-Command".
- * Ohne Subcommand wird nur die Usage angezeigt.
+ * Remote-Live-Konfiguration für Origin- und Edge-Server.
  */
 @Command(
         name = "config",
-        description = "Manage global configuration",
-        subcommands = {AdminConfigCommand.AdminConfigSetCommand.class, AdminConfigCommand.AdminConfigShowCommand.class})
+        description = "Remote runtime configuration for Origin and Edge services.",
+        mixinStandardHelpOptions = true,
+        footerHeading = "%nBeispiele:%n",
+        footer = {
+            "  admin config origin show --origin http://localhost:8080",
+            "  admin config origin set --origin http://localhost:8080 --max-upload-bytes 1048576",
+            "  admin config edge show --edge http://localhost:8081",
+            "  admin config edge set --edge http://localhost:8081 --default-ttl-ms 120000 --max-entries 200"
+        },
+        subcommands = {AdminConfigCommand.OriginConfigCommand.class, AdminConfigCommand.EdgeConfigCommand.class})
 public final class AdminConfigCommand implements Runnable {
 
-    private final CliContext ctx;
+    final CliContext ctx;
 
-    @Spec
-    private CommandSpec spec;
-
-    /**
-     * Konstruktor für Constructor Injection via {@code ContextFactory}.
-     *
-     * @param ctx CLI-Kontext (Output, HTTP-Client, Timeouts, ...)
-     */
     public AdminConfigCommand(CliContext ctx) {
         this.ctx = Objects.requireNonNull(ctx, "ctx");
     }
 
     @Override
     public void run() {
-        spec.commandLine().usage(ctx.out());
-        ctx.out().flush();
+        ConsoleUtils.info(ctx.out(), new CommandLine(this).getUsageMessage());
     }
 
-    /**
-     * Setzt einen Konfigurationswert.
-     */
-    @Command(name = "set", description = "Set a global configuration value")
-    public static final class AdminConfigSetCommand implements Runnable {
-
-        @ParentCommand
-        private AdminConfigCommand parent;
-
-        @Option(names = "--key", required = true, description = "Configuration key")
-        private String key;
-
-        @Option(names = "--value", required = true, description = "Configuration value")
-        private String value;
-
-        @Override
-        public void run() {
-            boolean ok = AdminConfigService.set(key, value);
-            if (ok) {
-                parent.ctx.out().printf("[ADMIN] Set config %s=%s%n", key, value);
-                parent.ctx.out().flush();
-            } else {
-                parent.ctx.err().printf("[ADMIN] Failed to set config %s%n", key);
-                parent.ctx.err().flush();
-            }
-        }
+    AdminConfigService service() {
+        return new AdminConfigService(ctx.transportClient(), ctx.defaultRequestTimeout());
     }
 
-    /**
-     * Zeigt alle gesetzten Konfigurationswerte.
-     */
-    @Command(name = "show", description = "Show global configuration")
-    public static final class AdminConfigShowCommand implements Runnable {
+    @Command(
+            name = "origin",
+            description = "Manage runtime config of an Origin server.",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  admin config origin show --origin http://localhost:8080",
+                "  admin config origin set --origin http://localhost:8080 --log-level DEBUG",
+                "  admin config origin set --origin http://localhost:8080 --max-upload-bytes 5242880"
+            },
+            subcommands = {OriginShowCommand.class, OriginSetCommand.class})
+    public static final class OriginConfigCommand implements Runnable {
 
         @ParentCommand
         private AdminConfigCommand parent;
 
         @Override
         public void run() {
-            var lines = AdminConfigService.formatLines();
-
-            if (lines.isEmpty()) {
-                parent.ctx.out().println("[ADMIN] No global configuration set");
-                parent.ctx.out().flush();
-                return;
-            }
-
-            parent.ctx.out().println("[ADMIN] Global configuration:");
-            for (String line : lines) {
-                parent.ctx.out().printf("[ADMIN] %s%n", line);
-            }
-            parent.ctx.out().flush();
+            ConsoleUtils.info(parent.ctx.out(), new CommandLine(this).getUsageMessage());
         }
+    }
+
+    @Command(
+            name = "show",
+            description = "Show current Origin runtime config.",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {"  admin config origin show --origin http://localhost:8080"})
+    public static final class OriginShowCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private OriginConfigCommand parent;
+
+        @Option(names = "--origin", required = true, description = "Origin base URL. Example: http://localhost:8080")
+        private URI origin;
+
+        @Override
+        public Integer call() {
+            return printResult(parent.parent.service().getOriginConfig(origin), parent.parent.ctx);
+        }
+    }
+
+    @Command(
+            name = "set",
+            description = "Patch Origin runtime config without restart.",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  admin config origin set --origin http://localhost:8080 --max-upload-bytes 1048576",
+                "  admin config origin set --origin http://localhost:8080 --log-level INFO"
+            })
+    public static final class OriginSetCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private OriginConfigCommand parent;
+
+        @Option(names = "--origin", required = true, description = "Origin base URL. Example: http://localhost:8080")
+        private URI origin;
+
+        @Option(names = "--max-upload-bytes", description = "Maximum upload size in bytes. Example: 1048576")
+        private Long maxUploadBytes;
+
+        @Option(names = "--log-level", description = "Root log level. Example: DEBUG")
+        private String logLevel;
+
+        @Override
+        public Integer call() {
+            return printResult(
+                    parent.parent.service().patchOriginConfig(origin, maxUploadBytes, logLevel), parent.parent.ctx);
+        }
+    }
+
+    @Command(
+            name = "edge",
+            description = "Manage runtime config of an Edge server.",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  admin config edge show --edge http://localhost:8081",
+                "  admin config edge set --edge http://localhost:8081 --default-ttl-ms 120000",
+                "  admin config edge set --edge http://localhost:8081 --replacement-strategy LFU"
+            },
+            subcommands = {EdgeShowCommand.class, EdgeSetCommand.class})
+    public static final class EdgeConfigCommand implements Runnable {
+
+        @ParentCommand
+        private AdminConfigCommand parent;
+
+        @Override
+        public void run() {
+            ConsoleUtils.info(parent.ctx.out(), new CommandLine(this).getUsageMessage());
+        }
+    }
+
+    @Command(
+            name = "show",
+            description = "Show current Edge runtime config.",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {"  admin config edge show --edge http://localhost:8081"})
+    public static final class EdgeShowCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private EdgeConfigCommand parent;
+
+        @Option(names = "--edge", required = true, description = "Edge base URL. Example: http://localhost:8081")
+        private URI edge;
+
+        @Override
+        public Integer call() {
+            return printResult(parent.parent.service().getEdgeConfig(edge), parent.parent.ctx);
+        }
+    }
+
+    @Command(
+            name = "set",
+            description = "Patch Edge runtime config without restart.",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  admin config edge set --edge http://localhost:8081 --default-ttl-ms 120000 --max-entries 300",
+                "  admin config edge set --edge http://localhost:8081 --region EU --replacement-strategy LRU"
+            })
+    public static final class EdgeSetCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private EdgeConfigCommand parent;
+
+        @Option(names = "--edge", required = true, description = "Edge base URL. Example: http://localhost:8081")
+        private URI edge;
+
+        @Option(names = "--region", description = "Edge region value. Example: EU")
+        private String region;
+
+        @Option(names = "--default-ttl-ms", description = "Default cache TTL in ms. Example: 120000")
+        private Long defaultTtlMs;
+
+        @Option(names = "--max-entries", description = "Max cache entries. Example: 200")
+        private Integer maxEntries;
+
+        @Option(names = "--replacement-strategy", description = "Replacement strategy: LRU or LFU. Example: LFU")
+        private String replacementStrategy;
+
+        @Override
+        public Integer call() {
+            return printResult(
+                    parent.parent
+                            .service()
+                            .patchEdgeConfig(edge, region, defaultTtlMs, maxEntries, replacementStrategy),
+                    parent.parent.ctx);
+        }
+    }
+
+    private static Integer printResult(HttpCallResult result, CliContext ctx) {
+        if (result.error() != null) {
+            ConsoleUtils.error(ctx.err(), "[CONFIG] request failed: %s", result.error());
+            return 1;
+        }
+
+        int status = Objects.requireNonNull(result.statusCode(), "statusCode");
+        String body = Objects.toString(result.body(), "");
+
+        if (status >= 200 && status < 300) {
+            ConsoleUtils.info(ctx.out(), "[CONFIG] success (HTTP %d)", status);
+            if (!body.isBlank()) {
+                ctx.out().println(body);
+            }
+            ctx.out().flush();
+            return 0;
+        }
+
+        ConsoleUtils.error(ctx.err(), "[CONFIG] rejected (HTTP %d): %s", status, body);
+        return 2;
     }
 }

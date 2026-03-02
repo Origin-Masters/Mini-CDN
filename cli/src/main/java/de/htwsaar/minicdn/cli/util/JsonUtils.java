@@ -1,5 +1,10 @@
 package de.htwsaar.minicdn.cli.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+
 public final class JsonUtils {
     private JsonUtils() {}
 
@@ -75,5 +80,25 @@ public final class JsonUtils {
         for (int i = 0; i < indent; i++) {
             sb.append(" ");
         }
+    }
+
+    /**
+     * Extrahiert ein JSON-Objekt als sortierte Long-Map.
+     *
+     * @param node JSON-Objekt
+     * @return sortierte Map mit numerischen Werten
+     */
+    public static Map<String, Long> toSortedLongMap(JsonNode node) {
+        Map<String, Long> values = new TreeMap<>();
+        if (!node.isObject()) {
+            return values;
+        }
+
+        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> entry = fields.next();
+            values.put(entry.getKey(), Math.max(0L, entry.getValue().asLong(0L)));
+        }
+        return values;
     }
 }

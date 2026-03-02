@@ -12,26 +12,26 @@ public final class ConsoleUtils {
 
     public static void info(PrintStream out, String fmt, Object... args) {
         Objects.requireNonNull(out, "out");
-        out.printf("[ADMIN] " + fmt + "%n", args);
+        out.printf(fmt + "%n", args);
         out.flush();
     }
 
     public static void error(PrintStream err, String fmt, Object... args) {
         Objects.requireNonNull(err, "err");
-        err.printf("[ADMIN] " + fmt + "%n", args);
+        err.printf(fmt + "%n", args);
         err.flush();
     }
 
     // Overloads for PrintWriter (convenience for CliContext::out/err)
     public static void info(PrintWriter out, String fmt, Object... args) {
         Objects.requireNonNull(out, "out");
-        out.printf("[ADMIN] " + fmt + "%n", args);
+        out.printf(fmt + "%n", args);
         out.flush();
     }
 
     public static void error(PrintWriter err, String fmt, Object... args) {
         Objects.requireNonNull(err, "err");
-        err.printf("[ADMIN] " + fmt + "%n", args);
+        err.printf(fmt + "%n", args);
         err.flush();
     }
 }

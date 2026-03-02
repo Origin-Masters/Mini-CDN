@@ -2,98 +2,65 @@ package de.htwsaar.minicdn.router.web;
 
 import de.htwsaar.minicdn.router.dto.BulkRequest;
 import de.htwsaar.minicdn.router.dto.BulkResponse;
-import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.dto.EdgeNodeStatus;
-import de.htwsaar.minicdn.router.service.EdgeHttpClient;
-import de.htwsaar.minicdn.router.service.MetricsService;
-import de.htwsaar.minicdn.router.service.RoutingIndex;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
+import de.htwsaar.minicdn.router.service.RouterAdminService;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Verwaltungs-API für die Pflege des Routingindexes.
+ * HTTP-Adapter für Pflege und Abfrage des Routing-Indexes.
  */
 @RestController
 @RequestMapping("/api/cdn/routing")
 public class RoutingAdminController {
 
-    private final RoutingIndex routingIndex;
-    private final MetricsService metricsService;
-    private final EdgeHttpClient edgeHttpClient;
+    private final RouterAdminService routerAdminService;
 
-    public RoutingAdminController(
-            RoutingIndex routingIndex, MetricsService metricsService, EdgeHttpClient edgeHttpClient) {
-        this.routingIndex = routingIndex;
-        this.metricsService = metricsService;
-        this.edgeHttpClient = edgeHttpClient;
+    public RoutingAdminController(RouterAdminService routerAdminService) {
+        this.routerAdminService = routerAdminService;
     }
 
     /**
-     * Registriert einen Edge-Knoten in einer Region.
+     * Fuegt eine Edge-Instanz zur Region hinzu.
      *
-     * @param region Zielregion
-     * @param url URL des Edge-Knotens
-     * @return {@code 201 Created} bei Erfolg
+     * @param region Region der Edge-Cluster
+     * @param url Basis-URL der Edge-Instanz
+     * @return Created bei Erfolg
      */
     @PostMapping
     public ResponseEntity<Void> addEdgeNode(
             @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
 
-        routingIndex.addEdge(region, new EdgeNode(url));
+        routerAdminService.addEdgeNode(region, url);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
-     * Verarbeitet eine Liste von Add/Remove-Anweisungen in einem Request.
+     * Fuehrt mehrere Routing-Updates in einem Request aus.
      *
-     * @param requests Bulk-Anweisungen
-     * @return Ergebnisliste pro Anweisung
+     * @param requests Liste der Bulk-Updates
+     * @return Ergebnisliste je Update
      */
     @PostMapping("/bulk")
     public ResponseEntity<List<BulkResponse>> bulkUpdate(@RequestBody List<BulkRequest> requests) {
-        List<BulkResponse> results = new ArrayList<>();
-        if (requests == null) {
-            return ResponseEntity.ok(results);
-        }
-
-        for (BulkRequest req : requests) {
-            String status;
-            if (req != null && "add".equalsIgnoreCase(req.action())) {
-                routingIndex.addEdge(req.region(), new EdgeNode(req.url()));
-                status = "added";
-            } else if (req != null && "remove".equalsIgnoreCase(req.action())) {
-                boolean removed = routingIndex.removeEdge(req.region(), new EdgeNode(req.url()), true);
-                status = removed ? "removed" : "not found";
-            } else {
-                status = "invalid action";
-            }
-            results.add(new BulkResponse(req == null ? null : req.region(), req == null ? null : req.url(), status));
-        }
-
-        return ResponseEntity.ok(results);
+        return ResponseEntity.ok(routerAdminService.bulkUpdate(requests));
     }
 
     /**
-     * Entfernt einen Edge-Knoten aus einer Region.
+     * Entfernt eine Edge-Instanz aus der Region.
      *
-     * @param region Zielregion
-     * @param url URL des zu entfernenden Knotens
-     * @return {@code 200 OK} oder {@code 404 Not Found}
+     * @param region Region der Edge-Cluster
+     * @param url Basis-URL der Edge-Instanz
+     * @return OK bei Erfolg, sonst NOT_FOUND
      */
     @DeleteMapping
     public ResponseEntity<?> deleteEdgeNode(
             @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
 
-        boolean removed = routingIndex.removeEdge(region, new EdgeNode(url), true);
+        boolean removed = routerAdminService.deleteEdgeNode(region, url);
         return removed
                 ? ResponseEntity.ok().build()
                 : ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -101,51 +68,14 @@ public class RoutingAdminController {
     }
 
     /**
-     * Gibt den aktuellen Routingindex zurück und prüft optional die Knotergesundheit.
+     * Liefert den aktuellen Routing-Index.
      *
-     * @param checkHealth aktiviert aktive Health-Checks pro Knoten
-     * @return Knotenstatus nach Region gruppiert
+     * @param checkHealth ob der Health-Check der Edges ausgefuehrt wird
+     * @return Routing-Index nach Region
      */
     @GetMapping
     public ResponseEntity<Map<String, List<EdgeNodeStatus>>> getIndex(
             @RequestParam(value = "checkHealth", defaultValue = "false") boolean checkHealth) {
-
-        Map<String, List<EdgeNode>> rawIndex = routingIndex.getRawIndex();
-        Map<String, List<EdgeNodeStatus>> result = new ConcurrentHashMap<>();
-
-        if (!checkHealth) {
-            rawIndex.forEach((region, nodes) -> {
-                List<EdgeNodeStatus> statuses = nodes.stream()
-                        .map(n -> new EdgeNodeStatus(n.url(), true))
-                        .collect(Collectors.toList());
-                result.put(region, statuses);
-            });
-            return ResponseEntity.ok(result);
-        }
-
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        rawIndex.forEach((region, nodes) -> {
-            List<EdgeNodeStatus> statuses = Collections.synchronizedList(new ArrayList<>());
-            result.put(region, statuses);
-
-            for (EdgeNode node : nodes) {
-                futures.add(edgeHttpClient
-                        .checkNodeHealth(node, Duration.ofSeconds(1))
-                        .thenAccept(isHealthy -> statuses.add(new EdgeNodeStatus(node.url(), isHealthy))));
-            }
-        });
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * Liefert eine Momentaufnahme der Router-Metriken.
-     *
-     * @return Metriken als Schlüssel/Wert-Struktur
-     */
-    @GetMapping("/metrics")
-    public ResponseEntity<Map<String, Object>> getMetrics() {
-        return ResponseEntity.ok(metricsService.getSnapshot());
+        return ResponseEntity.ok(routerAdminService.getIndex(checkHealth));
     }
 }
