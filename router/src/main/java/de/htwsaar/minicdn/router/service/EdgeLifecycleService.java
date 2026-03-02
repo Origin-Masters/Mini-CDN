@@ -188,6 +188,37 @@ public class EdgeLifecycleService {
     }
 
     /**
+     * Stoppt alle managed Edges einer Region.
+     *
+     * @param region Zielregion
+     * @param deregister ob die Instanzen deregistriert werden sollen
+     * @return Anzahl erfolgreich gestoppter Instanzen
+     */
+    public int stopRegion(String region, boolean deregister) {
+        if (region == null || region.isBlank()) {
+            throw new IllegalArgumentException("Region darf nicht leer sein.");
+        }
+
+        synchronized (startLock) {
+            cleanupDeadManagedProcesses();
+
+            String cleanRegion = region.trim();
+            List<String> instanceIds = managedMeta.values().stream()
+                    .filter(meta -> cleanRegion.equals(meta.region()))
+                    .map(ManagedEdge::instanceId)
+                    .toList();
+
+            int stopped = 0;
+            for (String instanceId : instanceIds) {
+                if (stop(instanceId, deregister)) {
+                    stopped++;
+                }
+            }
+            return stopped;
+        }
+    }
+
+    /**
      * Liefert die aktuell verwalteten Edge-Instanzen.
      *
      * @return Liste der Instanzen

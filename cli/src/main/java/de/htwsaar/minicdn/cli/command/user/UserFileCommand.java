@@ -27,9 +27,9 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  user file download EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082",
-            "  user file download EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --client-id alice",
-            "  user file download EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --overwrite"
+            "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082",
+            "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --client-id alice",
+            "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --overwrite"
         },
         subcommands = {UserFileCommand.FileDownloadCommand.class})
 public final class UserFileCommand implements Runnable {
@@ -59,9 +59,9 @@ public final class UserFileCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  user file download EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082",
-                "  user file download EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --client-id alice",
-                "  user file download EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --overwrite"
+                "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082",
+                "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --client-id alice",
+                "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --overwrite"
             })
     public static final class FileDownloadCommand implements Callable<Integer> {
 
