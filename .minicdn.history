@@ -107,3 +107,9 @@
 1772469438122:admin config origin set --origin http://localhost:8080 --max-upload-bytes 1048576
 1772469450474:admin config edge show --edge http://localhost:8081
 1772469464129:admin config edge set --edge http://localhost:8081 --default-ttl-ms 120000
+1772470427637:admin edge
+1772470447441:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready
+1772470457594:admin edge start -H http://localhost:8082 --region EU --port 8089 --origin http://localhost:8080 --wait-ready
+1772479557429:admin edge
+1772479573706:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready
+1772479579966:admin edge start -H http://localhost:8082 --region EU --port 8089 --origin http://localhost:8080 --wait-ready
