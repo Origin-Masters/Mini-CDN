@@ -7,6 +7,8 @@ import de.htwsaar.minicdn.cli.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
@@ -70,6 +72,26 @@ public final class AdminEdgeService {
 
         URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
         URI url = base.resolve("api/cdn/admin/edges/" + trimmed + "?deregister=" + deregister);
+
+        TransportResponse response = transportClient.send(
+                TransportRequest.delete(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
+
+        return toHttpCallResult(response);
+    }
+
+    public HttpCallResult stopRegion(URI routerBaseUrl, String region, boolean deregister) {
+        Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
+        Objects.requireNonNull(region, "region");
+
+        String trimmed = region.trim();
+        if (trimmed.isBlank()) {
+            return HttpCallResult.clientError("Invalid region (must not be blank).");
+        }
+
+        String encodedRegion = URLEncoder.encode(trimmed, StandardCharsets.UTF_8);
+
+        URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
+        URI url = base.resolve("api/cdn/admin/edges/region/" + encodedRegion + "?deregister=" + deregister);
 
         TransportResponse response = transportClient.send(
                 TransportRequest.delete(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));

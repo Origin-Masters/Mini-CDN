@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.router.web;
 import de.htwsaar.minicdn.router.dto.AutoStartEdgesRequest;
 import de.htwsaar.minicdn.router.dto.StartEdgeRequest;
 import de.htwsaar.minicdn.router.service.EdgeLifecycleService;
+import java.util.Map;
 import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,6 +80,36 @@ public class EdgeLifecycleController {
                     .body("Unbekannte instanceId (nicht managed): " + instanceId);
         }
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Stoppt alle managed Edges einer Region.
+     *
+     * @param region Zielregion
+     * @param deregister ob die Instanzen deregistriert werden sollen
+     * @return Anzahl gestoppter Instanzen oder Fehlermeldung
+     */
+    @DeleteMapping("/region/{region}")
+    public ResponseEntity<?> deleteRegion(
+            @PathVariable("region") String region,
+            @RequestParam(name = "deregister", defaultValue = "true") boolean deregister) {
+
+        lifecycleService.ensureEnabled();
+
+        try {
+            int stopped = lifecycleService.stopRegion(region, deregister);
+            if (stopped <= 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Keine managed Edges in Region gefunden: " + region);
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "region", region,
+                    "stopped", stopped,
+                    "deregister", deregister));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     /**

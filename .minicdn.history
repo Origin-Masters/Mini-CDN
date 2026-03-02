@@ -113,3 +113,20 @@
 1772479557429:admin edge
 1772479573706:admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready
 1772479579966:admin edge start -H http://localhost:8082 --region EU --port 8089 --origin http://localhost:8080 --wait-ready
+1772482103257:mini-cdn user file --help
+1772482114640:user file --help
+1772482129694:user file
+1772482179606:uder file download
+1772482194835:user file download
+1772482253252:admin
+1772482263053:admin edge
+1772483493156:admin edge auto-start
+1772483531108:admin edge auto-start -H http://localhost:8082 --region EU --count 10 --origin http://localhost:8080 --auto-register=true --wait-ready
+1772483548366:admin edge managed
+1772483612002:admin edge auto-start -H http://localhost:8082 --region EU --count 10 --origin http://localhost:8080 --auto-register=true --wait-ready
+1772483624806:admin edge --help
+1772483635045:admin edge stop-region -H http://localhost:8082 --region EU --force
+1772483644097:admin managed
+1772483649355:admin edge managed
+1772483654102:admin stats
+1772483663419:admin stats show

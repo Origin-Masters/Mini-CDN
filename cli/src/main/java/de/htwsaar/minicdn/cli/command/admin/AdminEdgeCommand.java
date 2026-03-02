@@ -28,11 +28,13 @@ import picocli.CommandLine.Spec;
         footer = {
             "  admin edge start -H http://localhost:8082 --region EU --port 8081 --origin http://localhost:8080 --wait-ready",
             "  admin edge managed -H http://localhost:8082",
-            "  admin edge stop -H http://localhost:8082 edge-12345 --force"
+            "  admin edge stop -H http://localhost:8082 edge-12345 --force",
+            "  admin edge stop-region -H http://localhost:8082 --region EU --force"
         },
         subcommands = {
             AdminEdgeCommand.AdminEdgeStartCommand.class,
             AdminEdgeCommand.AdminEdgeStopCommand.class,
+            AdminEdgeCommand.AdminEdgeStopRegionCommand.class,
             AdminEdgeCommand.AdminEdgeManagedCommand.class,
             AdminEdgeCommand.AdminEdgeAutoStartCommand.class
         })
@@ -258,6 +260,118 @@ public final class AdminEdgeCommand implements Runnable {
 
             } catch (Exception ex) {
                 ConsoleUtils.error(parent.ctx.err(), "[EDGE] stop failed: %s", ex.getMessage());
+                return 1;
+            }
+        }
+    }
+
+    @Command(
+            name = "stop-region",
+            description =
+                    "Stop all managed edge processes in a region via router (DELETE /api/cdn/admin/edges/region/{region}).",
+            mixinStandardHelpOptions = true,
+            footerHeading = "%nBeispiele:%n",
+            footer = {
+                "  admin edge stop-region -H http://localhost:8082 --region EU --force",
+                "  admin edge stop-region -H http://localhost:8082 --region EU --force --deregister=false",
+                "  admin edge stop-region -H http://localhost:8082 --region EU --force --json"
+            })
+    public static final class AdminEdgeStopRegionCommand implements Callable<Integer> {
+
+        private static final ObjectMapper MAPPER = new ObjectMapper();
+
+        @ParentCommand
+        private AdminEdgeCommand parent;
+
+        @Option(
+                names = {"-H", "--host"},
+                defaultValue = "http://localhost:8082",
+                paramLabel = "ROUTER_URL",
+                description = "Router base URL (default: ${DEFAULT-VALUE}). Example: http://localhost:8082")
+        private URI host;
+
+        @Option(
+                names = "--region",
+                required = true,
+                paramLabel = "REGION",
+                description = "Region whose managed edges should be stopped. Example: EU")
+        private String region;
+
+        @Option(
+                names = "--deregister",
+                defaultValue = "true",
+                paramLabel = "true|false",
+                description = "If true, router removes the edges from its routing index (default: ${DEFAULT-VALUE}).")
+        private boolean deregister;
+
+        @Option(
+                names = "--force",
+                defaultValue = "false",
+                description = "Safety switch: required to actually stop all region edges (default: ${DEFAULT-VALUE}).")
+        private boolean force;
+
+        @Option(
+                names = "--json",
+                defaultValue = "false",
+                description = "Print raw JSON response body (default: ${DEFAULT-VALUE}).")
+        private boolean printJson;
+
+        @Override
+        public Integer call() {
+            if (region == null || region.isBlank()) {
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] region must not be blank");
+                return 3;
+            }
+
+            if (!force) {
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[EDGE] stop-region is destructive. Re-run with --force. region=%s", region);
+                return 3;
+            }
+
+            try {
+                HttpCallResult result = parent.service().stopRegion(host, region, deregister);
+
+                if (result.error() != null) {
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] stop-region failed: %s", result.error());
+                    return 1;
+                }
+
+                int sc = Objects.requireNonNull(result.statusCode(), "statusCode");
+                String body = Objects.toString(result.body(), "");
+
+                if (sc < 200 || sc >= 300) {
+                    ConsoleUtils.error(parent.ctx.err(), "[EDGE] stop-region rejected: HTTP %d, body=%s", sc, body);
+                    return 2;
+                }
+
+                if (printJson) {
+                    parent.ctx.out().println(body);
+                    parent.ctx.out().flush();
+                    return 0;
+                }
+
+                if (!body.isBlank()) {
+                    JsonNode root = MAPPER.readTree(body);
+                    String responseRegion = root.path("region").asText(region);
+                    int stopped = root.path("stopped").asInt(-1);
+
+                    ConsoleUtils.info(
+                            parent.ctx.out(),
+                            "[EDGE] stopped region=%s count=%d deregister=%s (HTTP %d)",
+                            responseRegion,
+                            stopped,
+                            deregister,
+                            sc);
+                    return 0;
+                }
+
+                ConsoleUtils.info(
+                        parent.ctx.out(), "[EDGE] stopped region=%s deregister=%s (HTTP %d)", region, deregister, sc);
+                return 0;
+
+            } catch (Exception ex) {
+                ConsoleUtils.error(parent.ctx.err(), "[EDGE] stop-region failed: %s", ex.getMessage());
                 return 1;
             }
         }
