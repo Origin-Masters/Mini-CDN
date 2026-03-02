@@ -23,6 +23,7 @@ public class CdnRoutingService {
 
     private static final Logger log = LoggerFactory.getLogger(CdnRoutingService.class);
     private static final String EDGE_FILES_PREFIX = "api/edge/files/";
+    private static final String ORIGIN_FILES_PREFIX = "api/origin/files/";
 
     private final RoutingIndex routingIndex;
     private final RouterStatsService routerStatsService;
@@ -31,13 +32,17 @@ public class CdnRoutingService {
     private final int maxRetries;
     private final long retryIntervalMs;
 
+    // Wir brauchen die Origin-URL für den Fallback (NFA-S3)
+    private final String originBaseUrl;
+
     public CdnRoutingService(
             RoutingIndex routingIndex,
             RouterStatsService routerStatsService,
             EdgeGateway edgeGateway,
             @Value("${cdn.delivery.ack-timeout-ms:500}") long ackTimeoutMs,
             @Value("${cdn.delivery.max-retries:3}") int maxRetries,
-            @Value("${cdn.delivery.retry-interval-ms:100}") long retryIntervalMs) {
+            @Value("${cdn.delivery.retry-interval-ms:100}") long retryIntervalMs,
+            @Value("${cdn.origin.base-url:http://localhost:8080}") String originBaseUrl) {
 
         this.routingIndex = routingIndex;
         this.routerStatsService = routerStatsService;
@@ -45,6 +50,7 @@ public class CdnRoutingService {
         this.ackTimeoutMs = ackTimeoutMs;
         this.maxRetries = maxRetries;
         this.retryIntervalMs = retryIntervalMs;
+        this.originBaseUrl = originBaseUrl;
     }
 
     /**
@@ -72,58 +78,72 @@ public class CdnRoutingService {
         routerStatsService.recordRequest(region, clientId);
 
         int nodeCount = routingIndex.getNodeCount(region);
-        if (nodeCount <= 0) {
-            routerStatsService.recordError();
-            log.error("FINISH: Routing fehlgeschlagen für Datei: {} - Keine Edge erreichbar.", path);
-            return new RouteFileResult(
-                    RouteStatus.UNAVAILABLE,
-                    null,
-                    null,
-                    0,
-                    "Fehler: Zustellgarantie konnte nicht erfüllt werden. Keine erreichbaren Knoten in Region '"
-                            + region + "'.");
-        }
 
-        int maxAllowedAttempts = Math.min(maxRetries, nodeCount);
+        // NFA-S3: Zustellgarantie mit Origin-Fallback
+
+        // Wir berechnen, wie oft wir versuchen Edges zu erreichen
+        int maxAllowedAttempts = Math.min(maxRetries, Math.max(1, nodeCount));
         int attempts = 0;
+        boolean erfolgreich = false;
 
+        // Schritt 1: Versuche alle verfügbaren Edges durch (Retries/Duplikate)
         while (attempts < maxAllowedAttempts) {
             EdgeNode selectedNode = routingIndex.getNextNode(region);
-            if (selectedNode == null) {
-                break;
-            }
 
-            boolean ack = edgeGateway.isNodeResponsive(selectedNode, Duration.ofMillis(ackTimeoutMs));
-            if (ack) {
-                routerStatsService.recordDownload(path, selectedNode.url());
+            if (selectedNode != null) {
+                // Prüfen ob Edge antwortet (Acknowledgement)
+                boolean ack = edgeGateway.isNodeResponsive(selectedNode, Duration.ofMillis(ackTimeoutMs));
 
-                URI baseUri = URI.create(UrlUtil.ensureTrailingSlash(selectedNode.url()));
-                String relativePath = EDGE_FILES_PREFIX + UrlUtil.stripLeadingSlash(path);
-                URI location = baseUri.resolve(UrlUtil.stripLeadingSlash(relativePath));
+                if (ack) {
+                    erfolgreich = true;
+                    routerStatsService.recordDownload(path, selectedNode.url());
 
-                log.info(
-                        "FINISH: Routing-Entscheidung erfolgreich für Datei: {} -> Edge: {}", path, selectedNode.url());
+                    URI baseUri = URI.create(UrlUtil.ensureTrailingSlash(selectedNode.url()));
+                    String relativePath = EDGE_FILES_PREFIX + UrlUtil.stripLeadingSlash(path);
+                    URI location = baseUri.resolve(UrlUtil.stripLeadingSlash(relativePath));
 
-                return new RouteFileResult(
-                        RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
+                    log.info("[NFA-S3] Zustellgarantie durch Edge erfüllt: {}", selectedNode.url());
+
+                    return new RouteFileResult(
+                            RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
+                } else {
+                    log.warn("[NFA-S3] Kein ACK von Edge {}. Versuch {} fehlgeschlagen.", selectedNode.url(), attempts + 1);
+                }
             }
 
             attempts++;
+            // Kurze Pause vor dem nächsten Duplikat-Versuch (Consumer-Restart Zeit geben)
             if (attempts < maxAllowedAttempts && retryIntervalMs > 0) {
                 sleepQuietly(retryIntervalMs);
             }
         }
 
-        routerStatsService.recordError();
-        log.error("FINISH: Routing fehlgeschlagen für Datei: {} - Keine Edge erreichbar.", path);
+        // Schritt 2: Wenn alle Edges tot sind -> Fallback auf den Origin (Ultimative Zustellgarantie)
+        log.error("[NFA-S3] Keine Edge erreichbar nach {} Versuchen. Nutze Origin-Fallback!", attempts);
 
-        return new RouteFileResult(
-                RouteStatus.UNAVAILABLE,
-                null,
-                null,
-                attempts,
-                "Fehler: Zustellgarantie konnte nicht erfüllt werden. Keine erreichbaren Knoten in Region '" + region
-                        + "'.");
+        try {
+            URI originBase = URI.create(UrlUtil.ensureTrailingSlash(originBaseUrl));
+            String originPath = ORIGIN_FILES_PREFIX + UrlUtil.stripLeadingSlash(path);
+            URI originLocation = originBase.resolve(UrlUtil.stripLeadingSlash(originPath));
+
+            return new RouteFileResult(
+                    RouteStatus.REDIRECT,
+                    originLocation,
+                    UUID.randomUUID().toString(),
+                    attempts,
+                    "Zustellgarantie via Origin-Fallback erfüllt (keine Edges verfügbar)");
+
+        } catch (Exception e) {
+            routerStatsService.recordError();
+            log.error("FINISH: Routing komplett fehlgeschlagen. Auch Origin nicht erreichbar.");
+
+            return new RouteFileResult(
+                    RouteStatus.UNAVAILABLE,
+                    null,
+                    null,
+                    attempts,
+                    "Fehler: Zustellgarantie konnte nicht erfüllt werden. Weder Edges noch Origin erreichbar.");
+        }
     }
 
     /**
