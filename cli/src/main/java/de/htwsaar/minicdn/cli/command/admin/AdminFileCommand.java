@@ -6,7 +6,7 @@ import de.htwsaar.minicdn.cli.service.admin.AdminFileService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
 import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.cli.util.PathUtils;
-import java.io.FileNotFoundException;
+import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,17 +14,22 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 
+/**
+ * Top-Level Command: admin file
+ */
 @Command(
         name = "file",
-        description = "Manage files on Origin server.",
+        description = "Manage files via CDN router (Origin hidden behind router).",
         mixinStandardHelpOptions = true,
-        footerHeading = "%nBeispiele:%n",
+        footerHeading = "\nBeispiele%n",
         footer = {
-            "  admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf",
-            "  admin file list --origin http://localhost:8080 --page 1 --size 20",
-            "  admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf",
-            "  admin file download --origin http://localhost:8080 --path docs/Lebenslauf.pdf --out ./downloads/Lebenslauf.pdf"
+            "  admin file upload --router http://localhost:8082 --region EU --path docs/a.pdf --file ./a.pdf",
+            "  admin file list --router http://localhost:8082",
+            "  admin file show --router http://localhost:8082 --path docs/a.pdf",
+            "  admin file download --router http://localhost:8082 --path docs/a.pdf --out ./a.pdf",
+            "  admin file delete --router http://localhost:8082 --region EU --path docs/a.pdf"
         },
         subcommands = {
             AdminFileCommand.AdminFileUploadCommand.class,
@@ -50,169 +55,157 @@ public class AdminFileCommand implements Runnable {
         return new AdminFileService(ctx.transportClient(), ctx.defaultRequestTimeout());
     }
 
+    // Upload über den Router zum Origin + Cache Invalidation (Region erforderlich, da Invalidation über Router
+    // erfolgt).
     @Command(
             name = "upload",
-            description = "Upload a file to the Origin server.",
-            mixinStandardHelpOptions = true,
-            footerHeading = "%nBeispiele:%n",
-            footer = {
-                "  admin file upload --origin http://localhost:8080 --path docs/Lebenslauf.pdf --file ./Lebenslauf.pdf"
-            })
+            description = "Upload a file via router (origin + cache invalidation).",
+            mixinStandardHelpOptions = true)
     public static class AdminFileUploadCommand implements Callable<Integer> {
 
-        @CommandLine.ParentCommand
+        @ParentCommand
         AdminFileCommand parent;
 
         @Option(
-                names = "--path",
+                names = {"--router"},
                 required = true,
-                paramLabel = "REMOTE_PATH",
-                description = "Target path on origin, e.g. docs/Lebenslauf.pdf (stored under origin's data/ directory)")
+                paramLabel = "ROUTER_URL",
+                description = "Router base URL, e.g. http://localhost:8082")
+        URI router;
+
+        @Option(
+                names = {"--region"},
+                required = true,
+                paramLabel = "REGION",
+                description = "Region for cache invalidation, e.g. EU")
+        String region;
+
+        @Option(
+                names = {"--path"},
+                required = true,
+                paramLabel = "REMOTE_PATH, e.g. docs/a.pdf")
         String path;
 
         @Option(
-                names = "--origin",
+                names = {"--file"},
                 required = true,
-                paramLabel = "ORIGIN_URL",
-                description = "Origin server base URL, e.g. http://localhost:8080")
-        URI origin;
-
-        @Option(
-                names = "--file",
-                required = true,
-                paramLabel = "LOCAL_FILE",
-                description = "Local file path to upload, e.g. /Users/.../Lebenslauf.pdf")
+                paramLabel = "LOCAL_FILEPATH, e,g ./a.pdf")
         Path file;
 
         @Override
-        public Integer call() throws FileNotFoundException {
+        public Integer call() {
             if (file == null || !Files.exists(file) || !Files.isRegularFile(file)) {
                 ConsoleUtils.error(
                         parent.ctx.err(), "[ADMIN] Local file does not exist or is not a regular file: %s", file);
                 return 1;
             }
-
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
                 ConsoleUtils.error(
-                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                        parent.ctx.err(), "[ADMIN] Invalid path %s after normalization: %s", path, cleanPath);
                 return 1;
             }
 
-            HttpCallResult result = parent.service().uploadToOrigin(origin, cleanPath, file);
-            int rc = result.is2xx() ? 0 : 2;
+            HttpCallResult result = parent.service().uploadViaRouter(router, cleanPath, file, region);
 
-            if (rc == 0) {
+            if (result.is2xx()) {
                 ConsoleUtils.info(
                         parent.ctx.out(),
-                        "[ADMIN] Upload successful: status=%s origin=%s path=%s file=%s",
+                        "[ADMIN] Upload via router successful HTTP %d path=%s region=%s",
                         result.statusCode(),
-                        origin,
                         cleanPath,
-                        file);
+                        region);
                 return 0;
             }
-
             ConsoleUtils.error(
                     parent.ctx.err(),
-                    "[ADMIN] Upload failed: status=%s error=%s body=%s origin=%s path=%s file=%s",
+                    "[ADMIN] Upload via router failed HTTP %d error=%s body=%s path=%s region=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
-                    origin,
                     cleanPath,
-                    file);
-            return rc;
+                    region);
+            return 2;
         }
     }
 
+    // list: über die Admin-API des Routers (der Router fragt den Origin).
     @Command(
             name = "list",
-            description = "List files on Origin server with pagination.",
-            mixinStandardHelpOptions = true,
-            footerHeading = "%nBeispiele:%n",
-            footer = {
-                "  admin file list --origin http://localhost:8080",
-                "  admin file list --origin http://localhost:8080 --page 2 --size 50"
-            })
+            description = "List files via router (router asks origin).",
+            mixinStandardHelpOptions = true)
     public static class AdminFileListCommand implements Callable<Integer> {
 
-        @CommandLine.ParentCommand
+        @ParentCommand
         AdminFileCommand parent;
 
         @Option(
-                names = "--origin",
+                names = {"--router"},
                 required = true,
-                paramLabel = "ORIGIN_URL",
-                description = "Origin server base URL, e.g. http://localhost:8080")
-        URI origin;
+                paramLabel = "ROUTER_URL")
+        URI router;
 
-        @Option(names = "--page", description = "Page number (>= 1)", defaultValue = "1")
+        @Option(
+                names = {"--page"},
+                defaultValue = "1")
         int page;
 
-        @Option(names = "--size", description = "Page size (> 0)", defaultValue = "20")
+        @Option(
+                names = {"--size"},
+                defaultValue = "20")
         int size;
 
         @Override
         public Integer call() {
-            HttpCallResult result = parent.service().listOriginFiles(origin, page, size);
-
+            HttpCallResult result = parent.service().listViaRouter(router, page, size);
             var out = parent.ctx.out();
             var err = parent.ctx.err();
 
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "[ADMIN] List files successful: status=%s origin=%s page=%s size=%s",
+                        "[ADMIN] List via router successful HTTP %d router=%s page=%d size=%d",
                         result.statusCode(),
-                        origin,
+                        router,
                         page,
                         size);
-
-                String body = result.body();
-                if (body != null && !body.isBlank()) {
-                    out.println(JsonUtils.formatJson(body));
+                if (result.body() != null && !result.body().isBlank()) {
+                    out.println(JsonUtils.formatJson(result.body()));
                     out.flush();
                 }
                 return 0;
             }
-
             ConsoleUtils.error(
                     err,
-                    "[ADMIN] List files failed: status=%s error=%s body=%s origin=%s page=%s size=%s",
+                    "[ADMIN] List via router failed HTTP %d error=%s body=%s router=%s page=%d size=%d",
                     result.statusCode(),
                     result.error(),
                     result.body(),
-                    origin,
+                    router,
                     page,
                     size);
             return 2;
         }
     }
 
-    @Command(
-            name = "show",
-            description = "Show a file on Origin server (metadata and content as text, if available)",
-            mixinStandardHelpOptions = true,
-            footerHeading = "%nBeispiele:%n",
-            footer = {"  admin file show --origin http://localhost:8080 --path docs/Lebenslauf.pdf"})
+    // Show: Router leitet HEAD an Origin weiter und gibt Metadaten zurück (z.B. Content-Length, Last-Modified, ETag).
+    // Keine Region nötig, da keine Cache-Invalidation.
+    @Command(name = "show", description = "Show file metadata via router.", mixinStandardHelpOptions = true)
     public static class AdminFileShowCommand implements Callable<Integer> {
 
-        @CommandLine.ParentCommand
+        @ParentCommand
         AdminFileCommand parent;
 
         @Option(
-                names = "--origin",
+                names = {"--router"},
                 required = true,
-                paramLabel = "ORIGIN_URL",
-                description = "Origin server base URL, e.g. http://localhost:8080")
-        URI origin;
+                paramLabel = "ROUTER_URL")
+        URI router;
 
         @Option(
-                names = "--path",
+                names = {"--path"},
                 required = true,
-                paramLabel = "REMOTE_PATH",
-                description = "File path on origin, e.g. docs/Lebenslauf.pdf")
+                paramLabel = "REMOTE_PATH")
         String path;
 
         @Override
@@ -220,136 +213,143 @@ public class AdminFileCommand implements Runnable {
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
                 ConsoleUtils.error(
-                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                        parent.ctx.err(), "[ADMIN] Invalid path %s after normalization: %s", path, cleanPath);
                 return 1;
             }
 
-            HttpCallResult result = parent.service().showOriginFile(origin, cleanPath);
-
+            HttpCallResult result = parent.service().showViaRouter(router, cleanPath);
             var out = parent.ctx.out();
             var err = parent.ctx.err();
 
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "[ADMIN] Show file successful: status=%s origin=%s path=%s",
+                        "[ADMIN] Show via router successful HTTP %d router=%s path=%s",
                         result.statusCode(),
-                        origin,
+                        router,
                         cleanPath);
-
-                String body = result.body();
-                if (body != null && !body.isBlank()) {
-                    out.println(JsonUtils.formatJson(body));
+                if (result.body() != null && !result.body().isBlank()) {
+                    out.println(JsonUtils.formatJson(result.body()));
                     out.flush();
                 }
                 return 0;
             }
-
             ConsoleUtils.error(
                     err,
-                    "[ADMIN] Show file failed: status=%s error=%s body=%s origin=%s path=%s",
+                    "[ADMIN] Show via router failed HTTP %d error=%s body=%s router=%s path=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
-                    origin,
+                    router,
                     cleanPath);
             return 2;
         }
     }
 
+    // Download: über den Router zum Origin (gleicher Flow wie User-Download). Keine Region nötig, da keine
+    // Cache-Invalidation.
     @Command(
             name = "download",
-            description = "Download a file from Origin Server to a local path (binary-safe)",
-            mixinStandardHelpOptions = true,
-            footerHeading = "%nBeispiele:%n",
-            footer = {
-                "  admin file download --origin http://localhost:8080 --path docs/Lebenslauf.pdf --out ./downloads/Lebenslauf.pdf"
-            })
+            description = "Download a file via router (same flow as user download).",
+            mixinStandardHelpOptions = true)
     public static class AdminFileDownloadCommand implements Callable<Integer> {
 
-        @CommandLine.ParentCommand
+        @ParentCommand
         AdminFileCommand parent;
 
         @Option(
-                names = "--origin",
+                names = {"--router"},
                 required = true,
-                paramLabel = "ORIGIN_URL",
-                description = "Origin server base URL, e.g. http://localhost:8080")
-        URI origin;
+                paramLabel = "ROUTER_URL")
+        URI router;
 
         @Option(
-                names = "--path",
+                names = {"--region"},
                 required = true,
-                paramLabel = "REMOTE_PATH",
-                description = "File path on origin, e.g. docs/Lebenslauf.pdf")
+                paramLabel = "REGION")
+        String region;
+
+        @Option(
+                names = {"--path"},
+                required = true,
+                paramLabel = "REMOTE_PATH")
         String path;
 
         @Option(
-                names = "--out",
+                names = {"--out"},
                 required = true,
-                paramLabel = "OUT_FILE",
-                description = "Local output file path, e.g. ./downloads/Lebenslauf.pdf")
+                paramLabel = "OUT_FILE")
         Path outFile;
+
+        @Option(
+                names = {"--overwrite"},
+                defaultValue = "false")
+        boolean overwrite;
 
         @Override
         public Integer call() {
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
                 ConsoleUtils.error(
-                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                        parent.ctx.err(), "[ADMIN] Invalid path %s after normalization: %s", path, cleanPath);
                 return 1;
             }
 
-            HttpCallResult result = parent.service().downloadOriginFile(origin, cleanPath, outFile);
+            var userFileService = new de.htwsaar.minicdn.cli.service.user.UserFileService(
+                    parent.ctx.transportClient(), parent.ctx.defaultRequestTimeout());
 
-            var err = parent.ctx.err();
-            if (result.is2xx()) {
-                ConsoleUtils.info(
-                        err,
-                        "[ADMIN] Download successful: status=%s origin=%s path=%s out=%s",
-                        result.statusCode(),
-                        origin,
-                        cleanPath,
-                        outFile);
-                return 0;
+            var base = UriUtils.ensureTrailingSlash(router);
+            var result = userFileService.downloadViaRouter(
+                    base,
+                    cleanPath,
+                    region,
+                    null, // kein clientId, damit die Statistik im Router nicht unnötig aufgebläht wird (Admin-Downloads
+                    // landen dann in der gleichen Statistik wie User-Downloads ohne clientId)
+                    outFile,
+                    overwrite);
+
+            if (result.error() != null) {
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Download via router failed: %s", result.error());
+                return 2;
             }
-
-            ConsoleUtils.error(
-                    err,
-                    "[ADMIN] Download failed: status=%s error=%s body=%s origin=%s path=%s out=%s",
+            ConsoleUtils.info(
+                    parent.ctx.out(),
+                    "[ADMIN] Download via router successful HTTP %d router=%s path=%s out=%s",
                     result.statusCode(),
-                    result.error(),
-                    result.body(),
-                    origin,
+                    router,
                     cleanPath,
                     outFile);
-            return 2;
+            return 0;
         }
     }
 
+    // delete: über den Router zum Origin + Cache Invalidation (Region erforderlich, da Invalidation über Router
+    // erfolgt).
     @Command(
             name = "delete",
-            description = "Delete a file from Origin Server",
-            mixinStandardHelpOptions = true,
-            footerHeading = "%nBeispiele:%n",
-            footer = {"  admin file delete --origin http://localhost:8080 --path docs/Lebenslauf.pdf"})
+            description = "Delete a file via router (origin + cache invalidation).",
+            mixinStandardHelpOptions = true)
     public static class AdminFileDeleteCommand implements Callable<Integer> {
 
-        @CommandLine.ParentCommand
+        @ParentCommand
         AdminFileCommand parent;
 
         @Option(
-                names = "--origin",
+                names = {"--router"},
                 required = true,
-                paramLabel = "ORIGIN_URL",
-                description = "Origin server base URL, e.g. http://localhost:8080")
-        URI origin;
+                paramLabel = "ROUTER_URL")
+        URI router;
 
         @Option(
-                names = "--path",
+                names = {"--region"},
                 required = true,
-                paramLabel = "REMOTE_PATH",
-                description = "File path on origin, e.g. docs/Lebenslauf.pdf")
+                paramLabel = "REGION")
+        String region;
+
+        @Option(
+                names = {"--path"},
+                required = true,
+                paramLabel = "REMOTE_PATH")
         String path;
 
         @Override
@@ -357,31 +357,30 @@ public class AdminFileCommand implements Runnable {
             String cleanPath = PathUtils.normalizePath(path);
             if (cleanPath.isBlank()) {
                 ConsoleUtils.error(
-                        parent.ctx.err(), "[ADMIN] Invalid path: '%s' (after normalization: '%s')", path, cleanPath);
+                        parent.ctx.err(), "[ADMIN] Invalid path %s after normalization: %s", path, cleanPath);
                 return 1;
             }
 
-            HttpCallResult result = parent.service().deleteOriginFile(origin, cleanPath);
-
+            HttpCallResult result = parent.service().deleteViaRouter(router, cleanPath, region);
             var err = parent.ctx.err();
+
             if (result.is2xx()) {
                 ConsoleUtils.info(
                         err,
-                        "[ADMIN] Delete successful: status=%s origin=%s path=%s",
+                        "[ADMIN] Delete via router successful HTTP %d path=%s region=%s",
                         result.statusCode(),
-                        origin,
-                        cleanPath);
+                        cleanPath,
+                        region);
                 return 0;
             }
-
             ConsoleUtils.error(
                     err,
-                    "[ADMIN] Delete failed: status=%s error=%s body=%s origin=%s path=%s",
+                    "[ADMIN] Delete via router failed HTTP %d error=%s body=%s path=%s region=%s",
                     result.statusCode(),
                     result.error(),
                     result.body(),
-                    origin,
-                    cleanPath);
+                    cleanPath,
+                    region);
             return 2;
         }
     }
