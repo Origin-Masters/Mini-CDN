@@ -101,4 +101,15 @@ public final class JsonUtils {
         }
         return values;
     }
+
+    /**
+     * Hilfsfunktion zum URL-Encoden von Strings, um sie sicher in URLs oder als Werte in JSON-Strukturen einzubetten.
+     * Verwendet UTF-8 als Standard-Encoding und behandelt null-Werte als leere Strings.
+     */
+    public static String urlEncode(String value) {
+        if (value == null) {
+            return "";
+        }
+        return java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8);
+    }
 }

@@ -19,17 +19,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class RoutingIndex {
 
-    /** Persistenter Speicher für den Routing-Zustand. */
+    /**
+     * Persistenter Speicher für den Routing-Zustand.
+     */
     private final RouterRoutingStateStore stateStore;
-    /** Registrierte Edge-Knoten pro Region. */
+    /**
+     * Registrierte Edge-Knoten pro Region.
+     */
     private final Map<String, List<EdgeNode>> regionToNodes = new ConcurrentHashMap<>();
-    /** Round-Robin-Zähler pro Region. */
+    /**
+     * Round-Robin-Zähler pro Region.
+     */
     private final Map<String, AtomicInteger> regionCounters = new ConcurrentHashMap<>();
 
     /**
      * Erstellt einen RoutingIndex mit dem erforderlichen State-Store.
      *
-     * @param stateStore Speicher für persistente Sicherungen des Index */
+     * @param stateStore Speicher für persistente Sicherungen des Index
+     */
     public RoutingIndex(RouterRoutingStateStore stateStore) {
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore must not be null");
     }
@@ -60,7 +67,7 @@ public class RoutingIndex {
      * Fügt einen Knoten für eine Region hinzu, sofern er noch nicht existiert.
      *
      * @param region Zielregion
-     * @param node hinzuzufügender Knoten
+     * @param node   hinzuzufügender Knoten
      */
     public void addEdge(String region, EdgeNode node) {
         if (region == null || node == null) {
@@ -108,8 +115,8 @@ public class RoutingIndex {
     /**
      * Entfernt einen Knoten aus einer Region.
      *
-     * @param region Zielregion
-     * @param node zu entfernender Knoten
+     * @param region        Zielregion
+     * @param node          zu entfernender Knoten
      * @param removeIfEmpty entfernt die Region vollständig, wenn sie leer ist
      * @return {@code true}, wenn der Knoten entfernt wurde
      */
@@ -158,7 +165,7 @@ public class RoutingIndex {
      * Liefert die Anzahl Knoten in einer Region.
      *
      * @param region Zielregion
-     * @return Anzahl Knoten (0, wenn Region unbekannt)
+     * @return Anzahl Knoten (0, wenn Region unbekannt ist)
      */
     public int getNodeCount(String region) {
         if (region == null) {
@@ -173,12 +180,41 @@ public class RoutingIndex {
     }
 
     /**
-     * Persistiert den aktuellen in-memo zustand im State-Store.
+     * Persistiert den aktuellen in-memo Zustand im State-Store.
      */
     private void persistState() {
         Map<String, List<String>> snapshot = new ConcurrentHashMap<>();
         regionToNodes.forEach((region, nodes) -> snapshot.put(
                 region, nodes.stream().map(EdgeNode::url).distinct().toList()));
         stateStore.save(snapshot);
+    }
+
+    /**
+     * Liefert eine unveränderliche Liste aller bekannten Regionen.
+     */
+    public List<String> getAllRegions() {
+        return List.copyOf(regionToNodes.keySet());
+    }
+
+    /**
+     * Liefert eine unveränderliche Liste aller Knoten einer Region.
+     *
+     * @param region Zielregion
+     * @return Liste von EdgeNode (leer, wenn Region unbekannt ist oder ungültig)
+     */
+    public List<EdgeNode> getAllNodes(String region) {
+        if (region == null) {
+            return List.of();
+        }
+        String cleanRegion = region.trim();
+        if (cleanRegion.isBlank()) {
+            return List.of();
+        }
+        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
+        if (nodes == null || nodes.isEmpty()) {
+            return List.of();
+        }
+        // Rückgabe einer unveränderlichen Kopie, um die interne Liste vor Modifikationen zu schützen
+        return List.copyOf(nodes);
     }
 }
