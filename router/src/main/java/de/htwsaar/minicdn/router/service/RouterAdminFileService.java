@@ -18,9 +18,7 @@ public class RouterAdminFileService {
     private final EdgeGateway edgeGateway;
 
     public RouterAdminFileService(
-            OriginAdminGateway originAdminGateway,
-            RoutingIndex routingIndex,
-            EdgeGateway edgeGateway) {
+            OriginAdminGateway originAdminGateway, RoutingIndex routingIndex, EdgeGateway edgeGateway) {
 
         this.originAdminGateway = originAdminGateway;
         this.routingIndex = routingIndex;
