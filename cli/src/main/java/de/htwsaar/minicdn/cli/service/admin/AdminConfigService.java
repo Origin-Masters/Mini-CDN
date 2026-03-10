@@ -95,6 +95,33 @@ public final class AdminConfigService {
         return sendPatch(edgeBaseUrl, "api/edge/admin/config", json.toString());
     }
 
+    public HttpCallResult getEdgeTtlPolicies(URI edgeBaseUrl) {
+        return sendGet(edgeBaseUrl, "api/edge/admin/config/ttl");
+    }
+
+    public HttpCallResult setEdgeTtlPolicy(URI edgeBaseUrl, String prefix, Long ttlMs) {
+        if (prefix == null || prefix.isBlank()) {
+            return HttpCallResult.clientError("prefix must not be blank");
+        }
+        if (ttlMs == null) {
+            return HttpCallResult.clientError("ttlMs must not be null");
+        }
+
+        String json = "{\"prefix\":\"" + JsonUtils.escapeJson(prefix.trim()) + "\",\"ttlMs\":" + ttlMs + '}';
+        return sendPut(edgeBaseUrl, "api/edge/admin/config/ttl", json);
+    }
+
+    public HttpCallResult removeEdgeTtlPolicy(URI edgeBaseUrl, String prefix) {
+        if (prefix == null || prefix.isBlank()) {
+            return HttpCallResult.clientError("prefix must not be blank");
+        }
+        URI url = UriUtils.ensureTrailingSlash(edgeBaseUrl)
+                .resolve("api/edge/admin/config/ttl?prefix=" + UriUtils.urlEncode(prefix.trim()));
+        TransportResponse response = transportClient.send(
+                TransportRequest.delete(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
+        return toResult(response);
+    }
+
     private HttpCallResult sendGet(URI baseUrl, String path) {
         URI url = UriUtils.ensureTrailingSlash(baseUrl).resolve(path);
         TransportResponse response = transportClient.send(
@@ -105,6 +132,16 @@ public final class AdminConfigService {
     private HttpCallResult sendPatch(URI baseUrl, String path, String jsonBody) {
         URI url = UriUtils.ensureTrailingSlash(baseUrl).resolve(path);
         TransportResponse response = transportClient.send(TransportRequest.patchJson(
+                url,
+                requestTimeout,
+                Map.of("X-Admin-Token", resolveAdminToken(), "Content-Type", "application/json"),
+                jsonBody));
+        return toResult(response);
+    }
+
+    private HttpCallResult sendPut(URI baseUrl, String path, String jsonBody) {
+        URI url = UriUtils.ensureTrailingSlash(baseUrl).resolve(path);
+        TransportResponse response = transportClient.send(TransportRequest.putJson(
                 url,
                 requestTimeout,
                 Map.of("X-Admin-Token", resolveAdminToken(), "Content-Type", "application/json"),

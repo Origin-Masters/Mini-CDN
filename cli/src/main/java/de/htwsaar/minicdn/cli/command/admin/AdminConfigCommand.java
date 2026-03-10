@@ -124,9 +124,10 @@ public final class AdminConfigCommand implements Runnable {
             footer = {
                 "  admin config edge show --edge http://localhost:8081",
                 "  admin config edge set --edge http://localhost:8081 --default-ttl-ms 120000",
-                "  admin config edge set --edge http://localhost:8081 --replacement-strategy LFU"
+                "  admin config edge set --edge http://localhost:8081 --replacement-strategy LFU",
+                "  admin config edge ttl set --edge http://localhost:8081 --prefix videos/ --ttl-ms 10000"
             },
-            subcommands = {EdgeShowCommand.class, EdgeSetCommand.class})
+            subcommands = {EdgeShowCommand.class, EdgeSetCommand.class, EdgeTtlCommand.class})
     public static final class EdgeConfigCommand implements Runnable {
 
         @ParentCommand
@@ -194,6 +195,78 @@ public final class AdminConfigCommand implements Runnable {
                             .service()
                             .patchEdgeConfig(edge, region, defaultTtlMs, maxEntries, replacementStrategy),
                     parent.parent.ctx);
+        }
+    }
+
+    @Command(
+            name = "ttl",
+            description = "Manage TTL prefix policies on an Edge server.",
+            mixinStandardHelpOptions = true,
+            subcommands = {EdgeTtlShowCommand.class, EdgeTtlSetCommand.class, EdgeTtlRemoveCommand.class})
+    public static final class EdgeTtlCommand implements Runnable {
+
+        @ParentCommand
+        private EdgeConfigCommand parent;
+
+        @Override
+        public void run() {
+            ConsoleUtils.info(parent.parent.ctx.out(), new CommandLine(this).getUsageMessage());
+        }
+    }
+
+    @Command(name = "show", description = "Show TTL prefix policies.", mixinStandardHelpOptions = true)
+    public static final class EdgeTtlShowCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private EdgeTtlCommand parent;
+
+        @Option(names = "--edge", required = true, description = "Edge base URL. Example: http://localhost:8081")
+        private URI edge;
+
+        @Override
+        public Integer call() {
+            return printResult(parent.parent.parent.service().getEdgeTtlPolicies(edge), parent.parent.parent.ctx);
+        }
+    }
+
+    @Command(name = "set", description = "Set TTL policy for a path prefix.", mixinStandardHelpOptions = true)
+    public static final class EdgeTtlSetCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private EdgeTtlCommand parent;
+
+        @Option(names = "--edge", required = true, description = "Edge base URL. Example: http://localhost:8081")
+        private URI edge;
+
+        @Option(names = "--prefix", required = true, description = "Path prefix. Example: videos/")
+        private String prefix;
+
+        @Option(names = "--ttl-ms", required = true, description = "TTL in ms. Example: 30000")
+        private Long ttlMs;
+
+        @Override
+        public Integer call() {
+            return printResult(
+                    parent.parent.parent.service().setEdgeTtlPolicy(edge, prefix, ttlMs), parent.parent.parent.ctx);
+        }
+    }
+
+    @Command(name = "remove", description = "Remove TTL policy for a path prefix.", mixinStandardHelpOptions = true)
+    public static final class EdgeTtlRemoveCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private EdgeTtlCommand parent;
+
+        @Option(names = "--edge", required = true, description = "Edge base URL. Example: http://localhost:8081")
+        private URI edge;
+
+        @Option(names = "--prefix", required = true, description = "Path prefix. Example: videos/")
+        private String prefix;
+
+        @Override
+        public Integer call() {
+            return printResult(
+                    parent.parent.parent.service().removeEdgeTtlPolicy(edge, prefix), parent.parent.parent.ctx);
         }
     }
 
