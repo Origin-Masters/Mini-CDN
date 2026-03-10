@@ -17,14 +17,15 @@ import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 /**
  * Bündelt die fachlichen Admin-Use-Cases des Routers.
  *
- * <p>Hier liegt die Logik für Routing-Administration, Cache-Invalidierung
- * und Statistik-Aggregation. Die Controller bleiben dadurch dünn.</p>
+ * <p>Die Services arbeiten nur mit fachlichen Edge-Operationen.
+ * Transportdetails liegen vollständig im Adapter.</p>
  */
 @Service
 public class RouterAdminService {
@@ -35,13 +36,14 @@ public class RouterAdminService {
 
     public RouterAdminService(
             RoutingIndex routingIndex, RouterStatsService routerStatsService, EdgeGateway edgeGateway) {
+
         this.routingIndex = routingIndex;
         this.routerStatsService = routerStatsService;
         this.edgeGateway = edgeGateway;
     }
 
     /**
-     * Registriert eine Edge-URL fuer eine Region.
+     * Registriert eine Edge-URL für eine Region.
      *
      * @param region Zielregion
      * @param url Basis-URL der Edge
@@ -51,7 +53,7 @@ public class RouterAdminService {
     }
 
     /**
-     * Verarbeitet Bulk-Aktionen fuer add/remove von Edges.
+     * Verarbeitet Bulk-Aktionen für add/remove von Edges.
      *
      * @param requests Liste der Aktionen
      * @return Ergebnisliste
@@ -85,7 +87,7 @@ public class RouterAdminService {
      *
      * @param region Zielregion
      * @param url Basis-URL der Edge
-     * @return true wenn entfernt
+     * @return {@code true}, wenn entfernt
      */
     public boolean deleteEdgeNode(String region, String url) {
         return routingIndex.removeEdge(region, new EdgeNode(url), true);
@@ -94,7 +96,7 @@ public class RouterAdminService {
     /**
      * Liefert den Routing-Index, optional mit Health-Checks.
      *
-     * @param checkHealth ob Edges geprueft werden
+     * @param checkHealth ob Edges geprüft werden
      * @return Index nach Region
      */
     public Map<String, List<EdgeNodeStatus>> getIndex(boolean checkHealth) {
@@ -135,18 +137,18 @@ public class RouterAdminService {
      * @return Ergebnis der Broadcast-Operation
      */
     public Map<String, Object> invalidatePath(String region, String path) {
-        return broadcast(region, "/api/edge/cache/files/" + path);
+        return broadcast(region, node -> edgeGateway.invalidateFile(node, path));
     }
 
     /**
      * Invalidiert einen Prefix in einer Region.
      *
      * @param region Zielregion
-     * @param value Prefix fuer die Invalidierung
+     * @param value Prefix für die Invalidierung
      * @return Ergebnis der Broadcast-Operation
      */
     public Map<String, Object> invalidatePrefix(String region, String value) {
-        return broadcast(region, "/api/edge/cache/prefix?value=" + value);
+        return broadcast(region, node -> edgeGateway.invalidatePrefix(node, value));
     }
 
     /**
@@ -156,7 +158,7 @@ public class RouterAdminService {
      * @return Ergebnis der Broadcast-Operation
      */
     public Map<String, Object> clearRegion(String region) {
-        return broadcast(region, "/api/edge/cache/all");
+        return broadcast(region, edgeGateway::clearCache);
     }
 
     /**
@@ -242,23 +244,24 @@ public class RouterAdminService {
     }
 
     /**
-     * Sendet einen Delete-Request an alle Edges einer Region.
+     * Führt eine fachliche Cache-Operation auf allen Edges einer Region aus.
      *
      * @param region Zielregion
-     * @param endpoint Edge-Endpoint
-     * @return Ergebnisliste
+     * @param operation fachliche Edge-Operation
+     * @return Ergebnisliste pro Edge
      */
-    private Map<String, Object> broadcast(String region, String endpoint) {
+    private Map<String, Object> broadcast(String region, Function<EdgeNode, CompletableFuture<Boolean>> operation) {
+
         List<EdgeNode> nodes = routingIndex.getRawIndex().get(region);
         if (nodes == null || nodes.isEmpty()) {
             throw new NoSuchElementException("Region nicht gefunden");
         }
 
         List<CompletableFuture<String>> futures = nodes.stream()
-                .map(node -> edgeGateway
-                        .sendDelete(node, endpoint)
-                        .thenApply(status -> node.url() + ": " + status)
-                        .exceptionally(ex -> node.url() + ": Fehler"))
+                .map(node -> operation
+                        .apply(node)
+                        .thenApply(success -> node.url() + ": " + (success ? "OK" : "FAILED"))
+                        .exceptionally(ex -> node.url() + ": FAILED"))
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();

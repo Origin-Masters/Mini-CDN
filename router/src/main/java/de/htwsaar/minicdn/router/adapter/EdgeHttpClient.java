@@ -8,9 +8,11 @@ import de.htwsaar.minicdn.router.domain.EdgeNodeStats;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.util.UrlUtil;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -21,10 +23,13 @@ import org.springframework.stereotype.Component;
 /**
  * HTTP-Adapter für die Kommunikation mit Edge-Knoten.
  *
- * <p>Enthält bewusst alle HTTP-Details wie URLs, Header und JSON-Parsing.</p>
+ * <p>Diese Klasse kapselt bewusst alle HTTP-Details wie URLs, Header,
+ * Query-Parameter, Statuscodes und JSON-Parsing.</p>
  */
 @Component
 public class EdgeHttpClient implements EdgeGateway {
+
+    private static final Duration ADMIN_OPERATION_TIMEOUT = Duration.ofSeconds(3);
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -32,6 +37,7 @@ public class EdgeHttpClient implements EdgeGateway {
 
     public EdgeHttpClient(
             HttpClient httpClient, ObjectMapper objectMapper, @Value("${minicdn.admin.token}") String adminToken) {
+
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
         this.adminToken = adminToken;
@@ -42,7 +48,7 @@ public class EdgeHttpClient implements EdgeGateway {
      *
      * @param node Edge-Knoten
      * @param timeout Request-Timeout
-     * @return true wenn der Health-Check HTTP 200 liefert
+     * @return {@code true}, wenn der Health-Check HTTP 200 liefert
      */
     @Override
     public boolean isNodeResponsive(EdgeNode node, Duration timeout) {
@@ -65,7 +71,7 @@ public class EdgeHttpClient implements EdgeGateway {
      *
      * @param node Edge-Knoten
      * @param timeout Request-Timeout
-     * @return Future mit true bei HTTP 200
+     * @return Future mit {@code true} bei HTTP 200
      */
     @Override
     public CompletableFuture<Boolean> checkNodeHealth(EdgeNode node, Duration timeout) {
@@ -112,21 +118,40 @@ public class EdgeHttpClient implements EdgeGateway {
     }
 
     /**
-     * Sendet einen DELETE-Request an einen Edge-Knoten.
+     * Invalidiert genau eine Datei im Edge-Cache.
      *
      * @param node Edge-Knoten
-     * @param endpoint Ziel-Endpoint relativ zur Edge-Base-URL
-     * @return Future mit HTTP-Statuscode
+     * @param path relativer Dateipfad
+     * @return Future mit {@code true}, wenn die Operation erfolgreich war
      */
     @Override
-    public CompletableFuture<Integer> sendDelete(EdgeNode node, String endpoint) {
-        HttpRequest request = withCurrentTraceId(HttpRequest.newBuilder().uri(resolve(node, endpoint)))
-                .DELETE()
-                .build();
+    public CompletableFuture<Boolean> invalidateFile(EdgeNode node, String path) {
+        String cleanPath = UrlUtil.stripLeadingSlash(path == null ? "" : path.trim());
+        return executeDelete(resolve(node, "api/edge/admin/cache/files/" + cleanPath));
+    }
 
-        return httpClient
-                .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::statusCode);
+    /**
+     * Invalidiert alle Cache-Einträge mit einem Prefix.
+     *
+     * @param node Edge-Knoten
+     * @param prefix Prefix für die Invalidierung
+     * @return Future mit {@code true}, wenn die Operation erfolgreich war
+     */
+    @Override
+    public CompletableFuture<Boolean> invalidatePrefix(EdgeNode node, String prefix) {
+        String encodedPrefix = URLEncoder.encode(prefix == null ? "" : prefix, StandardCharsets.UTF_8);
+        return executeDelete(resolve(node, "api/edge/admin/cache/prefix?value=" + encodedPrefix));
+    }
+
+    /**
+     * Leert den kompletten Edge-Cache.
+     *
+     * @param node Edge-Knoten
+     * @return Future mit {@code true}, wenn die Operation erfolgreich war
+     */
+    @Override
+    public CompletableFuture<Boolean> clearCache(EdgeNode node) {
+        return executeDelete(resolve(node, "api/edge/admin/cache/all"));
     }
 
     /**
@@ -134,7 +159,7 @@ public class EdgeHttpClient implements EdgeGateway {
      *
      * @param baseUrl Basis-URL der Edge
      * @param timeout Request-Timeout
-     * @return true bei HTTP 2xx
+     * @return {@code true} bei HTTP 2xx
      */
     @Override
     public boolean isReady(URI baseUrl, Duration timeout) {
@@ -154,7 +179,29 @@ public class EdgeHttpClient implements EdgeGateway {
     }
 
     /**
+     * Führt eine fachliche Lösch-/Invalidierungsoperation per HTTP DELETE aus.
+     *
+     * @param uri Ziel-URI
+     * @return Future mit {@code true}, wenn der Edge-Knoten 2xx liefert
+     */
+    private CompletableFuture<Boolean> executeDelete(URI uri) {
+        HttpRequest request = withCurrentTraceId(
+                        HttpRequest.newBuilder().uri(uri).timeout(ADMIN_OPERATION_TIMEOUT))
+                .DELETE()
+                .build();
+
+        return httpClient
+                .sendAsync(request, HttpResponse.BodyHandlers.discarding())
+                .thenApply(response -> response.statusCode() >= 200 && response.statusCode() < 300)
+                .exceptionally(ex -> false);
+    }
+
+    /**
      * Baut eine absolute URI auf Basis der Edge-URL.
+     *
+     * @param node Edge-Knoten
+     * @param pathOrPathAndQuery relativer Pfad oder Pfad mit Query
+     * @return aufgelöste Ziel-URI
      */
     private static URI resolve(EdgeNode node, String pathOrPathAndQuery) {
         URI base = URI.create(UrlUtil.ensureTrailingSlash(node.url()));
@@ -162,7 +209,10 @@ public class EdgeHttpClient implements EdgeGateway {
     }
 
     /**
-     * Ergaenzt Admin-Token und Trace-Id falls vorhanden.
+     * Ergänzt Admin-Token und Trace-Id, falls vorhanden.
+     *
+     * @param builder Request-Builder
+     * @return Builder mit technischen Headern
      */
     private HttpRequest.Builder withCurrentTraceId(HttpRequest.Builder builder) {
         builder.header("X-Admin-Token", adminToken);
@@ -176,7 +226,7 @@ public class EdgeHttpClient implements EdgeGateway {
     }
 
     /**
-     * HTTP-Adapter-internes JSON-Modell für Edge-Statistiken.
+     * HTTP-internes JSON-Modell für Edge-Statistiken.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record EdgeStatsPayload(
