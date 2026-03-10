@@ -6,10 +6,10 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Port für die Kommunikation mit Edge-Knoten.
+ * Port für die fachliche Kommunikation mit Edge-Knoten.
  *
- * <p>Die Fachlogik hängt nur von diesem Interface ab und kennt keine konkreten
- * HTTP- oder gRPC-Implementierungen.</p>
+ * <p>Die Fachlogik kennt nur fachliche Operationen und keine
+ * HTTP-spezifischen Details wie Endpunkte, Verben oder Statuscodes.</p>
  */
 public interface EdgeGateway {
 
@@ -43,13 +43,30 @@ public interface EdgeGateway {
     EdgeNodeStats fetchAdminStats(EdgeNode node, int windowSec, Duration timeout) throws Exception;
 
     /**
-     * Sendet asynchron ein DELETE an einen Edge-Endpunkt.
+     * Invalidiert genau eine Datei im Cache eines Edge-Knotens.
      *
      * @param node Edge-Knoten
-     * @param endpoint relativer Endpunkt
-     * @return Future mit dem HTTP-Statuscode
+     * @param path relativer Dateipfad
+     * @return Future mit {@code true}, wenn die Invalidierung erfolgreich war
      */
-    CompletableFuture<Integer> sendDelete(EdgeNode node, String endpoint);
+    CompletableFuture<Boolean> invalidateFile(EdgeNode node, String path);
+
+    /**
+     * Invalidiert alle Cache-Einträge eines Prefixes auf einem Edge-Knoten.
+     *
+     * @param node Edge-Knoten
+     * @param prefix Prefix für die Invalidierung
+     * @return Future mit {@code true}, wenn die Invalidierung erfolgreich war
+     */
+    CompletableFuture<Boolean> invalidatePrefix(EdgeNode node, String prefix);
+
+    /**
+     * Leert den kompletten Cache eines Edge-Knotens.
+     *
+     * @param node Edge-Knoten
+     * @return Future mit {@code true}, wenn die Operation erfolgreich war
+     */
+    CompletableFuture<Boolean> clearCache(EdgeNode node);
 
     /**
      * Prüft, ob eine Edge-Instanz über ihren Ready-Endpunkt betriebsbereit ist.

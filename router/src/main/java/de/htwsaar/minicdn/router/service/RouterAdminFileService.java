@@ -10,6 +10,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Service;
 
+/**
+ * Fachlicher Service für Admin-Dateioperationen über den Router.
+ *
+ * <p>Schreiboperationen werden an den Origin delegiert.
+ * Die anschließende Cache-Invalidierung nutzt nur fachliche Edge-Operationen.</p>
+ */
 @Service
 public class RouterAdminFileService {
 
@@ -26,41 +32,43 @@ public class RouterAdminFileService {
     }
 
     /**
-     * Hochladen einer Datei zum Origin und invalidieren aller Edge-Caches in der Region (oder global).
+     * Lädt eine Datei zum Origin hoch und invalidiert betroffene Edge-Caches.
+     *
+     * @param path relativer Dateipfad
+     * @param body Dateiinhalt
+     * @param region optionale Zielregion; leer bedeutet alle Regionen
+     * @return Ergebnis der Gesamtoperation
      */
     public AdminFileResult uploadAndInvalidate(String path, byte[] body, String region) {
         try {
-            // Step 1: Upload to Origin
-            var uploadResult = originAdminGateway.uploadFile(path, body);
-
+            AdminFileResult uploadResult = originAdminGateway.uploadFile(path, body);
             if (!uploadResult.success()) {
                 return uploadResult;
             }
 
-            // Step 2: Invalidate Edge caches
             int invalidated = invalidateCaches(path, region);
 
             return AdminFileResult.success(
                     201, Map.of("uploaded", true, "path", path, "size", body.length, "edgesInvalidated", invalidated));
-
         } catch (Exception e) {
             return AdminFileResult.error(500, "Upload failed: " + e.getMessage());
         }
     }
 
     /**
-     * Löschen einer Datei vom Origin und invalidieren aller Edge-Caches in der Region (oder global).
+     * Löscht eine Datei im Origin und invalidiert betroffene Edge-Caches.
+     *
+     * @param path relativer Dateipfad
+     * @param region optionale Zielregion; leer bedeutet alle Regionen
+     * @return Ergebnis der Gesamtoperation
      */
     public AdminFileResult deleteAndInvalidate(String path, String region) {
         try {
-            // Step 1: Delete from Origin
-            var deleteResult = originAdminGateway.deleteFile(path);
-
+            AdminFileResult deleteResult = originAdminGateway.deleteFile(path);
             if (!deleteResult.success()) {
                 return deleteResult;
             }
 
-            // Step 2: Invalidate Edge caches
             int invalidated = invalidateCaches(path, region);
 
             return AdminFileResult.success(
@@ -69,21 +77,28 @@ public class RouterAdminFileService {
                             "deleted", true,
                             "path", path,
                             "edgesInvalidated", invalidated));
-
         } catch (Exception e) {
             return AdminFileResult.error(500, "Delete failed: " + e.getMessage());
         }
     }
 
     /**
-     * Listet Dateien vom Origin auf (nur read-only, keine Cache-Invalidierung). Unterstützt Paging.
+     * Listet Dateien aus dem Origin auf.
+     *
+     * @param page Seitennummer
+     * @param size Seitengröße
+     * @return Ergebnis der Origin-Abfrage
      */
     public AdminFileResult listOriginFiles(int page, int size) {
         return originAdminGateway.listFiles(page, size);
     }
 
     /**
-     * Invalidiert die Caches aller Edge-Knoten in der angegebenen Region (oder global, wenn region null/blank).
+     * Invalidiert die Caches aller Edge-Knoten in einer Region oder global.
+     *
+     * @param path relativer Dateipfad
+     * @param region optionale Zielregion
+     * @return Anzahl erfolgreicher Invalidierungen
      */
     private int invalidateCaches(String path, String region) {
         List<String> regionsToInvalidate =
@@ -97,28 +112,30 @@ public class RouterAdminFileService {
             List<CompletableFuture<Boolean>> futures =
                     nodes.stream().map(node -> invalidateEdgeCache(node, path)).toList();
 
-            // Wait for all invalidations (with timeout)
             long successCount = futures.stream()
-                    .map(f -> f.orTimeout(5, TimeUnit.SECONDS))
-                    .map(f -> f.exceptionally(ex -> false).join())
-                    .filter(success -> success)
+                    .map(future -> future.orTimeout(5, TimeUnit.SECONDS))
+                    .map(future -> future.exceptionally(ex -> false).join())
+                    .filter(Boolean.TRUE::equals)
                     .count();
 
-            totalInvalidated += successCount;
+            totalInvalidated += (int) successCount;
         }
 
         return totalInvalidated;
     }
 
     /**
-     * Sendet eine Cache-Invalidierungsanfrage an einen Edge-Knoten für den angegebenen Pfad.
+     * Führt eine fachliche Datei-Invalidierung auf einem Edge-Knoten aus.
+     *
+     * @param node Edge-Knoten
+     * @param path relativer Dateipfad
+     * @return Future mit {@code true}, wenn die Invalidierung erfolgreich war
      */
     private CompletableFuture<Boolean> invalidateEdgeCache(EdgeNode node, String path) {
         try {
             return edgeGateway
-                    .sendDelete(node, "/api/edge/admin/cache/files/" + path)
+                    .invalidateFile(node, path)
                     .orTimeout(3, TimeUnit.SECONDS)
-                    .thenApply(status -> status >= 200 && status < 300)
                     .exceptionally(ex -> false);
         } catch (Exception e) {
             return CompletableFuture.completedFuture(false);

@@ -1,10 +1,10 @@
 package de.htwsaar.minicdn.router.service;
 
 import de.htwsaar.minicdn.router.domain.EdgeGateway;
+import de.htwsaar.minicdn.router.domain.FileRouteLocationResolver;
 import de.htwsaar.minicdn.router.domain.RouteFileResult;
 import de.htwsaar.minicdn.router.domain.RouteStatus;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
-import de.htwsaar.minicdn.router.util.UrlUtil;
 import java.net.URI;
 import java.time.Duration;
 import java.util.UUID;
@@ -22,35 +22,31 @@ import org.springframework.stereotype.Service;
 public class CdnRoutingService {
 
     private static final Logger log = LoggerFactory.getLogger(CdnRoutingService.class);
-    private static final String EDGE_FILES_PREFIX = "api/edge/files/";
-    private static final String ORIGIN_FILES_PREFIX = "api/origin/files/";
 
     private final RoutingIndex routingIndex;
     private final RouterStatsService routerStatsService;
     private final EdgeGateway edgeGateway;
+    private final FileRouteLocationResolver fileRouteLocationResolver;
     private final long ackTimeoutMs;
     private final int maxRetries;
     private final long retryIntervalMs;
-
-    // Wir brauchen die Origin-URL für den Fallback (NFA-S3)
-    private final String originBaseUrl;
 
     public CdnRoutingService(
             RoutingIndex routingIndex,
             RouterStatsService routerStatsService,
             EdgeGateway edgeGateway,
+            FileRouteLocationResolver fileRouteLocationResolver,
             @Value("${cdn.delivery.ack-timeout-ms:500}") long ackTimeoutMs,
             @Value("${cdn.delivery.max-retries:3}") int maxRetries,
-            @Value("${cdn.delivery.retry-interval-ms:100}") long retryIntervalMs,
-            @Value("${cdn.origin.base-url:http://localhost:8080}") String originBaseUrl) {
+            @Value("${cdn.delivery.retry-interval-ms:100}") long retryIntervalMs) {
 
         this.routingIndex = routingIndex;
         this.routerStatsService = routerStatsService;
         this.edgeGateway = edgeGateway;
+        this.fileRouteLocationResolver = fileRouteLocationResolver;
         this.ackTimeoutMs = ackTimeoutMs;
         this.maxRetries = maxRetries;
         this.retryIntervalMs = retryIntervalMs;
-        this.originBaseUrl = originBaseUrl;
     }
 
     /**
@@ -80,41 +76,32 @@ public class CdnRoutingService {
         int nodeCount = routingIndex.getNodeCount(region);
 
         // NFA-S3: Zustellgarantie mit Origin-Fallback
-
-        // Wir berechnen, wie oft wir versuchen Edges zu erreichen
         int maxAllowedAttempts = Math.min(maxRetries, Math.max(1, nodeCount));
         int attempts = 0;
-        boolean erfolgreich = false;
 
         // Schritt 1: Versuche alle verfügbaren Edges durch (Retries/Duplikate)
         while (attempts < maxAllowedAttempts) {
             EdgeNode selectedNode = routingIndex.getNextNode(region);
 
             if (selectedNode != null) {
-                // Prüfen ob Edge antwortet (Acknowledgement)
                 boolean ack = edgeGateway.isNodeResponsive(selectedNode, Duration.ofMillis(ackTimeoutMs));
 
                 if (ack) {
-                    erfolgreich = true;
                     routerStatsService.recordDownload(path, selectedNode.url());
 
-                    URI baseUri = URI.create(UrlUtil.ensureTrailingSlash(selectedNode.url()));
-                    String relativePath = EDGE_FILES_PREFIX + UrlUtil.stripLeadingSlash(path);
-                    URI location = baseUri.resolve(UrlUtil.stripLeadingSlash(relativePath));
+                    URI location = fileRouteLocationResolver.resolveEdgeFileLocation(selectedNode, path);
 
                     log.info("[NFA-S3] Zustellgarantie durch Edge erfüllt: {}", selectedNode.url());
 
                     return new RouteFileResult(
                             RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
-                } else {
-                    log.warn(
-                            "[NFA-S3] Kein ACK von Edge {}. Versuch {} fehlgeschlagen.",
-                            selectedNode.url(),
-                            attempts + 1);
                 }
+
+                log.warn("[NFA-S3] Kein ACK von Edge {}. Versuch {} fehlgeschlagen.", selectedNode.url(), attempts + 1);
             }
 
             attempts++;
+
             // Kurze Pause vor dem nächsten Duplikat-Versuch (Consumer-Restart Zeit geben)
             if (attempts < maxAllowedAttempts && retryIntervalMs > 0) {
                 sleepQuietly(retryIntervalMs);
@@ -125,9 +112,7 @@ public class CdnRoutingService {
         log.error("[NFA-S3] Keine Edge erreichbar nach {} Versuchen. Nutze Origin-Fallback!", attempts);
 
         try {
-            URI originBase = URI.create(UrlUtil.ensureTrailingSlash(originBaseUrl));
-            String originPath = ORIGIN_FILES_PREFIX + UrlUtil.stripLeadingSlash(path);
-            URI originLocation = originBase.resolve(UrlUtil.stripLeadingSlash(originPath));
+            URI originLocation = fileRouteLocationResolver.resolveOriginFileLocation(path);
 
             return new RouteFileResult(
                     RouteStatus.REDIRECT,
