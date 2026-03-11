@@ -170,3 +170,10 @@
 1773240812034:admin edge start -H http://localhost:8082 --region EU --port 8086 --origin\nhttp://localhost:8080 --auto-register=true --wait-ready
 1773240820289:admin edge managed
 1773240849085:exit
+1773267566095:admin
+1773267576181:admin edge
+1773267582848:system init
+1773267597849:user login --name bob
+1773267601916:user login --name alice
+1773267608744:admin edge
+1773267624694:exit
