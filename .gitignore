@@ -27,7 +27,7 @@ ehthumbs.db
 edge.log
 git-stats.ps1
 origin.log
-
+router.log
 target
 cli/data/users.db
 e2e/data/routing-state.properties
