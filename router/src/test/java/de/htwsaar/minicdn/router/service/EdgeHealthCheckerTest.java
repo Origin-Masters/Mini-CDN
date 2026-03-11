@@ -110,6 +110,21 @@ class EdgeHealthCheckerTest {
         }
 
         @Override
+        public CompletableFuture<Boolean> invalidateFile(EdgeNode node, String path) {
+            return null;
+        }
+
+        @Override
+        public CompletableFuture<Boolean> invalidatePrefix(EdgeNode node, String prefix) {
+            return null;
+        }
+
+        @Override
+        public CompletableFuture<Boolean> clearCache(EdgeNode node) {
+            return null;
+        }
+
+        @Override
         public CompletableFuture<Integer> sendDelete(EdgeNode node, String endpoint) {
             throw new UnsupportedOperationException("Nicht Teil dieses Tests");
         }
