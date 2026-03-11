@@ -130,3 +130,20 @@
 1772483649355:admin edge managed
 1772483654102:admin stats
 1772483663419:admin stats show
+1773232128185:system
+1773232135287:system init
+1773232821803:system
+1773232830025:system init
+1773233132521:admin edge managed
+1773233142884:admin edge
+1773233251513:admin edge start --region EU --port 8083 --origin http://localhost:8080 --wait-ready
+1773233258490:admin edge managed
+1773233264081:admin stats
+1773233268955:admin stats show
+1773233696524:system init
+1773233712111:admin edge managed
+1773233720592:admin edge stats
+1773233723971:admin stats
+1773233731113:admin stats show
+1773233879582:system init
+1773233895051:admin stats show

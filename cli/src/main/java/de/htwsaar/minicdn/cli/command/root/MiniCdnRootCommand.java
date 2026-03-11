@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.cli.command.root;
 
 import de.htwsaar.minicdn.cli.command.admin.AdminCommand;
+import de.htwsaar.minicdn.cli.command.system.SystemCommand;
 import de.htwsaar.minicdn.cli.command.user.UserCommand;
 import de.htwsaar.minicdn.cli.di.CliContext;
 import java.util.Objects;
@@ -21,7 +22,7 @@ import picocli.CommandLine.Spec;
         name = "minicdn",
         description = "Mini-CDN CLI",
         mixinStandardHelpOptions = true,
-        subcommands = {AdminCommand.class, UserCommand.class, HelpCommand.class})
+        subcommands = {AdminCommand.class, UserCommand.class, SystemCommand.class, HelpCommand.class})
 public final class MiniCdnRootCommand implements Runnable {
 
     private final CliContext ctx;
