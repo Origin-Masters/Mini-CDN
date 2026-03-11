@@ -9,9 +9,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableAsync; // <---: Ermöglicht Hintergrund-Arbeit
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableAsync // <--- Aktiviert den Task-Pool für das NFA-Requirement (Parallelität)
+@EnableScheduling // Aktiviert periodische Aufgaben wie den automatischen Edge-Health-Check.
 @Import({LoggingConfig.class, SecurityConfig.class})
 public class RouterApp {
     public static void main(String[] args) {
