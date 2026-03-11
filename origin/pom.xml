@@ -42,8 +42,16 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>de.htwsaar.minicdn.origin.OriginApp</mainClass>  <!-- ← für origin-app -->
+                    <mainClass>de.htwsaar.minicdn.origin.OriginApp</mainClass>
+                    <classifier>exec</classifier>  <!-- ← für origin-app -->
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
