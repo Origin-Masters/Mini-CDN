@@ -14,7 +14,7 @@ import picocli.CommandLine.Spec;
 @Command(
         name = "user",
         description = "User operations",
-        subcommands = {UserFileCommand.class, UserStatsCommand.class})
+        subcommands = {UserFileCommand.class, UserStatsCommand.class, UserLoginCommand.class})
 public final class UserCommand implements Runnable {
 
     private final CliContext ctx;

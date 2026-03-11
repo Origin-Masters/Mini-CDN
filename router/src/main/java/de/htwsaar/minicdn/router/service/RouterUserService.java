@@ -5,6 +5,7 @@ import static de.htwsaar.minicdn.router.db.Tables.USERS;
 import de.htwsaar.minicdn.router.dto.UserResult;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -69,6 +70,34 @@ public class RouterUserService implements AutoCloseable {
      */
     public List<UserResult> listUsers() {
         return dsl.selectFrom(USERS).orderBy(USERS.ID).fetch(r -> new UserResult(r.getId(), r.getName(), r.getRole()));
+    }
+
+    /**
+     * Sucht einen User anhand der ID.
+     *
+     * @param id technische User-ID
+     * @return gefundener User oder leer, falls kein Treffer existiert
+     */
+    public Optional<UserResult> findUserById(long id) {
+        return dsl.selectFrom(USERS)
+                .where(USERS.ID.eq((int) id))
+                .fetchOptional(r -> new UserResult(r.getId(), r.getName(), r.getRole()));
+    }
+
+    /**
+     * Sucht einen User anhand des eindeutigen Namens.
+     *
+     * @param name Username des Users
+     * @return gefundener User oder leer, falls kein Treffer existiert
+     */
+    public Optional<UserResult> findByName(String name) {
+        if (name == null || name.isBlank()) {
+            return Optional.empty();
+        }
+
+        return dsl.selectFrom(USERS)
+                .where(USERS.NAME.eq(name.trim()))
+                .fetchOptional(r -> new UserResult(r.getId(), r.getName(), r.getRole()));
     }
 
     /**

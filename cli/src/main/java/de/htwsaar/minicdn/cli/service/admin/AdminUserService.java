@@ -10,20 +10,11 @@ import de.htwsaar.minicdn.cli.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.net.URI;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Admin-User-Service: spricht mit dem Router-Admin-API per TransportClient.
- * <p>
- * Endpunkte (Router):
- * - POST /api/cdn/admin/users        (CreateUserRequest)
- * - GET  /api/cdn/admin/users        (List<UserResult>)
- * - DELETE /api/cdn/admin/users/{id} (Delete user)
- * <p>
- * Alle Requests werden mit X-Admin-Token gesendet.
- */
 public final class AdminUserService {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -32,29 +23,31 @@ public final class AdminUserService {
     private final Duration requestTimeout;
     private final URI routerBaseUrl;
     private final String adminToken;
+    private final long loggedInUserId;
 
     public AdminUserService(
-            TransportClient transportClient, Duration requestTimeout, URI routerBaseUrl, String adminToken) {
+            TransportClient transportClient,
+            Duration requestTimeout,
+            URI routerBaseUrl,
+            String adminToken,
+            long loggedInUserId) {
         this.transportClient = Objects.requireNonNull(transportClient);
         this.requestTimeout = Objects.requireNonNull(requestTimeout);
         this.routerBaseUrl = Objects.requireNonNull(routerBaseUrl);
         this.adminToken = Objects.requireNonNull(adminToken);
+        this.loggedInUserId = loggedInUserId;
     }
 
     private URI base() {
         return UriUtils.ensureTrailingSlash(routerBaseUrl);
     }
 
-    /**
-     * Fügt einen Benutzer hinzu.
-     */
     public HttpCallResult addUser(String name, int role) {
         try {
             URI url = base().resolve("api/cdn/admin/users");
             String json = MAPPER.writeValueAsString(Map.of("name", name, "role", role));
 
-            TransportRequest request = TransportRequest.postJson(
-                    url, requestTimeout, Map.of("X-Admin-Token", adminToken, "Content-Type", "application/json"), json);
+            TransportRequest request = TransportRequest.postJson(url, requestTimeout, adminJsonHeaders(), json);
 
             TransportResponse response = transportClient.send(request);
             return toHttpCallResult(response);
@@ -63,14 +56,11 @@ public final class AdminUserService {
         }
     }
 
-    /**
-     * Listet alle Benutzer (roher HTTP-Result).
-     */
     public HttpCallResult listUsersRaw() {
         try {
             URI url = base().resolve("api/cdn/admin/users");
 
-            TransportRequest request = TransportRequest.get(url, requestTimeout, Map.of("X-Admin-Token", adminToken));
+            TransportRequest request = TransportRequest.get(url, requestTimeout, adminHeaders());
 
             TransportResponse response = transportClient.send(request);
             return toHttpCallResult(response);
@@ -79,9 +69,6 @@ public final class AdminUserService {
         }
     }
 
-    /**
-     * Parsed JSON-Body zu UserResult-Liste.
-     */
     public List<UserResult> parseUsers(String body) throws Exception {
         if (body == null || body.isBlank()) {
             return List.of();
@@ -89,21 +76,30 @@ public final class AdminUserService {
         return MAPPER.readValue(body, new TypeReference<>() {});
     }
 
-    /**
-     * Löscht einen Benutzer nach ID.
-     */
     public HttpCallResult deleteUser(long id) {
         try {
             URI url = base().resolve("api/cdn/admin/users/" + id);
 
-            TransportRequest request =
-                    TransportRequest.delete(url, requestTimeout, Map.of("X-Admin-Token", adminToken));
+            TransportRequest request = TransportRequest.delete(url, requestTimeout, adminHeaders());
 
             TransportResponse response = transportClient.send(request);
             return toHttpCallResult(response);
         } catch (Exception ex) {
             return HttpCallResult.ioError(ex.getMessage());
         }
+    }
+
+    private Map<String, String> adminHeaders() {
+        Map<String, String> headers = new LinkedHashMap<>();
+        headers.put("X-Admin-Token", adminToken);
+        headers.put("X-User-Id", String.valueOf(loggedInUserId));
+        return headers;
+    }
+
+    private Map<String, String> adminJsonHeaders() {
+        Map<String, String> headers = new LinkedHashMap<>(adminHeaders());
+        headers.put("Content-Type", "application/json");
+        return headers;
     }
 
     private static HttpCallResult toHttpCallResult(TransportResponse response) {

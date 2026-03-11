@@ -22,6 +22,15 @@ public final class CliSessionState {
     /** Prozess-ID des Routers, sofern in dieser Session gestartet. */
     private Long routerPid;
 
+    /** ID des aktuell eingeloggten Users. */
+    private Long loggedInUserId;
+
+    /** Name des aktuell eingeloggten Users. */
+    private String loggedInUsername;
+
+    /** Rolle des aktuell eingeloggten Users (0=USER, 1=ADMIN). */
+    private Integer loggedInRole;
+
     /**
      * Übernimmt alle gestarteten Dienste aus dem Initialisierungsergebnis in den Session-Zustand.
      *
@@ -72,6 +81,54 @@ public final class CliSessionState {
      */
     public synchronized boolean hasManagedResources() {
         return originPid != null || edgePid != null || routerPid != null;
+    }
+
+    /**
+     * Speichert den aktuell eingeloggten User in der Session.
+     *
+     * @param userId technische User-ID
+     * @param username Benutzername
+     * @param role Rollen-ID (0=USER, 1=ADMIN)
+     */
+    public synchronized void rememberLoggedInUser(long userId, String username, int role) {
+        this.loggedInUserId = userId;
+        this.loggedInUsername = username;
+        this.loggedInRole = role;
+    }
+
+    /**
+     * Entfernt den Login-Zustand der Session.
+     */
+    public synchronized void clearLogin() {
+        this.loggedInUserId = null;
+        this.loggedInUsername = null;
+        this.loggedInRole = null;
+    }
+
+    /**
+     * @return {@code true}, wenn ein User eingeloggt ist
+     */
+    public synchronized boolean isLoggedIn() {
+        return loggedInUserId != null;
+    }
+
+    /**
+     * @return {@code true}, wenn ein Admin-User eingeloggt ist
+     */
+    public synchronized boolean isAdminLoggedIn() {
+        return loggedInUserId != null && Integer.valueOf(1).equals(loggedInRole);
+    }
+
+    public synchronized Long loggedInUserId() {
+        return loggedInUserId;
+    }
+
+    public synchronized String loggedInUsername() {
+        return loggedInUsername;
+    }
+
+    public synchronized Integer loggedInRole() {
+        return loggedInRole;
     }
 
     /**

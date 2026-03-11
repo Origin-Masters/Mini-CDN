@@ -41,7 +41,13 @@ public class AdminUserMgmtCommand implements Runnable {
     public AdminUserMgmtCommand(CliContext ctx) {
         this.ctx = ctx;
         this.service = new AdminUserService(
-                ctx.transportClient(), ctx.defaultRequestTimeout(), ctx.routerBaseUrl(), ctx.adminToken());
+                ctx.transportClient(),
+                ctx.defaultRequestTimeout(),
+                ctx.routerBaseUrl(),
+                ctx.adminToken(),
+                ctx.sessionState().loggedInUserId() == null
+                        ? -1L
+                        : ctx.sessionState().loggedInUserId());
     }
 
     @Override
