@@ -64,6 +64,7 @@ public final class SystemCommand implements Runnable {
 
             SystemInitService.InitResult result = initService.init(
                     projectDir, ctx.routerBaseUrl(), ctx.defaultRequestTimeout(), ctx.adminToken(), startEdge);
+            ctx.sessionState().remember(result);
 
             printStatus(ctx, result.origin());
             printStatus(ctx, result.edge());

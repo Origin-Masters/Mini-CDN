@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.cli.shell;
 
 import de.htwsaar.minicdn.cli.di.CliContext;
+import de.htwsaar.minicdn.cli.service.system.SystemShutdownService;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.List;
@@ -21,22 +22,50 @@ import picocli.shell.jline3.PicocliCommands;
 /**
  * Interaktive Shell (REPL) für die Mini-CDN CLI.
  *
+ * <p>Diese Klasse kapselt die komplette Laufzeitlogik der interaktiven
+ * Kommandozeilen-Sitzung. Sie verbindet:
+ *
+ * <ul>
+ *   <li>JLine für Eingabe, Prompt, History und Komfortfunktionen</li>
+ *   <li>Picocli für das Parsen und Ausführen der eigentlichen Befehle</li>
+ *   <li>den {@link CliContext} für Terminal-, Ausgabe- und Sitzungszustand</li>
+ * </ul>
+ *
  * <p>Aufgaben:
- * - Liest Benutzereingaben zeilenweise und führt sie als Picocli-Kommandos aus.
- * - Bietet Autovervollständigung über {@link PicocliCommands} + JLine.
- * - Verwaltet Shell-spezifische Befehle (z. B. {@code clear}, {@code exit}) und History.
+ * <ul>
+ *   <li>Liest Benutzereingaben zeilenweise und führt sie als Picocli-Kommandos aus.</li>
+ *   <li>Bietet Autovervollständigung über {@link PicocliCommands} + JLine.</li>
+ *   <li>Verwaltet Shell-spezifische Befehle (z. B. {@code clear}, {@code exit}) und History.</li>
+ * </ul>
  *
  * <p>Beenden:
- * - Ctrl+C: aktuelle Eingabe verwerfen.
- * - Ctrl+D oder {@code exit}/{@code quit}: Shell beenden.
+ * <ul>
+ *   <li>{@code Ctrl+C}: aktuelle Eingabe verwerfen, Shell bleibt aktiv.</li>
+ *   <li>{@code Ctrl+D}: Shell beenden.</li>
+ *   <li>{@code exit}/{@code quit}: Shell beenden und ggf. verwaltete Dienste sauber stoppen.</li>
+ * </ul>
  */
 public final class MiniCdnInteractiveShell {
+
+    /**
+     * Das bereits konfigurierte Picocli-Root-Kommando.
+     *
+     * <p>Alle eingegebenen Shell-Befehle werden letztlich über dieses Objekt
+     * ausgeführt.
+     */
     private final CommandLine cmd;
+
+    /**
+     * Zentraler CLI-Kontext mit Terminal, Ein-/Ausgabe und Sitzungszustand.
+     */
     private final CliContext ctx;
 
     /**
+     * Erzeugt eine neue interaktive Shell.
+     *
      * @param cmd vorkonfiguriertes Picocli-Root-CommandLine-Objekt
-     * @param ctx CLI-Kontext (Terminal + I/O)
+     * @param ctx CLI-Kontext (Terminal, I/O, Session-Status)
+     * @throws NullPointerException wenn {@code cmd} oder {@code ctx} {@code null} ist
      */
     public MiniCdnInteractiveShell(CommandLine cmd, CliContext ctx) {
         this.cmd = Objects.requireNonNull(cmd, "cmd");
@@ -46,29 +75,59 @@ public final class MiniCdnInteractiveShell {
     /**
      * Startet die Shell-Schleife und blockiert bis zum Exit.
      *
+     * <p>Die Methode initialisiert JLine, richtet Autocomplete und History ein
+     * und verarbeitet anschließend Benutzereingaben in einer Endlosschleife.
+     *
      * <p>History wird in {@code .minicdn.history} im aktuellen Arbeitsverzeichnis gespeichert.
+     *
+     * <p>Ablauf pro Iteration:
+     * <ol>
+     *   <li>Prompt anzeigen</li>
+     *   <li>Benutzereingabe lesen</li>
+     *   <li>Sonderfälle wie {@code exit}, {@code quit}, {@code clear} behandeln</li>
+     *   <li>übrige Eingaben als Picocli-Kommando ausführen</li>
+     *   <li>Fehler und Exit-Codes an den Benutzer zurückmelden</li>
+     * </ol>
      */
     public void run() {
+        // Zugriff auf die im Kontext zentral bereitgestellten I/O-Komponenten.
         Terminal terminal = ctx.terminal();
         PrintWriter out = ctx.out();
         PrintWriter err = ctx.err();
 
+        // Steuert, ob vor dem nächsten Prompt eine Leerzeile eingefügt werden soll.
+        // Das verbessert die Lesbarkeit nach ausgeführten Kommandos.
+        boolean addSpacingBeforePrompt = false;
+
+        // Dienst zum sauberen Herunterfahren verwalteter Systemressourcen beim Shell-Exit.
+        SystemShutdownService shutdownService = new SystemShutdownService();
+
+        // Brücke zwischen Picocli und JLine für Completion-Unterstützung.
         PicocliCommands picocli = new PicocliCommands(cmd);
 
+        // Aufbau des Readers mit Terminal, Completion und Parser.
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .completer(picocli.compileCompleters())
                 .parser(new DefaultParser())
                 .build();
 
+        // Konfiguriert die Datei, in der die Command-History persistiert wird.
         reader.setVariable(LineReader.HISTORY_FILE, Path.of(".minicdn.history"));
 
         out.println("Mini-CDN Shell. Type 'help', 'exit', 'clear'.");
+        out.println();
         out.flush();
 
         while (true) {
             final String line;
             try {
+                if (addSpacingBeforePrompt) {
+                    out.println();
+                    out.flush();
+                }
+
+                // Baut einen grünen, fetten Prompt im Terminal.
                 String prompt = new AttributedStringBuilder()
                         .style(AttributedStyle.DEFAULT
                                 .foreground(AttributedStyle.GREEN)
@@ -76,20 +135,28 @@ public final class MiniCdnInteractiveShell {
                         .append("mini-cdn> ")
                         .toAnsi();
 
+                // Liest eine Zeile und entfernt führende/trailing Leerzeichen.
                 line = reader.readLine(prompt).trim();
             } catch (UserInterruptException e) {
-                continue; // Ctrl+C
-            } catch (EndOfFileException e) {
-                break; // Ctrl+D
-            }
-
-            if (line.isBlank()) {
+                // Ctrl+C verwirft nur die aktuelle Eingabe und startet die Schleife neu.
                 continue;
-            }
-            if (equalsAnyIgnoreCase(line, "exit", "quit")) {
+            } catch (EndOfFileException e) {
+                // Ctrl+D beendet die Shell direkt.
                 break;
             }
 
+            // Leere Eingaben werden ignoriert.
+            if (line.isBlank()) {
+                continue;
+            }
+
+            // Shell-interner Exit-Befehl: fährt verwaltete Dienste sauber herunter.
+            if (equalsAnyIgnoreCase(line, "exit", "quit")) {
+                shutdownOnExit(shutdownService, out, err);
+                break;
+            }
+
+            // Bildschirmbereinigung über Terminal-Capability.
             if (equalsAnyIgnoreCase(line, "clear", "cls")) {
                 terminal.puts(InfoCmp.Capability.clear_screen);
                 terminal.flush();
@@ -97,26 +164,100 @@ public final class MiniCdnInteractiveShell {
             }
 
             try {
+                // Parser der Shell zerlegt die Eingabe in einzelne Tokens/Wörter.
                 ParsedLine parsed = reader.getParser().parse(line, 0);
                 List<String> words = parsed.words();
                 String[] argv = words.toArray(new String[0]);
 
+                // Übergibt die Argumente an Picocli zur eigentlichen Befehlsausführung.
                 int exitCode = cmd.execute(argv);
                 if (exitCode != 0) {
                     err.println("Command failed with exit code: " + exitCode);
                     err.flush();
                 }
+
+                // Nach einer Befehlsausführung vor dem nächsten Prompt optisch trennen.
+                addSpacingBeforePrompt = true;
             } catch (Exception ex) {
+                // Fängt unerwartete Fehler bei Parsing oder Ausführung ab,
+                // damit die Shell weiterbenutzbar bleibt.
                 err.println("Error executing command: " + ex.getMessage());
                 err.flush();
+                addSpacingBeforePrompt = true;
             }
         }
     }
 
+    /**
+     * Prüft, ob ein Eingabestring einem der übergebenen Kandidaten entspricht,
+     * ohne Groß-/Kleinschreibung zu berücksichtigen.
+     *
+     * @param input zu prüfender Eingabestring
+     * @param candidates erlaubte Vergleichswerte
+     * @return {@code true}, wenn {@code input} einem Kandidaten entspricht, sonst {@code false}
+     */
     private static boolean equalsAnyIgnoreCase(String input, String... candidates) {
         for (String c : candidates) {
             if (input.equalsIgnoreCase(c)) return true;
         }
         return false;
+    }
+
+    /**
+     * Führt beim Verlassen der Shell einen kontrollierten Shutdown verwalteter Dienste aus.
+     *
+     * <p>Wenn keine verwalteten Ressourcen in der aktuellen Session registriert sind,
+     * wird kein Shutdown ausgelöst.
+     *
+     * @param shutdownService Dienst für das Herunterfahren der Systemkomponenten
+     * @param out Standardausgabe für erfolgreiche Statusmeldungen
+     * @param err Fehlerausgabe für fehlgeschlagene Statusmeldungen
+     */
+    private void shutdownOnExit(SystemShutdownService shutdownService, PrintWriter out, PrintWriter err) {
+        // Wenn die Session keine gestarteten/verwalteten Ressourcen kennt,
+        // gibt es beim Exit nichts zu tun.
+        if (!ctx.sessionState().hasManagedResources()) {
+            return;
+        }
+
+        // Führt den Shutdown aller bekannten Dienste aus und sammelt deren Einzelstatus.
+        SystemShutdownService.ShutdownResult result = shutdownService.shutdown(ctx.sessionState());
+
+        // Gibt den Status der einzelnen Komponenten in fester Reihenfolge aus.
+        printStopStatus(out, err, result.edge());
+        printStopStatus(out, err, result.router());
+        printStopStatus(out, err, result.origin());
+    }
+
+    /**
+     * Gibt das Ergebnis des Stop-Vorgangs für einen Dienst aus.
+     *
+     * <p>Verhalten nach Status:
+     * <ul>
+     *   <li>{@code SKIPPED}: keine Ausgabe</li>
+     *   <li>{@code FAILED}: Ausgabe auf {@code err}</li>
+     *   <li>sonst: Ausgabe auf {@code out}</li>
+     * </ul>
+     *
+     * @param out Standardausgabe für Erfolgsmeldungen
+     * @param err Fehlerausgabe für Fehlermeldungen
+     * @param status Ergebnisobjekt des Stop-Vorgangs
+     */
+    private void printStopStatus(PrintWriter out, PrintWriter err, SystemShutdownService.StopStatus status) {
+        // Übersprungene Dienste sollen die Ausgabe nicht unnötig aufblähen.
+        if ("SKIPPED".equals(status.state())) {
+            return;
+        }
+
+        // Fehlerstatus gehen auf STDERR, damit sie klar vom normalen Output getrennt sind.
+        if ("FAILED".equals(status.state())) {
+            err.printf("[EXIT] %s: %s%n", status.serviceName().toUpperCase(), status.message());
+            err.flush();
+            return;
+        }
+
+        // Erfolgs- oder Informationsstatus werden regulär auf STDOUT ausgegeben.
+        out.printf("[EXIT] %s: %s%n", status.serviceName().toUpperCase(), status.message());
+        out.flush();
     }
 }

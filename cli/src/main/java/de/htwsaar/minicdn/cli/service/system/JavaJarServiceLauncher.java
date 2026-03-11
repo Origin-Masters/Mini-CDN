@@ -24,7 +24,7 @@ public final class JavaJarServiceLauncher implements ServiceLauncher {
     }
 
     @Override
-    public void start(Path jarPath, String springProfile, Path logPath) {
+    public Process start(Path jarPath, String springProfile, Path logPath) {
         Objects.requireNonNull(jarPath, "jarPath");
         Objects.requireNonNull(springProfile, "springProfile");
         Objects.requireNonNull(logPath, "logPath");
@@ -48,7 +48,7 @@ public final class JavaJarServiceLauncher implements ServiceLauncher {
         builder.redirectOutput(logPath.toFile());
 
         try {
-            builder.start();
+            return builder.start();
         } catch (IOException e) {
             throw new UncheckedIOException("Service konnte nicht gestartet werden: " + jarPath, e);
         }
