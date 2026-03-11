@@ -18,12 +18,17 @@ build_job:
       - .m2/repository/
   artifacts:
     when: always
-    paths:
-      - origin/target/*.jar
-      - edge/target/*.jar
-      - router/target/*.jar
-      - cli/target/*.jar
-    expire_in: 1 week
+    artifacts:
+  paths:
+    - origin/target/mini-cdn-origin-1.0-SNAPSHOT.jar
+    - edge/target/mini-cdn-edge-1.0-SNAPSHOT.jar
+    - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
+    - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
+  exclude:
+    - '**/*-sources.jar'
+    - '**/*-javadoc.jar'
+    - '**/original-*.jar'
+  expire_in: 1 week
 
 test_job:
   stage: test
