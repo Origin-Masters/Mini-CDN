@@ -2,10 +2,13 @@ package de.htwsaar.minicdn.e2e;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -17,6 +20,7 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static final String REGION = "eu-west";
     private static final String CACHE_HEADER = "X-Cache";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final HttpClient CLIENT =
             HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
@@ -201,6 +205,53 @@ class CdnStandardFlowIT extends AbstractE2E {
         }
     }
 
+    @Test
+    @DisplayName("TS-C2: Ausgefallene Replikate werden automatisch erkannt und entfernt")
+    void failover_removes_dead_replica_within_ten_seconds() throws Exception {
+        String region = "failover-e2e";
+        String deadEdgeUrl = "http://localhost:65534";
+        String deadEdgeUrlNormalized = deadEdgeUrl + "/";
+        String healthyEdgeUrlNormalized = EDGE_BASE + "/";
+
+        TestFile tf = createOriginFile("Failover E2E Test");
+
+        try {
+            // Sauberes Setup: Falls vom letzten Lauf noch Einträge da sind, räumen wir sie weg.
+            unregisterEdge(region, deadEdgeUrl);
+            unregisterEdge(region, EDGE_BASE);
+
+            // Eine tote und eine funktionierende Edge für dieselbe Region registrieren.
+            registerEdgeInRouter(region, deadEdgeUrl);
+            registerEdgeInRouter(region, EDGE_BASE);
+
+            long start = System.currentTimeMillis();
+            boolean removedInTime = waitUntilEdgeRemoved(region, deadEdgeUrlNormalized, 10_000);
+            long durationMs = System.currentTimeMillis() - start;
+
+            assertTrue(removedInTime, "Die tote Edge sollte innerhalb von 10 Sekunden entfernt werden.");
+            assertTrue(durationMs <= 10_000, "Die Erkennung dauerte zu lange: " + durationMs + "ms");
+
+            List<String> urlsAfterCleanup = fetchRoutingUrls(region);
+
+            // Nach dem Health-Check darf nur noch die lebende Edge im Routing-Index stehen.
+            assertFalse(urlsAfterCleanup.contains(deadEdgeUrlNormalized));
+            assertTrue(urlsAfterCleanup.contains(healthyEdgeUrlNormalized));
+            assertEquals(1, urlsAfterCleanup.size());
+
+            // Ein echter Request sollte jetzt direkt zur verbleibenden Edge weitergeleitet werden.
+            HttpResponse<Void> response = requestRouting(tf.fileName(), region);
+            assertEquals(307, response.statusCode());
+
+            String location = response.headers().firstValue("location").orElseThrow();
+            assertEquals(EDGE_BASE + "/api/edge/files/" + tf.fileName(), location);
+
+        } finally {
+            cleanupOriginFile(tf.originAdminFileUri());
+            unregisterEdge(region, deadEdgeUrl);
+            unregisterEdge(region, EDGE_BASE);
+        }
+    }
+
     // ---------- Hilfsmethoden ----------
 
     private record TestFile(String fileName, URI originAdminFileUri) {}
@@ -306,8 +357,50 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static HttpResponse<Void> requestRouting(String fileName) throws Exception {
-        URI routeUri = URI.create(ROUTER_BASE + "/api/cdn/files/" + fileName + "?region=" + REGION);
+        return requestRouting(fileName, REGION);
+    }
+
+    private static HttpResponse<Void> requestRouting(String fileName, String region) throws Exception {
+        URI routeUri = URI.create(ROUTER_BASE + "/api/cdn/files/" + fileName + "?region=" + region);
         return NO_REDIRECT_CLIENT.send(
                 HttpRequest.newBuilder(routeUri).GET().build(), HttpResponse.BodyHandlers.discarding());
+    }
+
+    private static boolean waitUntilEdgeRemoved(String region, String edgeUrl, long timeoutMs) throws Exception {
+        long deadline = System.currentTimeMillis() + timeoutMs;
+
+        while (System.currentTimeMillis() < deadline) {
+            List<String> urls = fetchRoutingUrls(region);
+            if (!urls.contains(edgeUrl)) {
+                return true;
+            }
+            Thread.sleep(250);
+        }
+
+        return false;
+    }
+
+    private static List<String> fetchRoutingUrls(String region) throws Exception {
+        URI routingUri = URI.create(ROUTER_BASE + "/api/cdn/routing?checkHealth=false");
+        HttpRequest request = HttpRequest.newBuilder(routingUri)
+                .header("X-Admin-Token", ADMIN_TOKEN)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode());
+
+        JsonNode root = OBJECT_MAPPER.readTree(response.body());
+        JsonNode regionNodes = root.path(region);
+
+        List<String> urls = new ArrayList<>();
+        if (!regionNodes.isArray()) {
+            return urls;
+        }
+
+        for (JsonNode node : regionNodes) {
+            urls.add(node.path("url").asText());
+        }
+        return urls;
     }
 }
