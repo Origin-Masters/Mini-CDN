@@ -154,6 +154,11 @@ public class EdgeHttpClient implements EdgeGateway {
         return executeDelete(resolve(node, "api/edge/admin/cache/all"));
     }
 
+    @Override
+    public CompletableFuture<Integer> sendDelete(EdgeNode node, String endpoint) {
+        return null;
+    }
+
     /**
      * Prüft die Readiness einer Edge-Instanz.
      *
