@@ -28,6 +28,7 @@ public final class CliContext {
     private final Duration defaultRequestTimeout;
     private final String adminToken;
     private final URI routerBaseUrl;
+    private final CliSessionState sessionState;
 
     /**
      * Erzeugt einen neuen CLI-Kontext.
@@ -39,6 +40,7 @@ public final class CliContext {
      * @param defaultRequestTimeout Standard-Timeout für Requests
      * @param adminToken Token für Admin-/geschützte Aufrufe
      * @param routerBaseUrl Router-Basis-URL
+     * @param sessionState Laufzeitstatus für in dieser Session gestartete Ressourcen
      */
     public CliContext(
             Terminal terminal,
@@ -47,7 +49,8 @@ public final class CliContext {
             TransportClient transportClient,
             Duration defaultRequestTimeout,
             String adminToken,
-            URI routerBaseUrl) {
+            URI routerBaseUrl,
+            CliSessionState sessionState) {
         this.terminal = Objects.requireNonNull(terminal, "terminal");
         this.out = Objects.requireNonNull(out, "out");
         this.err = Objects.requireNonNull(err, "err");
@@ -55,6 +58,7 @@ public final class CliContext {
         this.defaultRequestTimeout = Objects.requireNonNull(defaultRequestTimeout, "defaultRequestTimeout");
         this.adminToken = Objects.requireNonNull(adminToken, "adminToken");
         this.routerBaseUrl = Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
+        this.sessionState = Objects.requireNonNull(sessionState, "sessionState");
     }
 
     public Terminal terminal() {
@@ -87,5 +91,9 @@ public final class CliContext {
 
     public URI routerBaseUrl() {
         return routerBaseUrl;
+    }
+
+    public CliSessionState sessionState() {
+        return sessionState;
     }
 }

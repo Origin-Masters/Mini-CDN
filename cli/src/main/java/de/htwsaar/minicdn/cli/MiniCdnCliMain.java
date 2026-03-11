@@ -2,6 +2,7 @@ package de.htwsaar.minicdn.cli;
 
 import de.htwsaar.minicdn.cli.command.root.MiniCdnRootCommand;
 import de.htwsaar.minicdn.cli.di.CliContext;
+import de.htwsaar.minicdn.cli.di.CliSessionState;
 import de.htwsaar.minicdn.cli.di.ContextFactory;
 import de.htwsaar.minicdn.cli.shell.MiniCdnInteractiveShell;
 import de.htwsaar.minicdn.cli.transport.HttpTransportClient;
@@ -44,8 +45,10 @@ public final class MiniCdnCliMain {
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         Duration timeout = Duration.ofSeconds(5);
         TransportClient transportClient = new HttpTransportClient(httpClient);
+        CliSessionState sessionState = new CliSessionState();
 
-        CliContext ctx = new CliContext(terminal, out, err, transportClient, timeout, adminToken, routerBaseUrl);
+        CliContext ctx =
+                new CliContext(terminal, out, err, transportClient, timeout, adminToken, routerBaseUrl, sessionState);
 
         CommandLine cmd = new CommandLine(MiniCdnRootCommand.class, new ContextFactory(ctx));
 

@@ -147,3 +147,26 @@
 1773233731113:admin stats show
 1773233879582:system init
 1773233895051:admin stats show
+1773237362541:system init
+1773237375189:admin
+1773237381009:admin edge
+1773237389402:admin edge managed
+1773237418850:exit
+1773237532576:system init
+1773237539559:admin file list
+1773237591853:--version
+1773237621656:--versiob
+1773237624446:--version
+1773237641120:admin file
+1773237657691:exit
+1773240677340:system init
+1773240696037:admin
+1773240709320:admin edge
+1773240716193:clear
+1773240719425:admin edge managed
+1773240755391:exit
+1773240797152:admin edge
+1773240801215:admin edge start
+1773240812034:admin edge start -H http://localhost:8082 --region EU --port 8086 --origin\nhttp://localhost:8080 --auto-register=true --wait-ready
+1773240820289:admin edge managed
+1773240849085:exit
