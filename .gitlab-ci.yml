@@ -9,7 +9,7 @@ variables:
 
 build_job:
   stage: build
-  tags: [ "maven" ]
+  tags: ["maven"]
   image: maven:3.9-jdk-21
   script:
     - mvn clean verify -DskipTests
@@ -18,17 +18,16 @@ build_job:
       - .m2/repository/
   artifacts:
     when: always
-    artifacts:
-  paths:
-    - origin/target/mini-cdn-origin-1.0-SNAPSHOT.jar
-    - edge/target/mini-cdn-edge-1.0-SNAPSHOT.jar
-    - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
-    - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
-  exclude:
-    - '**/*-sources.jar'
-    - '**/*-javadoc.jar'
-    - '**/original-*.jar'
-  expire_in: 1 week
+    paths:
+      - origin/target/mini-cdn-origin-1.0-SNAPSHOT.jar
+      - edge/target/mini-cdn-edge-1.0-SNAPSHOT.jar
+      - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
+      - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
+    exclude:
+      - '**/*-sources.jar'
+      - '**/*-javadoc.jar'
+      - '**/original-*.jar'
+    expire_in: 1 week
 
 test_job:
   stage: test
