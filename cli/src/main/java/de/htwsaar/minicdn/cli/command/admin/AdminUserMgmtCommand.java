@@ -24,7 +24,7 @@ import picocli.CommandLine.Spec;
         footerHeading = "%nBeispiele:%n",
         footer = {
             "  admin user add --name alice --role 1",
-            "  admin user list --role USER --page 1 --size 20",
+            "  admin user list",
             "  admin user remove --id 42 --force"
         },
         subcommands = {
@@ -117,7 +117,7 @@ public class AdminUserMgmtCommand implements Runnable {
             description = "List users in the system",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
-            footer = {"  admin user list", "  admin user list --role 1 --page 1 --size 50"})
+            footer = {"  admin user list"})
     public static class ListCommand implements Runnable {
 
         @ParentCommand
