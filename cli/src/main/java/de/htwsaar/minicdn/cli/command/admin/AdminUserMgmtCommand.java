@@ -22,11 +22,7 @@ import picocli.CommandLine.Spec;
         description = "Manage system users",
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
-        footer = {
-            "  admin user add --name alice --role 1",
-            "  admin user list",
-            "  admin user remove --id 42 --force"
-        },
+        footer = {"  admin user add --name alice --role 1", "  admin user list", "  admin user remove --id 42 --force"},
         subcommands = {
             AdminUserMgmtCommand.AddCommand.class,
             AdminUserMgmtCommand.ListCommand.class,
