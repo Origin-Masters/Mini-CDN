@@ -19,7 +19,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from typing import Optional
+from typing import Mapping, Optional
 
 
 @dataclass(frozen=True)
@@ -45,6 +45,8 @@ class RunResult:
     label: str
     success_count: int
     elapsed_sec: float
+    routed_to_edge_count: int
+    edge_hits: dict[str, int]
 
     @property
     def rps(self) -> float:
@@ -80,7 +82,7 @@ def build_config(args: argparse.Namespace) -> BenchmarkConfig:
         edge_jar=args.edge_jar,
         auto_start_services=args.auto_start_services,
     )
-    
+
 class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     """Prevent urllib from automatically following redirects."""
     def redirect_request(self, req, fp, code, msg, headers, newurl):
@@ -88,13 +90,13 @@ class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
 
 
 def request(
-    method: str,
-    url: str,
-    token: Optional[str] = None,
-    data: Optional[bytes] = None,
-    content_type: Optional[str] = None,
-    timeout: float = 5.0,
-) -> tuple[int, bytes]:
+        method: str,
+        url: str,
+        token: Optional[str] = None,
+        data: Optional[bytes] = None,
+        content_type: Optional[str] = None,
+        timeout: float = 5.0,
+) -> tuple[int, bytes, Mapping[str, str]]:
     """Execute an HTTP request and return status code with body.
 
     Redirects are intentionally not followed to keep router 307 responses
@@ -109,14 +111,14 @@ def request(
     opener = urllib.request.build_opener(_NoRedirectHandler)
     try:
         with opener.open(req, timeout=timeout) as response:
-            return int(response.status), response.read()
+            return int(response.status), response.read(), dict(response.headers.items())
     except urllib.error.HTTPError as ex:
-        return int(ex.code), ex.read()
+        return int(ex.code), ex.read(), dict(ex.headers.items()) if ex.headers else {}
 
 
 def require_status(method: str, url: str, expected: int, **kwargs: object) -> bytes:
     """Execute request and ensure expected status code."""
-    status, body = request(method, url, **kwargs)
+    status, body, _ = request(method, url, **kwargs)
     if status != expected:
         raise BenchmarkError(f"Unexpected HTTP status {status} for {method} {url}, expected {expected}")
     return body
@@ -125,7 +127,7 @@ def require_status(method: str, url: str, expected: int, **kwargs: object) -> by
 def ensure_services(config: BenchmarkConfig) -> None:
     """Validate router availability and optionally start local services."""
     health_url = f"{config.router_base}/api/cdn/health"
-    status, _ = request("GET", health_url, token=config.token)
+    status, _, _ = request("GET", health_url, token=config.token)
     if status == 200:
         return
 
@@ -143,7 +145,7 @@ def ensure_services(config: BenchmarkConfig) -> None:
 
     subprocess.run([bash, startup_script], check=True)
 
-    status_after, _ = request("GET", health_url, token=config.token)
+    status_after, _, _ = request("GET", health_url, token=config.token)
     if status_after != 200:
         raise BenchmarkError("Router is still unreachable after startup attempt.")
 
@@ -167,7 +169,7 @@ def ensure_single_edge_setup(config: BenchmarkConfig) -> None:
     """Register baseline edge route for deterministic 1-edge run."""
     query = urllib.parse.urlencode({"region": config.test_region, "url": "http://localhost:8081"})
     url = f"{config.router_base}/api/cdn/routing?{query}"
-    status, _ = request("POST", url, token=config.token)
+    status, _, _ = request("POST", url, token=config.token)
     if status not in (200, 201, 204, 409):
         raise BenchmarkError(f"Failed baseline edge setup: status={status}")
 
@@ -176,7 +178,7 @@ def upload_test_file(config: BenchmarkConfig) -> None:
     """Upload fixed benchmark payload to origin."""
     url = f"{config.origin_base}/api/origin/admin/files/{config.test_file}"
     payload = b"nfa-c1 benchmark payload"
-    status, _ = request("PUT", url, token=config.token, data=payload, content_type="application/octet-stream")
+    status, _, _ = request("PUT", url, token=config.token, data=payload, content_type="application/octet-stream")
     if status not in (200, 201, 204):
         raise BenchmarkError(f"Upload failed with HTTP {status}")
 
@@ -191,7 +193,7 @@ def warmup_router(config: BenchmarkConfig, client_prefix: str) -> None:
             }
         )
         url = f"{config.router_base}/api/cdn/files/{config.test_file}?{query}"
-        status, _ = request("GET", url)
+        status, _, _ = request("GET", url)
         if status != 307:
             raise BenchmarkError(f"Warmup failed with HTTP {status} at request {idx}")
 
@@ -201,8 +203,10 @@ def run_load_test(config: BenchmarkConfig, label: str, client_prefix: str) -> Ru
     end_time = time.monotonic() + config.duration_sec
     start = time.monotonic()
 
-    def worker(worker_id: int) -> int:
+    def worker(worker_id: int) -> tuple[int, int, dict[str, int]]:
         ok = 0
+        routed = 0
+        local_hits: dict[str, int] = {}
         attempt = 0
         while time.monotonic() < end_time:
             attempt += 1
@@ -213,16 +217,34 @@ def run_load_test(config: BenchmarkConfig, label: str, client_prefix: str) -> Ru
                 }
             )
             url = f"{config.router_base}/api/cdn/files/{config.test_file}?{query}"
-            status, _ = request("GET", url)
+            status, _, headers = request("GET", url)
             if status == 307:
                 ok += 1
-        return ok
+                location = headers.get("Location", "")
+                if location:
+                    routed += 1
+                    host = urllib.parse.urlparse(location).netloc
+                    local_hits[host] = local_hits.get(host, 0) + 1
+        return ok, routed, local_hits
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=config.concurrency) as executor:
-        successes = list(executor.map(worker, range(1, config.concurrency + 1)))
+        worker_results = list(executor.map(worker, range(1, config.concurrency + 1)))
 
     elapsed = time.monotonic() - start
-    return RunResult(label=label, success_count=sum(successes), elapsed_sec=elapsed)
+    successes = sum(result[0] for result in worker_results)
+    routed = sum(result[1] for result in worker_results)
+    edge_hits: dict[str, int] = {}
+    for _, _, local_hits in worker_results:
+        for host, count in local_hits.items():
+            edge_hits[host] = edge_hits.get(host, 0) + count
+
+    return RunResult(
+        label=label,
+        success_count=successes,
+        elapsed_sec=elapsed,
+        routed_to_edge_count=routed,
+        edge_hits=edge_hits,
+    )
 
 
 def start_second_edge(config: BenchmarkConfig) -> str:
@@ -270,6 +292,8 @@ def print_report(result_one: RunResult, result_two: RunResult) -> float:
     print(f"{'-'*14}-+-{'-'*10}-+-{'-'*12}-+-{'-'*12}")
     print(f"{result_one.label:<14} | {result_one.success_count:<10} | {result_one.elapsed_sec:<12.3f} | {result_one.rps:<12.3f}")
     print(f"{result_two.label:<14} | {result_two.success_count:<10} | {result_two.elapsed_sec:<12.3f} | {result_two.rps:<12.3f}")
+    print(f"edge-hits one-edge={result_one.edge_hits}")
+    print(f"edge-hits two-edges={result_two.edge_hits}")
     print(f"ratio(two/one)={ratio:.3f}")
     print("required>=1.5")
     return ratio

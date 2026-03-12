@@ -35,6 +35,13 @@ public class EdgeHttpClient implements EdgeGateway {
     private final ObjectMapper objectMapper;
     private final String adminToken;
 
+    /**
+     * Erstellt den Adapter für Edge-Kommunikation.
+     *
+     * @param httpClient HTTP-Client
+     * @param objectMapper Jackson ObjectMapper
+     * @param adminToken Admin-Token für technische Aufrufe
+     */
     public EdgeHttpClient(
             HttpClient httpClient, ObjectMapper objectMapper, @Value("${minicdn.admin.token}") String adminToken) {
 
@@ -152,11 +159,6 @@ public class EdgeHttpClient implements EdgeGateway {
     @Override
     public CompletableFuture<Boolean> clearCache(EdgeNode node) {
         return executeDelete(resolve(node, "api/edge/admin/cache/all"));
-    }
-
-    @Override
-    public CompletableFuture<Integer> sendDelete(EdgeNode node, String endpoint) {
-        return null;
     }
 
     /**

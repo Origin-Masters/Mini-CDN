@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.router.service;
 
 import de.htwsaar.minicdn.router.domain.EdgeGateway;
+import de.htwsaar.minicdn.router.domain.EdgeRegistry;
 import de.htwsaar.minicdn.router.domain.FileRouteLocationResolver;
 import de.htwsaar.minicdn.router.domain.RouteFileResult;
 import de.htwsaar.minicdn.router.domain.RouteStatus;
@@ -9,22 +10,19 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
- * Fachlicher Use Case zum Routen einer Datei an eine Edge-Node.
+ * Fachlicher Use Case für Datei-Routing.
  *
- * <p>Enthält keine HTTP-Response-Building-Logik.</p>
+ * <p>Der Service arbeitet über fachliche Ports und stellt die Zustellgarantie
+ * über Retries sowie Origin-Fallback sicher.</p>
  */
 @Service
 public class CdnRoutingService {
 
-    private static final Logger log = LoggerFactory.getLogger(CdnRoutingService.class);
-
-    private final RoutingIndex routingIndex;
+    private final EdgeRegistry edgeRegistry;
     private final RouterStatsService routerStatsService;
     private final EdgeGateway edgeGateway;
     private final FileRouteLocationResolver fileRouteLocationResolver;
@@ -32,8 +30,19 @@ public class CdnRoutingService {
     private final int maxRetries;
     private final long retryIntervalMs;
 
+    /**
+     * Erstellt den Routing-Service.
+     *
+     * @param edgeRegistry fachlicher Registry-Port für Edge-Knoten
+     * @param routerStatsService Statistik-Service
+     * @param edgeGateway Port zur Erreichbarkeitsprüfung von Edge-Knoten
+     * @param fileRouteLocationResolver Port zur Ermittlung des Redirect-Ziels
+     * @param ackTimeoutMs Timeout je Edge-ACK in Millisekunden
+     * @param maxRetries maximale Anzahl zu prüfender Kandidaten
+     * @param retryIntervalMs kurze Pause zwischen zwei Versuchen
+     */
     public CdnRoutingService(
-            RoutingIndex routingIndex,
+            EdgeRegistry edgeRegistry,
             RouterStatsService routerStatsService,
             EdgeGateway edgeGateway,
             FileRouteLocationResolver fileRouteLocationResolver,
@@ -41,7 +50,7 @@ public class CdnRoutingService {
             @Value("${cdn.delivery.max-retries:3}") int maxRetries,
             @Value("${cdn.delivery.retry-interval-ms:100}") long retryIntervalMs) {
 
-        this.routingIndex = routingIndex;
+        this.edgeRegistry = edgeRegistry;
         this.routerStatsService = routerStatsService;
         this.edgeGateway = edgeGateway;
         this.fileRouteLocationResolver = fileRouteLocationResolver;
@@ -56,85 +65,105 @@ public class CdnRoutingService {
      * @param path Dateipfad
      * @param region Zielregion
      * @param clientId optionale Client-ID
-     * @return fachliches Routing-Ergebnis
+     * @return fachliches Ergebnis
      */
     public RouteFileResult route(String path, String region, String clientId) {
-        log.info("START: Empfange Routing-Anfrage für Datei: {} [Region: {}]", path, region);
-
-        if (region == null || region.isBlank()) {
+        String cleanRegion = normalize(region);
+        if (cleanRegion == null) {
             routerStatsService.recordError();
-            log.warn("Anfrage abgebrochen: Region fehlt.");
             return new RouteFileResult(
                     RouteStatus.BAD_REQUEST,
                     null,
                     null,
                     0,
-                    "Fehler: Region fehlt. Bitte 'region' Query-Parameter oder 'X-Client-Region' Header setzen.");
+                    "Fehler: Region fehlt. Bitte region Query-Parameter oder X-Client-Region Header setzen.");
         }
 
-        routerStatsService.recordRequest(region, clientId);
+        routerStatsService.recordRequest(cleanRegion, clientId);
 
-        int nodeCount = routingIndex.getNodeCount(region);
+        int attemptsLimit = resolveAttemptsLimit(edgeRegistry.getNodeCount(cleanRegion));
+        List<EdgeNode> candidates = edgeRegistry.getNextNodes(cleanRegion, attemptsLimit);
 
-        // Mindestens alle registrierten Knoten pro Anfrage einmal ausprobieren, optional zusätzlich begrenzt.
-        int attemptsLimit = nodeCount;
-        if (maxRetries > 0) {
-            attemptsLimit = Math.min(attemptsLimit, maxRetries);
-        }
-        List<EdgeNode> candidates = routingIndex.getNextNodes(region, attemptsLimit);
         int attempts = 0;
-
-        for (EdgeNode selectedNode : candidates) {
-            boolean ack = edgeGateway.isNodeResponsive(selectedNode, Duration.ofMillis(ackTimeoutMs));
-
-            if (ack) {
-                routerStatsService.recordDownload(path, selectedNode.url());
-
-                URI location = fileRouteLocationResolver.resolveEdgeFileLocation(selectedNode, path);
-
-                log.info("[NFA-S3] Zustellgarantie durch Edge erfüllt: {}", selectedNode.url());
-
+        for (EdgeNode candidate : candidates) {
+            boolean responsive = edgeGateway.isNodeResponsive(candidate, Duration.ofMillis(ackTimeoutMs));
+            if (responsive) {
+                URI location = fileRouteLocationResolver.resolveEdgeFileLocation(candidate, path);
+                routerStatsService.recordDownload(path, candidate.url());
                 return new RouteFileResult(
                         RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
             }
 
+            edgeRegistry.markUnhealthy(cleanRegion, candidate);
             attempts++;
-            log.warn("[NFA-S3] Kein ACK von Edge {}. Versuch {} fehlgeschlagen.", selectedNode.url(), attempts);
 
-            // Kurze Pause vor dem nächsten Duplikat-Versuch (Consumer-Restart Zeit geben)
             if (attempts < candidates.size() && retryIntervalMs > 0) {
                 sleepQuietly(retryIntervalMs);
             }
         }
 
-        // Schritt 2: Wenn alle Edges tot sind -> Fallback auf den Origin (Ultimative Zustellgarantie)
-        log.error("[NFA-S3] Keine Edge erreichbar nach {} Versuchen. Nutze Origin-Fallback!", attempts);
+        return routeToOrigin(path, attempts);
+    }
 
+    /**
+     * Liefert einen Redirect auf den Origin, wenn keine Edge erreichbar war.
+     *
+     * @param path Dateipfad
+     * @param attempts Anzahl der fehlgeschlagenen Edge-Versuche
+     * @return Redirect oder UNAVAILABLE bei Origin-Fehler
+     */
+    private RouteFileResult routeToOrigin(String path, int attempts) {
         try {
             URI originLocation = fileRouteLocationResolver.resolveOriginFileLocation(path);
-
             return new RouteFileResult(
                     RouteStatus.REDIRECT,
                     originLocation,
                     UUID.randomUUID().toString(),
                     attempts,
-                    "Zustellgarantie via Origin-Fallback erfüllt (keine Edges verfügbar)");
-
-        } catch (Exception e) {
+                    "Origin-Fallback aktiv, weil keine erreichbare Edge verfügbar war.");
+        } catch (Exception ex) {
             routerStatsService.recordError();
-            log.error("FINISH: Routing komplett fehlgeschlagen. Auch Origin nicht erreichbar.");
-
             return new RouteFileResult(
                     RouteStatus.UNAVAILABLE,
                     null,
                     null,
                     attempts,
-                    "Fehler: Zustellgarantie konnte nicht erfüllt werden. Weder Edges noch Origin erreichbar.");
+                    "Fehler: Weder Edge noch Origin-Fallback verfügbar.");
         }
     }
 
     /**
-     * Wartet eine feste Zeit und stellt den Interrupt-Status wieder her.
+     * Bestimmt die maximale Anzahl zu prüfender Kandidaten.
+     *
+     * @param nodeCount Anzahl registrierter Knoten
+     * @return obere Grenze für Routing-Versuche
+     */
+    private int resolveAttemptsLimit(int nodeCount) {
+        if (nodeCount <= 0) {
+            return 0;
+        }
+        if (maxRetries <= 0) {
+            return nodeCount;
+        }
+        return Math.min(maxRetries, nodeCount);
+    }
+
+    /**
+     * Normalisiert String-Eingaben.
+     *
+     * @param value Eingabewert
+     * @return getrimmter Wert oder {@code null}
+     */
+    private static String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+        String clean = value.trim();
+        return clean.isBlank() ? null : clean;
+    }
+
+    /**
+     * Wartet kurz und stellt den Interrupt-Status wieder her.
      *
      * @param millis Wartezeit in Millisekunden
      */

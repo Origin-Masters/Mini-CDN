@@ -1,258 +1,365 @@
 package de.htwsaar.minicdn.router.service;
 
 import de.htwsaar.minicdn.router.adapter.RouterRoutingStateStore;
+import de.htwsaar.minicdn.router.domain.EdgeRegistry;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import de.htwsaar.minicdn.router.util.UrlUtil;
 import jakarta.annotation.PostConstruct;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Service;
 
 /**
- * In-Memory-Index für Edge-Knoten je Region inklusive Round-Robin-Zählern.
+ * Thread-sichere In-Memory-Implementierung des fachlichen Edge-Registers.
+ *
+ * <p>Die Klasse hält alle registrierten Knoten pro Region, verwaltet deren
+ * Health-Zustand und liefert Round-Robin-Kandidaten ohne Transportwissen.</p>
  */
 @Service
-public class RoutingIndex {
+public class RoutingIndex implements EdgeRegistry {
 
-    /**
-     * Persistenter Speicher für den Routing-Zustand.
-     */
     private final RouterRoutingStateStore stateStore;
-    /**
-     * Registrierte Edge-Knoten pro Region.
-     */
-    private final Map<String, List<EdgeNode>> regionToNodes = new ConcurrentHashMap<>();
-    /**
-     * Round-Robin-Zähler pro Region.
-     */
+    private final Map<String, CopyOnWriteArrayList<RegisteredEdge>> regionToNodes = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> regionCounters = new ConcurrentHashMap<>();
 
-    /**
-     * Erstellt einen RoutingIndex mit dem erforderlichen State-Store.
-     *
-     * @param stateStore Speicher für persistente Sicherungen des Index
-     */
     public RoutingIndex(RouterRoutingStateStore stateStore) {
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore must not be null");
     }
 
     /**
-     * Lädt beim Start den gespeicherten Zustand und baut den in-Memo index auf.
+     * Lädt den persistierten Zustand beim Start.
      */
     @PostConstruct
     void recoverOnStartup() {
-        Map<String, List<String>> recovered = stateStore.load();
-        recovered.forEach((region, urls) -> {
-            if (region == null || region.isBlank() || urls == null || urls.isEmpty()) {
+        stateStore.load().forEach((region, urls) -> {
+            String cleanRegion = normalizeRegion(region);
+            if (cleanRegion == null || urls == null) {
                 return;
             }
-            List<EdgeNode> nodes = new CopyOnWriteArrayList<>();
+
+            CopyOnWriteArrayList<RegisteredEdge> nodes =
+                    regionToNodes.computeIfAbsent(cleanRegion, ignored -> new CopyOnWriteArrayList<>());
+
             for (String url : urls) {
-                if (url == null || url.isBlank()) continue;
-                nodes.add(new EdgeNode(UrlUtil.ensureTrailingSlash(url.trim())));
+                String cleanUrl = normalizeUrl(url);
+                if (cleanUrl == null || containsUrl(nodes, cleanUrl)) {
+                    continue;
+                }
+                nodes.add(new RegisteredEdge(new EdgeNode(cleanUrl), true));
             }
+
             if (!nodes.isEmpty()) {
-                regionToNodes.put(region.trim(), nodes);
-                regionCounters.put(region.trim(), new AtomicLong(0));
+                regionCounters.putIfAbsent(cleanRegion, new AtomicLong(0));
             }
         });
     }
 
     /**
-     * Fügt einen Knoten für eine Region hinzu, sofern er noch nicht existiert.
+     * {@inheritDoc}
      *
-     * @param region Zielregion
-     * @param node   hinzuzufügender Knoten
+     * <p>Vorhandene Einträge werden nicht dupliziert; ein bereits registrierter Knoten
+     * wird stattdessen wieder als gesund markiert.</p>
      */
+    @Override
     public void addEdge(String region, EdgeNode node) {
-        if (region == null || node == null) {
+        String cleanRegion = normalizeRegion(region);
+        String cleanUrl = node == null ? null : normalizeUrl(node.url());
+        if (cleanRegion == null || cleanUrl == null) {
             return;
         }
 
-        String cleanRegion = region.trim();
-        if (cleanRegion.isBlank() || node.url() == null || node.url().isBlank()) {
+        CopyOnWriteArrayList<RegisteredEdge> nodes =
+                regionToNodes.computeIfAbsent(cleanRegion, ignored -> new CopyOnWriteArrayList<>());
+
+        if (containsUrl(nodes, cleanUrl)) {
+            markHealthy(cleanRegion, new EdgeNode(cleanUrl));
             return;
         }
-        List<EdgeNode> nodes = regionToNodes.computeIfAbsent(cleanRegion, ignored -> new CopyOnWriteArrayList<>());
-        EdgeNode cleanNode = new EdgeNode(UrlUtil.ensureTrailingSlash(node.url()));
-        if (!nodes.contains(cleanNode)) {
-            nodes.add(cleanNode);
+
+        nodes.add(new RegisteredEdge(new EdgeNode(cleanUrl), true));
+        regionCounters.putIfAbsent(cleanRegion, new AtomicLong(0));
+        persistState();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Nach erfolgreichem Entfernen wird der Round-Robin-Zaehler der Region
+     * zurueckgesetzt; leere Regionen werden komplett entfernt.</p>
+     */
+    @Override
+    public boolean removeEdge(String region, EdgeNode node, boolean persist) {
+        String cleanRegion = normalizeRegion(region);
+        String cleanUrl = node == null ? null : normalizeUrl(node.url());
+        if (cleanRegion == null || cleanUrl == null) {
+            return false;
+        }
+
+        CopyOnWriteArrayList<RegisteredEdge> nodes = regionToNodes.get(cleanRegion);
+        if (nodes == null || nodes.isEmpty()) {
+            return false;
+        }
+
+        boolean removed = nodes.removeIf(entry -> entry.node().url().equals(cleanUrl));
+        if (!removed) {
+            return false;
+        }
+
+        if (nodes.isEmpty()) {
+            regionToNodes.remove(cleanRegion);
+            regionCounters.remove(cleanRegion);
+        } else {
+            regionCounters
+                    .computeIfAbsent(cleanRegion, ignored -> new AtomicLong(0))
+                    .set(0);
+        }
+
+        if (persist) {
             persistState();
         }
-
-        regionCounters.putIfAbsent(cleanRegion, new AtomicLong(0));
+        return true;
     }
 
-    /**
-     * Wählt den nächsten Knoten einer Region via Round-Robin aus.
-     *
-     * @param region Zielregion
-     * @return nächster Knoten oder {@code null}, falls keiner vorhanden ist
-     */
-    public EdgeNode getNextNode(String region) {
-        if (region == null) {
-            return null;
+    /** {@inheritDoc} */
+    @Override
+    public void markHealthy(String region, EdgeNode node) {
+        updateHealth(region, node, true);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void markUnhealthy(String region, EdgeNode node) {
+        updateHealth(region, node, false);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getNodeCount(String region) {
+        String cleanRegion = normalizeRegion(region);
+        if (cleanRegion == null) {
+            return 0;
         }
-        String cleanRegion = region.trim();
-        if (cleanRegion.isBlank()) {
-            return null;
+        List<RegisteredEdge> nodes = regionToNodes.get(cleanRegion);
+        return nodes == null ? 0 : nodes.size();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getHealthyNodeCount(String region) {
+        String cleanRegion = normalizeRegion(region);
+        if (cleanRegion == null) {
+            return 0;
         }
-        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
+        List<RegisteredEdge> nodes = regionToNodes.get(cleanRegion);
         if (nodes == null || nodes.isEmpty()) {
-            return null;
+            return 0;
         }
 
-        AtomicLong counter = regionCounters.computeIfAbsent(cleanRegion, ignored -> new AtomicLong(0));
-        int index = Math.floorMod(counter.getAndIncrement(), nodes.size());
-        return nodes.get(index);
+        int healthy = 0;
+        for (RegisteredEdge node : nodes) {
+            if (node.healthy()) {
+                healthy++;
+            }
+        }
+        return healthy;
     }
 
     /**
-     * Liefert bis zu {@code maxCandidates} eindeutige Knoten einer Region in Round-Robin-Reihenfolge.
+     * {@inheritDoc}
      *
-     * <p>Die Methode eignet sich für Retry-Szenarien, in denen pro Anfrage keine unnötigen
-     * Duplikate ausgewählt werden sollen.</p>
-     *
-     * @param region Zielregion
-     * @param maxCandidates maximale Anzahl zurückzugebender Kandidaten
-     * @return unveränderliche Kandidatenliste
+     * <p>Die Auswahl erfolgt nur aus gesunden Knoten und startet je Aufruf
+     * am naechsten Round-Robin-Index der Region.</p>
      */
+    @Override
     public List<EdgeNode> getNextNodes(String region, int maxCandidates) {
-        if (region == null || maxCandidates <= 0) {
+        String cleanRegion = normalizeRegion(region);
+        if (cleanRegion == null || maxCandidates <= 0) {
             return List.of();
         }
 
-        String cleanRegion = region.trim();
-        if (cleanRegion.isBlank()) {
+        List<EdgeNode> healthyNodes = healthySnapshot(cleanRegion);
+        if (healthyNodes.isEmpty()) {
             return List.of();
         }
 
-        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
-        if (nodes == null || nodes.isEmpty()) {
-            return List.of();
-        }
+        int size = healthyNodes.size();
+        int limit = Math.min(maxCandidates, size);
 
-        int limit = Math.min(maxCandidates, nodes.size());
         AtomicLong counter = regionCounters.computeIfAbsent(cleanRegion, ignored -> new AtomicLong(0));
-        int start = Math.floorMod(counter.getAndAdd(limit), nodes.size());
+        int startIndex = Math.floorMod(counter.getAndIncrement(), size);
 
-        List<EdgeNode> candidates = new java.util.ArrayList<>(limit);
-        for (int offset = 0; offset < limit; offset++) {
-            int index = (start + offset) % nodes.size();
-            candidates.add(nodes.get(index));
+        List<EdgeNode> candidates = new ArrayList<>(limit);
+        for (int i = 0; i < limit; i++) {
+            candidates.add(healthyNodes.get((startIndex + i) % size));
         }
 
         return List.copyOf(candidates);
     }
 
-    /**
-     * Entfernt einen Knoten aus einer Region.
-     *
-     * @param region        Zielregion
-     * @param node          zu entfernender Knoten
-     * @param removeIfEmpty entfernt die Region vollständig, wenn sie leer ist
-     * @return {@code true}, wenn der Knoten entfernt wurde
-     */
-    public boolean removeEdge(String region, EdgeNode node, boolean removeIfEmpty) {
-        if (region == null || node == null || node.url() == null || node.url().isBlank()) {
-            return false;
-        }
-        String cleanRegion = region.trim();
-        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
-        if (nodes == null) {
-            return false;
-        }
-
-        EdgeNode cleanNode = new EdgeNode(UrlUtil.ensureTrailingSlash(node.url()));
-        boolean removed = nodes.remove(cleanNode);
-
-        if (removed && nodes.isEmpty() && removeIfEmpty) {
-            regionToNodes.remove(cleanRegion);
-            regionCounters.remove(cleanRegion);
-        }
-        if (removed) {
-            persistState();
-        }
-        return removed;
-    }
-
-    /**
-     * Gibt den unveränderlichen Blick auf den aktuellen Routingindex zurück.
-     *
-     * @return Regionen mit ihren registrierten Knoten
-     */
-    public Map<String, List<EdgeNode>> getRawIndex() {
-        return Collections.unmodifiableMap(regionToNodes);
-    }
-
-    /**
-     * Löscht den kompletten Routingindex inklusive Round-Robin-Zählern.
-     */
-    public void clear() {
-        regionToNodes.clear();
-        regionCounters.clear();
-        persistState();
-    }
-
-    /**
-     * Liefert die Anzahl Knoten in einer Region.
-     *
-     * @param region Zielregion
-     * @return Anzahl Knoten (0, wenn Region unbekannt ist)
-     */
-    public int getNodeCount(String region) {
-        if (region == null) {
-            return 0;
-        }
-        String cleanRegion = region.trim();
-        if (cleanRegion.isBlank()) {
-            return 0;
-        }
-        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
-        return nodes != null ? nodes.size() : 0;
-    }
-
-    /**
-     * Persistiert den aktuellen in-memo Zustand im State-Store.
-     */
-    private void persistState() {
-        Map<String, List<String>> snapshot = new ConcurrentHashMap<>();
-        regionToNodes.forEach((region, nodes) -> snapshot.put(
-                region, nodes.stream().map(EdgeNode::url).distinct().toList()));
-        stateStore.save(snapshot);
-    }
-
-    /**
-     * Liefert eine unveränderliche Liste aller bekannten Regionen.
-     */
-    public List<String> getAllRegions() {
-        return List.copyOf(regionToNodes.keySet());
-    }
-
-    /**
-     * Liefert eine unveränderliche Liste aller Knoten einer Region.
-     *
-     * @param region Zielregion
-     * @return Liste von EdgeNode (leer, wenn Region unbekannt ist oder ungültig)
-     */
+    /** {@inheritDoc} */
+    @Override
     public List<EdgeNode> getAllNodes(String region) {
-        if (region == null) {
+        String cleanRegion = normalizeRegion(region);
+        if (cleanRegion == null) {
             return List.of();
         }
-        String cleanRegion = region.trim();
-        if (cleanRegion.isBlank()) {
-            return List.of();
-        }
-        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
+
+        List<RegisteredEdge> nodes = regionToNodes.get(cleanRegion);
         if (nodes == null || nodes.isEmpty()) {
             return List.of();
         }
-        // Rückgabe einer unveränderlichen Kopie, um die interne Liste vor Modifikationen zu schützen
-        return List.copyOf(nodes);
+
+        List<EdgeNode> result = new ArrayList<>(nodes.size());
+        for (RegisteredEdge node : nodes) {
+            result.add(node.node());
+        }
+        return List.copyOf(result);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<String> getAllRegions() {
+        return regionToNodes.keySet().stream().sorted().toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Die Rueckgabe ist eine sortierte, unveraenderliche Momentaufnahme.</p>
+     */
+    @Override
+    public Map<String, List<EdgeNode>> getRawIndex() {
+        Map<String, List<EdgeNode>> snapshot = new TreeMap<>();
+        regionToNodes.forEach((region, nodes) -> {
+            List<EdgeNode> mapped = new ArrayList<>(nodes.size());
+            for (RegisteredEdge node : nodes) {
+                mapped.add(node.node());
+            }
+            snapshot.put(region, List.copyOf(mapped));
+        });
+        return Map.copyOf(snapshot);
+    }
+
+    /**
+     * Aktualisiert den Health-Status eines vorhandenen Knotens in einer Region.
+     */
+    private void updateHealth(String region, EdgeNode node, boolean healthy) {
+        String cleanRegion = normalizeRegion(region);
+        String cleanUrl = node == null ? null : normalizeUrl(node.url());
+        if (cleanRegion == null || cleanUrl == null) {
+            return;
+        }
+
+        List<RegisteredEdge> nodes = regionToNodes.get(cleanRegion);
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
+
+        for (RegisteredEdge entry : nodes) {
+            if (entry.node().url().equals(cleanUrl)) {
+                entry.setHealthy(healthy);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Erzeugt eine unveraenderliche Momentaufnahme aller gesunden Knoten einer Region.
+     */
+    private List<EdgeNode> healthySnapshot(String region) {
+        List<RegisteredEdge> nodes = regionToNodes.get(region);
+        if (nodes == null || nodes.isEmpty()) {
+            return List.of();
+        }
+
+        List<EdgeNode> healthy = new ArrayList<>(nodes.size());
+        for (RegisteredEdge node : nodes) {
+            if (node.healthy()) {
+                healthy.add(node.node());
+            }
+        }
+        return List.copyOf(healthy);
+    }
+
+    /**
+     * Persistiert den aktuellen Index als Region-zu-URL-Abbildung.
+     */
+    private void persistState() {
+        Map<String, List<String>> state = new TreeMap<>();
+        regionToNodes.forEach((region, nodes) -> {
+            List<String> urls = new ArrayList<>(nodes.size());
+            for (RegisteredEdge node : nodes) {
+                urls.add(node.node().url());
+            }
+            if (!urls.isEmpty()) {
+                state.put(region, List.copyOf(urls));
+            }
+        });
+        stateStore.save(state);
+    }
+
+    /**
+     * Prueft, ob die URL in der gegebenen Knotenliste bereits registriert ist.
+     */
+    private static boolean containsUrl(List<RegisteredEdge> nodes, String url) {
+        for (RegisteredEdge node : nodes) {
+            if (node.node().url().equals(url)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Normalisiert Regionenamen durch Trimmen; leere Werte werden als {@code null} behandelt.
+     */
+    private static String normalizeRegion(String region) {
+        if (region == null) {
+            return null;
+        }
+        String clean = region.trim();
+        return clean.isBlank() ? null : clean;
+    }
+
+    /**
+     * Normalisiert URL-Werte durch Trimmen und erzwungenen trailing slash.
+     */
+    private static String normalizeUrl(String url) {
+        if (url == null) {
+            return null;
+        }
+        String clean = UrlUtil.ensureTrailingSlash(url.trim());
+        return clean.isBlank() ? null : clean;
+    }
+
+    /**
+     * Interner Eintrag eines registrierten Edge-Knotens.
+     */
+    private static final class RegisteredEdge {
+        private final EdgeNode node;
+        private volatile boolean healthy;
+
+        private RegisteredEdge(EdgeNode node, boolean healthy) {
+            this.node = node;
+            this.healthy = healthy;
+        }
+
+        public EdgeNode node() {
+            return node;
+        }
+
+        public boolean healthy() {
+            return healthy;
+        }
+
+        public void setHealthy(boolean healthy) {
+            this.healthy = healthy;
+        }
     }
 }

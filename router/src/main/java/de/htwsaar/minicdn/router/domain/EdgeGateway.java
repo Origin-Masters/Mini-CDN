@@ -68,8 +68,6 @@ public interface EdgeGateway {
      */
     CompletableFuture<Boolean> clearCache(EdgeNode node);
 
-    CompletableFuture<Integer> sendDelete(EdgeNode node, String endpoint);
-
     /**
      * Prüft, ob eine Edge-Instanz über ihren Ready-Endpunkt betriebsbereit ist.
      *
