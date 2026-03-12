@@ -177,6 +177,7 @@
 1773267601916:user login --name alice
 1773267608744:admin edge
 1773267624694:exit
+<<<<<<< HEAD
 1773322692853:system
 1773322707996:system init
 1773322712591:admin
@@ -189,3 +190,9 @@
 1773324202344:admin
 1773324212633:user login --name admin
 1773324220675:admin stats show
+=======
+1773332149840:system init
+1773332522148:.exit
+1773332523697:exit
+1773332618108:system init
+>>>>>>> 3300487 (US-C5: Audit Logs hinzugefügt. Man sieht nun was der user gemacht hat. #32)
