@@ -10,6 +10,7 @@ import de.htwsaar.minicdn.cli.util.UriUtils;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -27,16 +28,37 @@ import java.util.Objects;
  */
 public final class AdminFileService {
 
-    private static final String HEADER_REGION =
-            "X-Client-Region"; // Admin-Downloads nutzen den gleichen Header wie User-Downloads, damit sie in der
-    // gleichen Statistik landen (ohne clientId)
-
     private final TransportClient transportClient;
     private final Duration requestTimeout;
+    private final URI routerBaseUrl;
+    private final String adminToken;
+    private final long loggedInUserId;
 
-    public AdminFileService(TransportClient transportClient, Duration requestTimeout) {
+    public AdminFileService(
+            TransportClient transportClient,
+            Duration requestTimeout,
+            URI routerBaseUrl,
+            String adminToken,
+            long loggedInUserId1) {
         this.transportClient = Objects.requireNonNull(transportClient, "transportClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
+        this.routerBaseUrl = Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
+        this.adminToken = Objects.requireNonNull(adminToken, "adminToken");
+        this.loggedInUserId = loggedInUserId1;
+    }
+
+    private URI base() {
+        return UriUtils.ensureTrailingSlash(routerBaseUrl);
+    }
+
+    /**
+     * Hilfsmethode für Admin-Header, die bei allen Admin-API-Aufrufen benötigt werden.
+     */
+    private Map<String, String> adminHeaders() {
+        Map<String, String> headers = new LinkedHashMap<>();
+        headers.put("X-Admin-Token", adminToken);
+        headers.put("X-User-Id", String.valueOf(loggedInUserId));
+        return headers;
     }
 
     /**
@@ -97,23 +119,17 @@ public final class AdminFileService {
 
     /**
      * Listet Dateien über den Router:
-     *   GET /api/cdn/admin/files?page=&size=
+     *   GET /api/cdn/admin/files
      */
-    public HttpCallResult listViaRouter(URI routerBaseUrl, int page, int size) {
-        Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
-        if (page < 1) {
-            return HttpCallResult.clientError("page must be >= 1");
+    public HttpCallResult listFilesRaw() {
+        try {
+            URI url = base().resolve("api/cdn/admin/files");
+            TransportRequest request = TransportRequest.get(url, requestTimeout, adminHeaders());
+            TransportResponse response = transportClient.send(request);
+            return HttpCallResult.http(Objects.requireNonNull(response.statusCode(), "statusCode"), response.body());
+        } catch (Exception ex) {
+            return HttpCallResult.ioError(ex.getMessage());
         }
-        if (size <= 0) {
-            return HttpCallResult.clientError("size must be > 0");
-        }
-
-        URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
-        URI url = base.resolve(String.format("/api/cdn/admin/files?page=%d&size=%d", page, size));
-
-        TransportResponse response = transportClient.send(
-                TransportRequest.get(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
-        return toHttpCallResult(response);
     }
 
     /**
