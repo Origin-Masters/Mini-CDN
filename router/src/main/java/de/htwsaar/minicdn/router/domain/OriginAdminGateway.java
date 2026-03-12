@@ -35,4 +35,11 @@ public interface OriginAdminGateway {
      * @return Ergebnis inkl. HTTP-Statuscode und Response-Body (String)
      */
     AdminFileResult listFiles(int page, int size);
+
+    /**
+     * Liefert Metadaten zu einer Datei.
+     * @param path
+     * @return
+     */
+    AdminFileResult getFileMetadata(String path);
 }
