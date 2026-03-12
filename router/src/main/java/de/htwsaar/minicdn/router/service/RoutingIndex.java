@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Service;
 
 /**
@@ -30,7 +30,7 @@ public class RoutingIndex {
     /**
      * Round-Robin-Zähler pro Region.
      */
-    private final Map<String, AtomicInteger> regionCounters = new ConcurrentHashMap<>();
+    private final Map<String, AtomicLong> regionCounters = new ConcurrentHashMap<>();
 
     /**
      * Erstellt einen RoutingIndex mit dem erforderlichen State-Store.
@@ -58,7 +58,7 @@ public class RoutingIndex {
             }
             if (!nodes.isEmpty()) {
                 regionToNodes.put(region.trim(), nodes);
-                regionCounters.put(region.trim(), new AtomicInteger(0));
+                regionCounters.put(region.trim(), new AtomicLong(0));
             }
         });
     }
@@ -85,7 +85,7 @@ public class RoutingIndex {
             persistState();
         }
 
-        regionCounters.putIfAbsent(cleanRegion, new AtomicInteger(0));
+        regionCounters.putIfAbsent(cleanRegion, new AtomicLong(0));
     }
 
     /**
@@ -107,9 +107,47 @@ public class RoutingIndex {
             return null;
         }
 
-        AtomicInteger counter = regionCounters.computeIfAbsent(cleanRegion, ignored -> new AtomicInteger(0));
-        int index = Math.abs(counter.getAndIncrement() % nodes.size());
+        AtomicLong counter = regionCounters.computeIfAbsent(cleanRegion, ignored -> new AtomicLong(0));
+        int index = Math.floorMod(counter.getAndIncrement(), nodes.size());
         return nodes.get(index);
+    }
+
+    /**
+     * Liefert bis zu {@code maxCandidates} eindeutige Knoten einer Region in Round-Robin-Reihenfolge.
+     *
+     * <p>Die Methode eignet sich für Retry-Szenarien, in denen pro Anfrage keine unnötigen
+     * Duplikate ausgewählt werden sollen.</p>
+     *
+     * @param region Zielregion
+     * @param maxCandidates maximale Anzahl zurückzugebender Kandidaten
+     * @return unveränderliche Kandidatenliste
+     */
+    public List<EdgeNode> getNextNodes(String region, int maxCandidates) {
+        if (region == null || maxCandidates <= 0) {
+            return List.of();
+        }
+
+        String cleanRegion = region.trim();
+        if (cleanRegion.isBlank()) {
+            return List.of();
+        }
+
+        List<EdgeNode> nodes = regionToNodes.get(cleanRegion);
+        if (nodes == null || nodes.isEmpty()) {
+            return List.of();
+        }
+
+        int limit = Math.min(maxCandidates, nodes.size());
+        AtomicLong counter = regionCounters.computeIfAbsent(cleanRegion, ignored -> new AtomicLong(0));
+        int start = Math.floorMod(counter.getAndAdd(limit), nodes.size());
+
+        List<EdgeNode> candidates = new java.util.ArrayList<>(limit);
+        for (int offset = 0; offset < limit; offset++) {
+            int index = (start + offset) % nodes.size();
+            candidates.add(nodes.get(index));
+        }
+
+        return List.copyOf(candidates);
     }
 
     /**

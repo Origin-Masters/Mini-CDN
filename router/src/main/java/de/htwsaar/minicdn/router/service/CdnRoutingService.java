@@ -7,6 +7,7 @@ import de.htwsaar.minicdn.router.domain.RouteStatus;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,35 +76,33 @@ public class CdnRoutingService {
 
         int nodeCount = routingIndex.getNodeCount(region);
 
-        // NFA-S3: Zustellgarantie mit Origin-Fallback
-        int maxAllowedAttempts = Math.min(maxRetries, Math.max(1, nodeCount));
+        // Mindestens alle registrierten Knoten pro Anfrage einmal ausprobieren, optional zusätzlich begrenzt.
+        int attemptsLimit = nodeCount;
+        if (maxRetries > 0) {
+            attemptsLimit = Math.min(attemptsLimit, maxRetries);
+        }
+        List<EdgeNode> candidates = routingIndex.getNextNodes(region, attemptsLimit);
         int attempts = 0;
 
-        // Schritt 1: Versuche alle verfügbaren Edges durch (Retries/Duplikate)
-        while (attempts < maxAllowedAttempts) {
-            EdgeNode selectedNode = routingIndex.getNextNode(region);
+        for (EdgeNode selectedNode : candidates) {
+            boolean ack = edgeGateway.isNodeResponsive(selectedNode, Duration.ofMillis(ackTimeoutMs));
 
-            if (selectedNode != null) {
-                boolean ack = edgeGateway.isNodeResponsive(selectedNode, Duration.ofMillis(ackTimeoutMs));
+            if (ack) {
+                routerStatsService.recordDownload(path, selectedNode.url());
 
-                if (ack) {
-                    routerStatsService.recordDownload(path, selectedNode.url());
+                URI location = fileRouteLocationResolver.resolveEdgeFileLocation(selectedNode, path);
 
-                    URI location = fileRouteLocationResolver.resolveEdgeFileLocation(selectedNode, path);
+                log.info("[NFA-S3] Zustellgarantie durch Edge erfüllt: {}", selectedNode.url());
 
-                    log.info("[NFA-S3] Zustellgarantie durch Edge erfüllt: {}", selectedNode.url());
-
-                    return new RouteFileResult(
-                            RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
-                }
-
-                log.warn("[NFA-S3] Kein ACK von Edge {}. Versuch {} fehlgeschlagen.", selectedNode.url(), attempts + 1);
+                return new RouteFileResult(
+                        RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
             }
 
             attempts++;
+            log.warn("[NFA-S3] Kein ACK von Edge {}. Versuch {} fehlgeschlagen.", selectedNode.url(), attempts);
 
             // Kurze Pause vor dem nächsten Duplikat-Versuch (Consumer-Restart Zeit geben)
-            if (attempts < maxAllowedAttempts && retryIntervalMs > 0) {
+            if (attempts < candidates.size() && retryIntervalMs > 0) {
                 sleepQuietly(retryIntervalMs);
             }
         }
