@@ -177,3 +177,15 @@
 1773267601916:user login --name alice
 1773267608744:admin edge
 1773267624694:exit
+1773322692853:system
+1773322707996:system init
+1773322712591:admin
+1773322726105:admin file list
+1773322753271:admin file list --router
+1773322761342:admin file list --router http://
+1773322783584:admin file list --router http://localhost:8888
+1773324145865:exit
+1773324184555:system init
+1773324202344:admin
+1773324212633:user login --name admin
+1773324220675:admin stats show

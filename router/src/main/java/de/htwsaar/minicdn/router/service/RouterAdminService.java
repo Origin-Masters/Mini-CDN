@@ -209,7 +209,7 @@ public class RouterAdminService {
                 "router",
                 Map.of(
                         "totalRequests", routerSnapshot.totalRequests(),
-                        "requestsPerMinute", routerSnapshot.requestsPerWindow(),
+                        "requestsPerWindow", routerSnapshot.requestsPerWindow(),
                         "routingErrors", routerSnapshot.routingErrors(),
                         "activeClients", routerSnapshot.activeClients(),
                         "requestsByRegion", routerSnapshot.requestsByRegion()));
@@ -222,11 +222,11 @@ public class RouterAdminService {
                         "hitRatio", cacheHitRatio,
                         "filesLoaded", filesCached));
 
-        response.put(
-                "downloads",
-                Map.of(
-                        "byFileTotal", routerSnapshot.downloadsByFile(),
-                        "byFileByEdge", routerSnapshot.downloadsByFileByEdge()));
+        Map<String, Object> downloads = new LinkedHashMap<>();
+        downloads.put("byFileTotal", routerSnapshot.downloadsByFile());
+        downloads.put("byFileByEdgeTotal", routerSnapshot.downloadsByFileByEdge());
+        downloads.put("byFileByEdgeWindow", routerSnapshot.downloadsByFileByEdgeInWindow());
+        response.put("downloads", downloads);
 
         response.put(
                 "nodes",
@@ -240,7 +240,62 @@ public class RouterAdminService {
                         "enabled", aggregateEdge,
                         "errors", edgeErrors));
 
+        response.put("loadBalancing", buildLoadBalancingStats(rawIndex, routerSnapshot));
+
         return response;
+    }
+
+    /**
+     * Bewertet die Lastverteilung im angegebenen Zeitfenster gegen das Akzeptanzkriterium.
+     *
+     * @param rawIndex aktueller Routing-Index
+     * @param routerSnapshot Router-Metriken des Zeitfensters
+     * @return serialisierbare Auswertung des Load-Balancings
+     */
+    private Map<String, Object> buildLoadBalancingStats(
+            Map<String, List<EdgeNode>> rawIndex, RouterStatsService.RouterStatsSnapshot routerSnapshot) {
+
+        Map<String, Long> requestsByEdgeInWindow = new TreeMap<>();
+
+        rawIndex.values().stream()
+                .flatMap(List::stream)
+                .map(EdgeNode::url)
+                .sorted()
+                .forEach(url -> requestsByEdgeInWindow.put(url, 0L));
+
+        routerSnapshot
+                .edgeRequestsInWindow()
+                .forEach((edgeUrl, count) -> requestsByEdgeInWindow.merge(edgeUrl, count, Long::sum));
+
+        long routedRequestsInWindow = requestsByEdgeInWindow.values().stream()
+                .mapToLong(Long::longValue)
+                .sum();
+
+        int registeredEdges = requestsByEdgeInWindow.size();
+        double idealPerEdge = registeredEdges == 0 ? 0.0 : (double) routedRequestsInWindow / registeredEdges;
+        double toleranceAbsolute = idealPerEdge * 0.10d;
+
+        boolean balancedWithinTolerance = registeredEdges > 0
+                && routedRequestsInWindow > 0
+                && requestsByEdgeInWindow.values().stream()
+                        .allMatch(count -> Math.abs(count - idealPerEdge) <= toleranceAbsolute);
+
+        boolean minimumSampleSizeReached = routedRequestsInWindow >= 1000;
+        boolean acceptanceCriteriaMet = minimumSampleSizeReached && balancedWithinTolerance;
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("registeredEdges", registeredEdges);
+        result.put("requestsRoutedToEdgesInWindow", routedRequestsInWindow);
+        result.put("requestsByEdgeInWindow", requestsByEdgeInWindow);
+        result.put("idealPerEdge", idealPerEdge);
+        result.put("tolerancePercent", 10);
+        result.put("toleranceAbsolute", toleranceAbsolute);
+        result.put("minimumSampleSize", 1000);
+        result.put("minimumSampleSizeReached", minimumSampleSizeReached);
+        result.put("balancedWithinTolerance", balancedWithinTolerance);
+        result.put("acceptanceCriteriaMet", acceptanceCriteriaMet);
+
+        return result;
     }
 
     /**
