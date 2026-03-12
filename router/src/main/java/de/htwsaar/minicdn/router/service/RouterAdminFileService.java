@@ -141,4 +141,11 @@ public class RouterAdminFileService {
             return CompletableFuture.completedFuture(false);
         }
     }
+
+    /**
+     * Liefert Metadaten zu einer Datei im Origin.
+     */
+    public AdminFileResult showOriginFile(String path) {
+        return originAdminGateway.getFileMetadata(path);
+    }
 }

@@ -7,6 +7,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -126,6 +127,33 @@ public class OriginHttpClient implements OriginAdminGateway {
             return AdminFileResult.success(response.statusCode(), response.body());
         } catch (Exception e) {
             return AdminFileResult.error(500, "List failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public AdminFileResult getFileMetadata(String path) {
+        try {
+            URI headUri = originBaseUrl.resolve("api/origin/files/" + path);
+            HttpRequest request = HttpRequest.newBuilder(headUri)
+                    .header("X-Admin-Token", adminToken)
+                    .timeout(timeout)
+                    .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                    .build();
+
+            HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+
+            int status = response.statusCode();
+            if (status >= 200 && status < 300) {
+                var headers = response.headers();
+                Map<String, Object> meta = Map.of(
+                        "contentType", headers.firstValue("Content-Type").orElse("application/octet-stream"),
+                        "lengthBytes", headers.firstValue("Content-Length").orElse("0"),
+                        "sha256Hex", headers.firstValue("X-Content-SHA256").orElse(""));
+                return AdminFileResult.success(status, meta);
+            }
+            return AdminFileResult.error(status, "Origin HEAD failed with status " + status);
+        } catch (Exception e) {
+            return AdminFileResult.error(500, "Origin HEAD failed: " + e.getMessage());
         }
     }
 }

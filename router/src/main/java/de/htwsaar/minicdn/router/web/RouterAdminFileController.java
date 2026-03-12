@@ -60,4 +60,13 @@ public class RouterAdminFileController {
         var result = adminFileService.listOriginFiles(page, size);
         return ResponseEntity.status(result.httpStatus()).body(result.body());
     }
+
+    /**
+     * Zeigt Metadaten einer Datei im Origin an. Ruft den Origin direkt über den Router-Admin-API-Endpunkt ab.
+     */
+    @GetMapping("{path:.+}")
+    public ResponseEntity<?> showFile(@PathVariable String path) {
+        var result = adminFileService.showOriginFile(path);
+        return ResponseEntity.status(result.httpStatus()).body(result.body());
+    }
 }
