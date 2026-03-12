@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.router.web;
 
+import de.htwsaar.minicdn.router.audit.AuditLogService;
 import de.htwsaar.minicdn.router.dto.LoginRequest;
 import de.htwsaar.minicdn.router.dto.UserResult;
 import de.htwsaar.minicdn.router.service.RouterUserService;
@@ -17,9 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final RouterUserService userService;
+    private final AuditLogService auditLogService;
 
-    public AuthController(RouterUserService userService) {
+    public AuthController(RouterUserService userService, AuditLogService auditLogService) {
         this.userService = userService;
+        this.auditLogService = auditLogService;
     }
 
     @PostMapping("/login")
@@ -30,7 +33,10 @@ public class AuthController {
 
         return userService
                 .findByName(request.name().trim())
-                .map(ResponseEntity::ok)
+                .map(user -> {
+                    auditLogService.append(user.id(), "POST /api/cdn/auth/login", "/api/cdn/auth/login", 200);
+                    return ResponseEntity.ok(user);
+                })
                 .orElseGet(() -> ResponseEntity.status(404).build());
     }
 }
