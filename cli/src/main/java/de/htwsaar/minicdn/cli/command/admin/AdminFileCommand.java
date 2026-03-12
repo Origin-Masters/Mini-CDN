@@ -52,7 +52,14 @@ public class AdminFileCommand implements Runnable {
     }
 
     AdminFileService service() {
-        return new AdminFileService(ctx.transportClient(), ctx.defaultRequestTimeout());
+        return new AdminFileService(
+                ctx.transportClient(),
+                ctx.defaultRequestTimeout(),
+                ctx.routerBaseUrl(),
+                ctx.adminToken(),
+                ctx.sessionState().loggedInUserId() == null
+                        ? -1L
+                        : ctx.sessionState().loggedInUserId());
     }
 
     // Upload über den Router zum Origin + Cache Invalidation (Region erforderlich, da Invalidation über Router
@@ -60,7 +67,10 @@ public class AdminFileCommand implements Runnable {
     @Command(
             name = "upload",
             description = "Upload a file via router (origin + cache invalidation).",
-            mixinStandardHelpOptions = true)
+            mixinStandardHelpOptions = true,
+            footerHeading = "\nBeispiele%n",
+            footer = {"  admin file upload --router http://localhost:8082 --region EU --path docs/a.pdf --file ./a.pdf"
+            })
     public static class AdminFileUploadCommand implements Callable<Integer> {
 
         @ParentCommand
@@ -133,64 +143,47 @@ public class AdminFileCommand implements Runnable {
     @Command(
             name = "list",
             description = "List files via router (router asks origin).",
-            mixinStandardHelpOptions = true)
-    public static class AdminFileListCommand implements Callable<Integer> {
+            mixinStandardHelpOptions = true,
+            footerHeading = "\nBeispiele\n",
+            footer = "  admin file list")
+    public static class AdminFileListCommand implements Runnable {
 
         @ParentCommand
-        AdminFileCommand parent;
-
-        @Option(
-                names = {"--router"},
-                required = true,
-                paramLabel = "ROUTER_URL")
-        URI router;
-
-        @Option(
-                names = {"--page"},
-                defaultValue = "1")
-        int page;
-
-        @Option(
-                names = {"--size"},
-                defaultValue = "20")
-        int size;
+        private AdminFileCommand parent;
 
         @Override
-        public Integer call() {
-            HttpCallResult result = parent.service().listViaRouter(router, page, size);
-            var out = parent.ctx.out();
-            var err = parent.ctx.err();
-
-            if (result.is2xx()) {
-                ConsoleUtils.info(
-                        err,
-                        "[ADMIN] List via router successful HTTP %d router=%s page=%d size=%d",
-                        result.statusCode(),
-                        router,
-                        page,
-                        size);
-                if (result.body() != null && !result.body().isBlank()) {
-                    out.println(JsonUtils.formatJson(result.body()));
-                    out.flush();
-                }
-                return 0;
+        public void run() {
+            HttpCallResult res = parent.service().listFilesRaw();
+            if (res.error() != null) {
+                ConsoleUtils.error(parent.ctx.err(), "[ADMIN] File list failed: %s", res.error());
+                return;
             }
-            ConsoleUtils.error(
-                    err,
-                    "[ADMIN] List via router failed HTTP %d error=%s body=%s router=%s page=%d size=%d",
-                    result.statusCode(),
-                    result.error(),
-                    result.body(),
-                    router,
-                    page,
-                    size);
-            return 2;
+            if (!res.is2xx()) {
+                ConsoleUtils.error(
+                        parent.ctx.err(), "[ADMIN] File list failed HTTP %d body=%s", res.statusCode(), res.body());
+                return;
+            }
+
+            String body = res.body();
+            if (body == null || body.isBlank()) {
+                parent.ctx.out().println("[ADMIN] Files: (none)");
+                parent.ctx.out().flush();
+                return;
+            }
+
+            parent.ctx.out().println(JsonUtils.formatJson(body));
+            parent.ctx.out().flush();
         }
     }
 
     // Show: Router leitet HEAD an Origin weiter und gibt Metadaten zurück (z.B. Content-Length, Last-Modified, ETag).
     // Keine Region nötig, da keine Cache-Invalidation.
-    @Command(name = "show", description = "Show file metadata via router.", mixinStandardHelpOptions = true)
+    @Command(
+            name = "show",
+            description = "Show file metadata via router.",
+            mixinStandardHelpOptions = true,
+            footerHeading = "\nBeispiele%n",
+            footer = {"  admin file show --router http://localhost:8082 --path docs/a.pdf"})
     public static class AdminFileShowCommand implements Callable<Integer> {
 
         @ParentCommand
@@ -251,7 +244,9 @@ public class AdminFileCommand implements Runnable {
     @Command(
             name = "download",
             description = "Download a file via router (same flow as user download).",
-            mixinStandardHelpOptions = true)
+            mixinStandardHelpOptions = true,
+            footerHeading = "\nBeispiele%n",
+            footer = {"  admin file download --router http://localhost:8082 --path docs/a.pdf --out ./a.pdf"})
     public static class AdminFileDownloadCommand implements Callable<Integer> {
 
         @ParentCommand
@@ -299,14 +294,7 @@ public class AdminFileCommand implements Runnable {
                     parent.ctx.transportClient(), parent.ctx.defaultRequestTimeout());
 
             var base = UriUtils.ensureTrailingSlash(router);
-            var result = userFileService.downloadViaRouter(
-                    base,
-                    cleanPath,
-                    region,
-                    null, // kein clientId, damit die Statistik im Router nicht unnötig aufgebläht wird (Admin-Downloads
-                    // landen dann in der gleichen Statistik wie User-Downloads ohne clientId)
-                    outFile,
-                    overwrite);
+            var result = userFileService.downloadViaRouter(base, cleanPath, region, null, outFile, overwrite);
 
             if (result.error() != null) {
                 ConsoleUtils.error(parent.ctx.err(), "[ADMIN] Download via router failed: %s", result.error());
@@ -328,7 +316,9 @@ public class AdminFileCommand implements Runnable {
     @Command(
             name = "delete",
             description = "Delete a file via router (origin + cache invalidation).",
-            mixinStandardHelpOptions = true)
+            mixinStandardHelpOptions = true,
+            footerHeading = "\nBeispiele%n",
+            footer = {"  admin file delete --router http://localhost:8082 --region EU --path docs/a.pdf"})
     public static class AdminFileDeleteCommand implements Callable<Integer> {
 
         @ParentCommand

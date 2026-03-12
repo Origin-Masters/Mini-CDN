@@ -42,6 +42,10 @@ public final class AdminUserService {
         return UriUtils.ensureTrailingSlash(routerBaseUrl);
     }
 
+    /**
+     * add User via Router-Admin-API:
+     * POST /api/cdn/admin/users
+     */
     public HttpCallResult addUser(String name, int role) {
         try {
             URI url = base().resolve("api/cdn/admin/users");
@@ -56,6 +60,10 @@ public final class AdminUserService {
         }
     }
 
+    /**
+     * list Users via Router-Admin-API:
+     * GET /api/cdn/admin/users
+     */
     public HttpCallResult listUsersRaw() {
         try {
             URI url = base().resolve("api/cdn/admin/users");
@@ -76,6 +84,10 @@ public final class AdminUserService {
         return MAPPER.readValue(body, new TypeReference<>() {});
     }
 
+    /**
+     * delete User via Router-Admin-API:
+     * DELETE /api/cdn/admin/users/{id}
+     */
     public HttpCallResult deleteUser(long id) {
         try {
             URI url = base().resolve("api/cdn/admin/users/" + id);
@@ -89,6 +101,9 @@ public final class AdminUserService {
         }
     }
 
+    /**
+     * Hilfsmethode für Admin-Header, die bei allen Admin-API-Aufrufen benötigt werden.
+     */
     private Map<String, String> adminHeaders() {
         Map<String, String> headers = new LinkedHashMap<>();
         headers.put("X-Admin-Token", adminToken);
@@ -96,6 +111,9 @@ public final class AdminUserService {
         return headers;
     }
 
+    /**
+     * Erweiterung der Admin-Header um Content-Type für JSON-Requests.
+     */
     private Map<String, String> adminJsonHeaders() {
         Map<String, String> headers = new LinkedHashMap<>(adminHeaders());
         headers.put("Content-Type", "application/json");
