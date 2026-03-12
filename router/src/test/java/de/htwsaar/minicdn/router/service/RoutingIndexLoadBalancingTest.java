@@ -18,8 +18,8 @@ class RoutingIndexLoadBalancingTest {
     /**
      * Stellt sicher, dass 1000 Requests über 10 Edges annähernd gleichverteilt werden.
      *
-     * <p>Akzeptanzkriterium: Jede Edge darf maximal ±10% von der idealen Last (100 Requests)
-     * abweichen.</p>
+     * <p>Akzeptanzkriterium: Jede Edge darf maximal 10 von der idealen Last
+     * 100 Requests abweichen.</p>
      */
     @Test
     void shouldDistributeThousandRequestsWithinTenPercentTolerance() throws Exception {
@@ -32,8 +32,9 @@ class RoutingIndexLoadBalancingTest {
         }
 
         Map<String, Integer> distribution = new HashMap<>();
+
         for (int i = 0; i < 1000; i++) {
-            EdgeNode node = routingIndex.getNextNode(region);
+            EdgeNode node = routingIndex.getNextNodes(region, 1).get(0);
             distribution.merge(node.url(), 1, Integer::sum);
         }
 
@@ -43,11 +44,11 @@ class RoutingIndexLoadBalancingTest {
         for (Integer count : distribution.values()) {
             assertTrue(
                     Math.abs(count - idealPerNode) <= maxDeviation,
-                    () -> "Verteilung außerhalb der Toleranz. Erwartet: "
+                    "Verteilung außerhalb der Toleranz. Erwartet etwa "
                             + idealPerNode
-                            + " ±"
+                            + " +/- "
                             + maxDeviation
-                            + ", tatsächlich: "
+                            + ", tatsächlich "
                             + count);
         }
     }
