@@ -3,7 +3,7 @@ package de.htwsaar.minicdn.cli.service.system;
 import de.htwsaar.minicdn.cli.transport.TransportClient;
 import de.htwsaar.minicdn.cli.transport.TransportRequest;
 import de.htwsaar.minicdn.cli.transport.TransportResponse;
-import de.htwsaar.minicdn.cli.util.UriUtils;
+import de.htwsaar.minicdn.common.util.UriUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;

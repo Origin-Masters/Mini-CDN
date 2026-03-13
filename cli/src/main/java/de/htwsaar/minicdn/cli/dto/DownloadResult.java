@@ -20,4 +20,12 @@ public record DownloadResult(Integer statusCode, long bytesWritten, String error
     public static DownloadResult ioError(String message) {
         return new DownloadResult(null, 0L, message == null ? "io error" : message);
     }
+
+    public boolean is2xx() {
+        return statusCode != null && statusCode >= 200 && statusCode < 300;
+    }
+
+    public boolean is4xx() {
+        return statusCode != null && statusCode >= 400 && statusCode < 500;
+    }
 }

@@ -2,9 +2,10 @@ package de.htwsaar.minicdn.cli.service.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import de.htwsaar.minicdn.cli.dto.CallResult;
 import de.htwsaar.minicdn.cli.dto.DownloadResult;
-import de.htwsaar.minicdn.cli.dto.HttpCallResult;
 import de.htwsaar.minicdn.cli.transport.TransportClient;
 import de.htwsaar.minicdn.cli.transport.TransportRequest;
 import de.htwsaar.minicdn.cli.transport.TransportResponse;
@@ -20,15 +21,17 @@ import org.junit.jupiter.api.Test;
  */
 class AdminConfigServiceTest {
 
+    private static final String ADMIN_TOKEN = "secret-token";
+
     /**
      * Verifiziert den GET-Aufruf für TTL-Policies.
      */
     @Test
     void getEdgeTtlPolicies_shouldCallExpectedEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2));
+        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
 
-        HttpCallResult result = service.getEdgeTtlPolicies(URI.create("http://localhost:8081"));
+        CallResult result = service.getEdgeTtlPolicies(URI.create("http://localhost:8081"));
 
         assertEquals(200, result.statusCode());
         assertNotNull(transportClient.lastRequest);
@@ -44,9 +47,9 @@ class AdminConfigServiceTest {
     @Test
     void setEdgeTtlPolicy_shouldSendPutWithJsonPayload() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2));
+        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
 
-        HttpCallResult result = service.setEdgeTtlPolicy(URI.create("http://localhost:8081"), "videos/", 15_000L);
+        CallResult result = service.setEdgeTtlPolicy(URI.create("http://localhost:8081"), "videos/", 15_000L);
 
         assertEquals(200, result.statusCode());
         assertNotNull(transportClient.lastRequest);
@@ -63,9 +66,9 @@ class AdminConfigServiceTest {
     @Test
     void removeEdgeTtlPolicy_shouldCallDeleteWithEncodedQueryParam() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2));
+        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
 
-        HttpCallResult result = service.removeEdgeTtlPolicy(URI.create("http://localhost:8081"), "videos/2026");
+        CallResult result = service.removeEdgeTtlPolicy(URI.create("http://localhost:8081"), "videos/2026");
 
         assertEquals(200, result.statusCode());
         assertNotNull(transportClient.lastRequest);
@@ -76,17 +79,18 @@ class AdminConfigServiceTest {
     }
 
     /**
-     * Verifiziert Client-Validierung: ohne Prefix wird kein Transport-Aufruf erzeugt.
+     * Verifiziert Client-Validierung: ohne Prefix wird vor dem Transport-Aufruf abgebrochen.
      */
     @Test
     void setEdgeTtlPolicy_shouldRejectBlankPrefixBeforeSend() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2));
+        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
 
-        HttpCallResult result = service.setEdgeTtlPolicy(URI.create("http://localhost:8081"), "   ", 5_000L);
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.setEdgeTtlPolicy(URI.create("http://localhost:8081"), "   ", 5_000L));
 
-        assertEquals(400, result.statusCode());
-        assertEquals("prefix must not be blank", result.error());
+        assertEquals("prefix must not be blank", ex.getMessage());
         assertEquals(0, transportClient.sendCalls);
     }
 
