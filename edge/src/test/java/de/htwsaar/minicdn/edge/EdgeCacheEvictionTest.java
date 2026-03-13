@@ -2,9 +2,9 @@ package de.htwsaar.minicdn.edge;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import de.htwsaar.minicdn.edge.cache.CachedFile;
-import de.htwsaar.minicdn.edge.cache.LfuCacheStore;
-import de.htwsaar.minicdn.edge.cache.LruCacheStore;
+import de.htwsaar.minicdn.edge.infrastructure.cache.CachedFile;
+import de.htwsaar.minicdn.edge.infrastructure.cache.LfuCacheStore;
+import de.htwsaar.minicdn.edge.infrastructure.cache.LruCacheStore;
 import org.junit.jupiter.api.Test;
 
 class EdgeCacheEvictionTest {

@@ -3,10 +3,13 @@ package de.htwsaar.minicdn.edge.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import de.htwsaar.minicdn.edge.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
+import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+
+import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeRuntimeStateStore;
 import org.junit.jupiter.api.Test;
 
 /**
