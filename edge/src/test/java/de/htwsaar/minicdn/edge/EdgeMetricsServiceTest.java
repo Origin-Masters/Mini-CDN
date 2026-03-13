@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+
+import de.htwsaar.minicdn.edge.application.metrics.EdgeMetricsService;
 import org.junit.jupiter.api.Test;
 
 /** Tests für die Edge-Metriken (Hits/Misses/Requests pro Zeitfenster und Downloadzahlen je Datei). */
