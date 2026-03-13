@@ -77,6 +77,53 @@ public final class AdminConfigService {
     }
 
     /**
+     * Liest den aktuellen Origin-Cluster-Zustand über den Router.
+     *
+     * @param routerBaseUrl Basis-URL des Routers
+     * @param checkHealth wenn true, werden Health-Checks je Origin ausgeführt
+     * @return normiertes HTTP-Ergebnis
+     */
+    public CallResult getOriginCluster(URI routerBaseUrl, boolean checkHealth) {
+        URI url = base(routerBaseUrl).resolve("api/cdn/admin/origin/cluster?checkHealth=" + checkHealth);
+        return send(TransportRequest.get(url, requestTimeout, adminHeaders()));
+    }
+
+    /**
+     * Registriert einen neuen Origin-Hot-Spare über den Router.
+     */
+    public CallResult addOriginSpare(URI routerBaseUrl, URI spareBaseUrl) {
+        String url = UriUtils.urlEncode(requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
+        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/spares?url=" + url);
+        return send(TransportRequest.postJson(target, requestTimeout, adminJsonHeaders(), "{}"));
+    }
+
+    /**
+     * Entfernt einen Origin-Hot-Spare über den Router.
+     */
+    public CallResult removeOriginSpare(URI routerBaseUrl, URI spareBaseUrl) {
+        String url = UriUtils.urlEncode(requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
+        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/spares?url=" + url);
+        return send(TransportRequest.delete(target, requestTimeout, adminHeaders()));
+    }
+
+    /**
+     * Befördert einen registrierten Hot-Spare zum aktiven Origin.
+     */
+    public CallResult promoteOriginSpare(URI routerBaseUrl, URI spareBaseUrl) {
+        String url = UriUtils.urlEncode(requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
+        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/promote?url=" + url);
+        return send(TransportRequest.postJson(target, requestTimeout, adminJsonHeaders(), "{}"));
+    }
+
+    /**
+     * Führt einen sofortigen Failover-Check des aktiven Origins aus.
+     */
+    public CallResult checkOriginFailover(URI routerBaseUrl) {
+        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/failover/check");
+        return send(TransportRequest.postJson(target, requestTimeout, adminJsonHeaders(), "{}"));
+    }
+
+    /**
      * Liest die aktuelle Laufzeitkonfiguration des Edge-Servers.
      *
      * @param edgeBaseUrl Basis-URL des Edge-Servers

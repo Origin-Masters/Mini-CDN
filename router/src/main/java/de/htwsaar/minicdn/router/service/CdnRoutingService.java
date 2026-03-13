@@ -26,6 +26,7 @@ public class CdnRoutingService {
     private final RouterStatsService routerStatsService;
     private final EdgeGateway edgeGateway;
     private final FileRouteLocationResolver fileRouteLocationResolver;
+    private final OriginClusterService originClusterService;
     private final long ackTimeoutMs;
     private final int maxRetries;
     private final long retryIntervalMs;
@@ -46,6 +47,7 @@ public class CdnRoutingService {
             RouterStatsService routerStatsService,
             EdgeGateway edgeGateway,
             FileRouteLocationResolver fileRouteLocationResolver,
+            OriginClusterService originClusterService,
             @Value("${cdn.delivery.ack-timeout-ms:500}") long ackTimeoutMs,
             @Value("${cdn.delivery.max-retries:3}") int maxRetries,
             @Value("${cdn.delivery.retry-interval-ms:100}") long retryIntervalMs) {
@@ -54,6 +56,7 @@ public class CdnRoutingService {
         this.routerStatsService = routerStatsService;
         this.edgeGateway = edgeGateway;
         this.fileRouteLocationResolver = fileRouteLocationResolver;
+        this.originClusterService = originClusterService;
         this.ackTimeoutMs = ackTimeoutMs;
         this.maxRetries = maxRetries;
         this.retryIntervalMs = retryIntervalMs;
@@ -114,7 +117,11 @@ public class CdnRoutingService {
      */
     private RouteFileResult routeToOrigin(String path, int attempts) {
         try {
-            URI originLocation = fileRouteLocationResolver.resolveOriginFileLocation(path);
+            String activeOrigin = originClusterService.resolveActiveOrigin();
+            if (activeOrigin == null || activeOrigin.isBlank()) {
+                throw new IllegalStateException("No active origin configured");
+            }
+            URI originLocation = fileRouteLocationResolver.resolveOriginFileLocation(activeOrigin, path);
             return new RouteFileResult(
                     RouteStatus.REDIRECT,
                     originLocation,

@@ -106,6 +106,11 @@ class EdgeHealthCheckerTest {
         }
 
         @Override
+        public boolean updateOriginBaseUrl(EdgeNode node, String originBaseUrl, Duration timeout) {
+            return true;
+        }
+
+        @Override
         public boolean isReady(URI baseUrl, Duration timeout) {
             throw new UnsupportedOperationException("Nicht Teil dieses Tests");
         }

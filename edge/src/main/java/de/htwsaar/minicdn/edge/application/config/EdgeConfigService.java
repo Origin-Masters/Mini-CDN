@@ -1,7 +1,6 @@
 package de.htwsaar.minicdn.edge.application.config;
 
 import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
-
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -50,15 +49,21 @@ public class EdgeConfigService {
      * @param defaultTtlMs        neue Standard-TTL oder {@code null}
      * @param maxEntries          neues Eintrags-Limit oder {@code null}
      * @param replacementStrategy neue Strategie oder {@code null}
+     * @param originBaseUrl       neue Origin-Basis-URL oder {@code null}
      * @return aktualisierte Konfiguration
      */
     public EdgeRuntimeConfig patch(
-            String region, Long defaultTtlMs, Integer maxEntries, ReplacementStrategy replacementStrategy) {
+            String region,
+            Long defaultTtlMs,
+            Integer maxEntries,
+            ReplacementStrategy replacementStrategy,
+            String originBaseUrl) {
 
         return ref.updateAndGet(cur -> new EdgeRuntimeConfig(
                 region != null ? region.trim() : cur.region(),
                 defaultTtlMs != null ? Math.max(0, defaultTtlMs) : cur.defaultTtlMs(),
                 maxEntries != null ? Math.max(0, maxEntries) : cur.maxEntries(),
-                replacementStrategy != null ? replacementStrategy : cur.replacementStrategy()));
+                replacementStrategy != null ? replacementStrategy : cur.replacementStrategy(),
+                originBaseUrl != null ? originBaseUrl.trim() : cur.originBaseUrl()));
     }
 }

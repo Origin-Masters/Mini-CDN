@@ -1,9 +1,9 @@
 package de.htwsaar.minicdn.edge.bootstrap;
 
 import de.htwsaar.minicdn.edge.application.config.EdgeConfigService;
-import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeRuntimeStateStore;
 import de.htwsaar.minicdn.edge.application.config.TtlPolicyService;
 import de.htwsaar.minicdn.edge.application.file.EdgeFileService;
+import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeRuntimeStateStore;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
 import org.slf4j.Logger;

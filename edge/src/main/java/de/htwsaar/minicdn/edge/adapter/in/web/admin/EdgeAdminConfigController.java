@@ -1,10 +1,10 @@
 package de.htwsaar.minicdn.edge.adapter.in.web.admin;
 
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
 import de.htwsaar.minicdn.edge.application.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
-import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeRuntimeStateStore;
 import de.htwsaar.minicdn.edge.application.config.TtlPolicyService;
+import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeRuntimeStateStore;
 import java.util.Map;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +70,8 @@ public class EdgeAdminConfigController {
                 dto.region() != null ? dto.region() : current.region(),
                 Math.max(0, dto.defaultTtlMs()),
                 Math.max(0, dto.maxEntries()),
-                strategy);
+                strategy,
+                dto.originBaseUrl() != null ? dto.originBaseUrl() : current.originBaseUrl());
         configService.update(next);
         persistRuntimeState();
         return ResponseEntity.ok(next);
@@ -87,8 +88,8 @@ public class EdgeAdminConfigController {
         if (dto == null) {
             return ResponseEntity.badRequest().build();
         }
-        EdgeRuntimeConfig updated =
-                configService.patch(dto.region(), dto.defaultTtlMs(), dto.maxEntries(), dto.replacementStrategy());
+        EdgeRuntimeConfig updated = configService.patch(
+                dto.region(), dto.defaultTtlMs(), dto.maxEntries(), dto.replacementStrategy(), dto.originBaseUrl());
         persistRuntimeState();
         return ResponseEntity.ok(updated);
     }
@@ -136,9 +137,14 @@ public class EdgeAdminConfigController {
      * @param defaultTtlMs        Standard-TTL in ms
      * @param maxEntries          maximale Cache-Einträge
      * @param replacementStrategy LRU oder LFU
+     * @param originBaseUrl       Basis-URL des Origins
      */
     public record ConfigDto(
-            String region, long defaultTtlMs, int maxEntries, ReplacementStrategy replacementStrategy) {}
+            String region,
+            long defaultTtlMs,
+            int maxEntries,
+            ReplacementStrategy replacementStrategy,
+            String originBaseUrl) {}
 
     /**
      * DTO für partielles Config-Update (alle Felder optional / nullable).
@@ -147,9 +153,14 @@ public class EdgeAdminConfigController {
      * @param defaultTtlMs        neue Standard-TTL oder {@code null}
      * @param maxEntries          neues Eintrags-Limit oder {@code null}
      * @param replacementStrategy neue Strategie oder {@code null}
+     * @param originBaseUrl       neue Origin-Basis-URL oder {@code null}
      */
     public record ConfigPatchDto(
-            String region, Long defaultTtlMs, Integer maxEntries, ReplacementStrategy replacementStrategy) {}
+            String region,
+            Long defaultTtlMs,
+            Integer maxEntries,
+            ReplacementStrategy replacementStrategy,
+            String originBaseUrl) {}
 
     /**
      * DTO für TTL-Policy.

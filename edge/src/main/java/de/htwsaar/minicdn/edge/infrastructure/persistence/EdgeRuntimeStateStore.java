@@ -49,6 +49,7 @@ public class EdgeRuntimeStateStore {
         props.setProperty("defaultTtlMs", String.valueOf(config.defaultTtlMs()));
         props.setProperty("maxEntries", String.valueOf(config.maxEntries()));
         props.setProperty("replacementStrategy", config.replacementStrategy().name());
+        props.setProperty("originBaseUrl", config.originBaseUrl());
 
         if (ttlPolicies != null) {
             ttlPolicies.forEach((k, v) -> {
@@ -77,7 +78,8 @@ public class EdgeRuntimeStateStore {
             if (props == null) return null;
             String region = props.getProperty("region");
             String repl = props.getProperty("replacementStrategy");
-            if (region == null || repl == null) {
+            String originBaseUrl = props.getProperty("originBaseUrl");
+            if (region == null || repl == null || originBaseUrl == null || originBaseUrl.isBlank()) {
                 return null;
             }
 
@@ -87,7 +89,8 @@ public class EdgeRuntimeStateStore {
                     region.trim(),
                     Math.max(0, ttl),
                     Math.max(0, max),
-                    ReplacementStrategy.valueOf(repl.trim().toUpperCase()));
+                    ReplacementStrategy.valueOf(repl.trim().toUpperCase()),
+                    originBaseUrl.trim());
 
             Map<String, Long> policies = new HashMap<>();
             for (String key : props.stringPropertyNames()) {

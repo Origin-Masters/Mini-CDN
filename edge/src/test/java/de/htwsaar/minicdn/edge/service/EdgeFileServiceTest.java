@@ -4,17 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import de.htwsaar.minicdn.common.util.Sha256Util;
-import de.htwsaar.minicdn.edge.application.file.EdgeFileService;
-import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeCacheStateStore;
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
 import de.htwsaar.minicdn.edge.application.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
 import de.htwsaar.minicdn.edge.application.config.TtlPolicyService;
+import de.htwsaar.minicdn.edge.application.file.EdgeFileService;
 import de.htwsaar.minicdn.edge.domain.model.CacheDecision;
 import de.htwsaar.minicdn.edge.domain.model.FilePayload;
-import de.htwsaar.minicdn.edge.domain.port.OriginClient;
 import de.htwsaar.minicdn.edge.domain.model.OriginContent;
 import de.htwsaar.minicdn.edge.domain.model.OriginMetadata;
+import de.htwsaar.minicdn.edge.domain.port.OriginClient;
+import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeCacheStateStore;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,8 +33,8 @@ class EdgeFileServiceTest {
         FakeOriginClient fakeOrigin = new FakeOriginClient(
                 new OriginContent(body, "text/plain", sha256), new OriginMetadata("text/plain", sha256));
 
-        EdgeConfigService configService =
-                new EdgeConfigService(new EdgeRuntimeConfig("eu-west", 60_000, 100, ReplacementStrategy.LRU));
+        EdgeConfigService configService = new EdgeConfigService(
+                new EdgeRuntimeConfig("eu-west", 60_000, 100, ReplacementStrategy.LRU, "http://localhost:8080"));
 
         EdgeCacheStateStore stateStore = new EdgeCacheStateStore(
                 Files.createTempFile("edge-cache-state-test", ".properties").toString());
@@ -80,8 +80,8 @@ class EdgeFileServiceTest {
         // this file survives both service instances
         // and persists the cache state across restart
 
-        EdgeConfigService configService =
-                new EdgeConfigService(new EdgeRuntimeConfig("eu-west", 60_000, 100, ReplacementStrategy.LRU));
+        EdgeConfigService configService = new EdgeConfigService(
+                new EdgeRuntimeConfig("eu-west", 60_000, 100, ReplacementStrategy.LRU, "http://localhost:8080"));
 
         FakeOriginClient firstOrigin = new FakeOriginClient(
                 new OriginContent(body, "text/plain", sha256), new OriginMetadata("text/plain", sha256));

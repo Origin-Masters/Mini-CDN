@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,13 +21,18 @@ import org.springframework.stereotype.Service;
 public class RouterAdminFileService {
 
     private final OriginAdminGateway originAdminGateway;
+    private final OriginClusterService originClusterService;
     private final RoutingIndex routingIndex;
     private final EdgeGateway edgeGateway;
 
     public RouterAdminFileService(
-            OriginAdminGateway originAdminGateway, RoutingIndex routingIndex, EdgeGateway edgeGateway) {
+            OriginAdminGateway originAdminGateway,
+            OriginClusterService originClusterService,
+            RoutingIndex routingIndex,
+            EdgeGateway edgeGateway) {
 
         this.originAdminGateway = originAdminGateway;
+        this.originClusterService = originClusterService;
         this.routingIndex = routingIndex;
         this.edgeGateway = edgeGateway;
     }
@@ -41,15 +47,35 @@ public class RouterAdminFileService {
      */
     public AdminFileResult uploadAndInvalidate(String path, byte[] body, String region) {
         try {
-            AdminFileResult uploadResult = originAdminGateway.uploadFile(path, body);
+            String activeOrigin = originClusterService.resolveActiveOrigin();
+            if (activeOrigin == null || activeOrigin.isBlank()) {
+                return AdminFileResult.error(503, "No active origin available");
+            }
+
+            AdminFileResult uploadResult = originAdminGateway.uploadFile(activeOrigin, path, body);
             if (!uploadResult.success()) {
                 return uploadResult;
             }
 
+            ReplicationResult replication = replicateUpload(path, body);
+
             int invalidated = invalidateCaches(path, region);
 
             return AdminFileResult.success(
-                    201, Map.of("uploaded", true, "path", path, "size", body.length, "edgesInvalidated", invalidated));
+                    201,
+                    Map.of(
+                            "uploaded",
+                            true,
+                            "path",
+                            path,
+                            "size",
+                            body.length,
+                            "activeOrigin",
+                            activeOrigin,
+                            "spareReplication",
+                            replication.toMap(),
+                            "edgesInvalidated",
+                            invalidated));
         } catch (Exception e) {
             return AdminFileResult.error(500, "Upload failed: " + e.getMessage());
         }
@@ -64,10 +90,17 @@ public class RouterAdminFileService {
      */
     public AdminFileResult deleteAndInvalidate(String path, String region) {
         try {
-            AdminFileResult deleteResult = originAdminGateway.deleteFile(path);
+            String activeOrigin = originClusterService.resolveActiveOrigin();
+            if (activeOrigin == null || activeOrigin.isBlank()) {
+                return AdminFileResult.error(503, "No active origin available");
+            }
+
+            AdminFileResult deleteResult = originAdminGateway.deleteFile(activeOrigin, path);
             if (!deleteResult.success()) {
                 return deleteResult;
             }
+
+            ReplicationResult replication = replicateDelete(path);
 
             int invalidated = invalidateCaches(path, region);
 
@@ -76,6 +109,8 @@ public class RouterAdminFileService {
                     Map.of(
                             "deleted", true,
                             "path", path,
+                            "activeOrigin", activeOrigin,
+                            "spareReplication", replication.toMap(),
                             "edgesInvalidated", invalidated));
         } catch (Exception e) {
             return AdminFileResult.error(500, "Delete failed: " + e.getMessage());
@@ -90,7 +125,11 @@ public class RouterAdminFileService {
      * @return Ergebnis der Origin-Abfrage
      */
     public AdminFileResult listOriginFiles(int page, int size) {
-        return originAdminGateway.listFiles(page, size);
+        String activeOrigin = originClusterService.resolveActiveOrigin();
+        if (activeOrigin == null || activeOrigin.isBlank()) {
+            return AdminFileResult.error(503, "No active origin available");
+        }
+        return originAdminGateway.listFiles(activeOrigin, page, size);
     }
 
     /**
@@ -146,6 +185,53 @@ public class RouterAdminFileService {
      * Liefert Metadaten zu einer Datei im Origin.
      */
     public AdminFileResult showOriginFile(String path) {
-        return originAdminGateway.getFileMetadata(path);
+        String activeOrigin = originClusterService.resolveActiveOrigin();
+        if (activeOrigin == null || activeOrigin.isBlank()) {
+            return AdminFileResult.error(503, "No active origin available");
+        }
+        return originAdminGateway.getFileMetadata(activeOrigin, path);
+    }
+
+    private ReplicationResult replicateUpload(String path, byte[] body) {
+        return replicateToSpares(spare -> originAdminGateway.uploadFile(spare, path, body));
+    }
+
+    private ReplicationResult replicateDelete(String path) {
+        return replicateToSpares(spare -> originAdminGateway.deleteFile(spare, path));
+    }
+
+    private ReplicationResult replicateToSpares(java.util.function.Function<String, AdminFileResult> operation) {
+        List<String> spares = originClusterService.spareOriginsSnapshot();
+        if (spares.isEmpty()) {
+            return new ReplicationResult(0, 0, 0);
+        }
+
+        AtomicInteger success = new AtomicInteger();
+        AtomicInteger failed = new AtomicInteger();
+
+        List<CompletableFuture<Void>> futures = spares.stream()
+                .map(spare -> CompletableFuture.runAsync(() -> {
+                            AdminFileResult result = operation.apply(spare);
+                            if (result.success()) {
+                                success.incrementAndGet();
+                            } else {
+                                failed.incrementAndGet();
+                            }
+                        })
+                        .orTimeout(5, TimeUnit.SECONDS)
+                        .exceptionally(ex -> {
+                            failed.incrementAndGet();
+                            return null;
+                        }))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        return new ReplicationResult(spares.size(), success.get(), failed.get());
+    }
+
+    private record ReplicationResult(int totalSpares, int replicated, int failed) {
+        private Map<String, Object> toMap() {
+            return Map.of("totalSpares", totalSpares, "replicated", replicated, "failed", failed);
+        }
     }
 }

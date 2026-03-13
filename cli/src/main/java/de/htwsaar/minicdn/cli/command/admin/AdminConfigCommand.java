@@ -2,6 +2,7 @@ package de.htwsaar.minicdn.cli.command.admin;
 
 import static de.htwsaar.minicdn.common.util.DefaultsURL.EDGE_URL;
 import static de.htwsaar.minicdn.common.util.DefaultsURL.ORIGIN_URL;
+import static de.htwsaar.minicdn.common.util.DefaultsURL.ROUTER_URL;
 import static de.htwsaar.minicdn.common.util.ExitCodes.REJECTED;
 import static de.htwsaar.minicdn.common.util.ExitCodes.REQUEST_FAILED;
 import static de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS;
@@ -36,6 +37,8 @@ import picocli.CommandLine.ParentCommand;
         footer = {
             "  admin config origin show",
             "  admin config origin set --max-upload-bytes 1048576",
+            "  admin config origin spare show",
+            "  admin config origin spare add --url http://localhost:8084",
             "  admin config origin show --origin http://anderer-origin:8080",
             "  admin config edge show",
             "  admin config edge set --default-ttl-ms 120000 --max-entries 200",
@@ -172,10 +175,12 @@ public final class AdminConfigCommand implements Runnable {
             footer = {
                 "  admin config origin show",
                 "  admin config origin set --log-level DEBUG",
+                "  admin config origin spare show",
+                "  admin config origin spare failover-check",
                 "  admin config origin set --max-upload-bytes 5242880",
                 "  admin config origin show --origin http://anderer-origin:8080"
             },
-            subcommands = {OriginShowCommand.class, OriginSetCommand.class})
+            subcommands = {OriginShowCommand.class, OriginSetCommand.class, OriginSpareCommand.class})
     public static final class OriginConfigCommand implements Runnable {
 
         @ParentCommand
@@ -269,6 +274,148 @@ public final class AdminConfigCommand implements Runnable {
         public Integer call() {
             AdminConfigCommand root = parent.root();
             return root.printResult(root.service().patchOriginConfig(origin, maxUploadBytes, logLevel));
+        }
+    }
+
+    /**
+     * Gruppiert Befehle zur Verwaltung von Origin-Hot-Spares über den Router.
+     */
+    @Command(
+            name = "spare",
+            description = "Manage Origin hot spares via router admin API.",
+            mixinStandardHelpOptions = true,
+            subcommands = {
+                OriginSpareShowCommand.class,
+                OriginSpareAddCommand.class,
+                OriginSpareRemoveCommand.class,
+                OriginSparePromoteCommand.class,
+                OriginSpareFailoverCheckCommand.class
+            })
+    public static final class OriginSpareCommand implements Runnable {
+
+        @ParentCommand
+        private OriginConfigCommand parent;
+
+        AdminConfigCommand root() {
+            return parent.root();
+        }
+
+        @Override
+        public void run() {
+            root().printUsage(this);
+        }
+    }
+
+    @Command(
+            name = "show",
+            description = "Show active Origin and registered hot spares.",
+            mixinStandardHelpOptions = true)
+    public static final class OriginSpareShowCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private OriginSpareCommand parent;
+
+        @Option(
+                names = "--router",
+                defaultValue = ROUTER_URL,
+                description = "Router base URL. Standard: ${DEFAULT-VALUE}")
+        private URI router;
+
+        @Option(names = "--check-health", defaultValue = "false", description = "Include live health status.")
+        private boolean checkHealth;
+
+        @Override
+        public Integer call() {
+            AdminConfigCommand root = parent.root();
+            return root.printResult(root.service().getOriginCluster(router, checkHealth));
+        }
+    }
+
+    @Command(name = "add", description = "Register a new Origin hot spare.", mixinStandardHelpOptions = true)
+    public static final class OriginSpareAddCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private OriginSpareCommand parent;
+
+        @Option(
+                names = "--router",
+                defaultValue = ROUTER_URL,
+                description = "Router base URL. Standard: ${DEFAULT-VALUE}")
+        private URI router;
+
+        @Option(names = "--url", required = true, description = "Spare Origin base URL. Example: http://localhost:8084")
+        private URI url;
+
+        @Override
+        public Integer call() {
+            AdminConfigCommand root = parent.root();
+            return root.printResult(root.service().addOriginSpare(router, url));
+        }
+    }
+
+    @Command(name = "remove", description = "Remove a registered Origin hot spare.", mixinStandardHelpOptions = true)
+    public static final class OriginSpareRemoveCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private OriginSpareCommand parent;
+
+        @Option(
+                names = "--router",
+                defaultValue = ROUTER_URL,
+                description = "Router base URL. Standard: ${DEFAULT-VALUE}")
+        private URI router;
+
+        @Option(names = "--url", required = true, description = "Spare Origin base URL. Example: http://localhost:8084")
+        private URI url;
+
+        @Override
+        public Integer call() {
+            AdminConfigCommand root = parent.root();
+            return root.printResult(root.service().removeOriginSpare(router, url));
+        }
+    }
+
+    @Command(name = "promote", description = "Promote a hot spare to active Origin.", mixinStandardHelpOptions = true)
+    public static final class OriginSparePromoteCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private OriginSpareCommand parent;
+
+        @Option(
+                names = "--router",
+                defaultValue = ROUTER_URL,
+                description = "Router base URL. Standard: ${DEFAULT-VALUE}")
+        private URI router;
+
+        @Option(names = "--url", required = true, description = "Spare Origin base URL to promote.")
+        private URI url;
+
+        @Override
+        public Integer call() {
+            AdminConfigCommand root = parent.root();
+            return root.printResult(root.service().promoteOriginSpare(router, url));
+        }
+    }
+
+    @Command(
+            name = "failover-check",
+            description = "Force an immediate active-Origin failover check.",
+            mixinStandardHelpOptions = true)
+    public static final class OriginSpareFailoverCheckCommand implements Callable<Integer> {
+
+        @ParentCommand
+        private OriginSpareCommand parent;
+
+        @Option(
+                names = "--router",
+                defaultValue = ROUTER_URL,
+                description = "Router base URL. Standard: ${DEFAULT-VALUE}")
+        private URI router;
+
+        @Override
+        public Integer call() {
+            AdminConfigCommand root = parent.root();
+            return root.printResult(root.service().checkOriginFailover(router));
         }
     }
 

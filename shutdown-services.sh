@@ -2,13 +2,27 @@
 
 echo -e "Stopping [MINI-CDN] servers...\n"
 
-# determine the PIDs to kill
-ORIGIN_PID=$(lsof -t -i:8080 2>/dev/null)
-EDGE_PID=$(lsof -t -i:8081 2>/dev/null)
-ROUTER_PID=$(lsof -t -i:8082 2>/dev/null)
+# Resolve only server listeners for the port (avoid killing clients connected to that port).
+pid_for_listen_port() {
+	local port="$1"
+	lsof -nP -t -iTCP:"$port" -sTCP:LISTEN 2>/dev/null
+}
 
-[ ! -z "$ORIGIN_PID" ] && kill $ORIGIN_PID && echo -e "[ORIGIN] stopped (PID: $ORIGIN_PID) \n" || echo -e "[ORIGIN] not running \n"
-[ ! -z "$EDGE_PID" ] && kill $EDGE_PID && echo -e "[EDGE] stopped (PID: $EDGE_PID) \n" || echo -e "[EDGE] not running \n"
-[ ! -z "$ROUTER_PID" ] && kill $ROUTER_PID && echo -e "[ROUTER] stopped (PID: $ROUTER_PID) \n" || echo -e "[ROUTER] not running \n"
+stop_service() {
+	local name="$1"
+	local port="$2"
+	local pid
+	pid="$(pid_for_listen_port "$port")"
+
+	if [ -n "$pid" ]; then
+		kill $pid && echo -e "[$name] stopped (PID: $pid, port: $port) \n" || echo -e "[$name] stop failed (PID: $pid) \n"
+	else
+		echo -e "[$name] not running (port: $port) \n"
+	fi
+}
+
+stop_service "ORIGIN" 8080
+stop_service "EDGE" 8081
+stop_service "ROUTER" 8082
 
 echo "Done!"

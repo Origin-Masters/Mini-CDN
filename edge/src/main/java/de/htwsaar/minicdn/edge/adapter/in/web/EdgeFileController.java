@@ -1,11 +1,12 @@
 package de.htwsaar.minicdn.edge.adapter.in.web;
 
+import de.htwsaar.minicdn.common.util.PathUtils;
+import de.htwsaar.minicdn.edge.application.file.EdgeFileService;
 import de.htwsaar.minicdn.edge.application.metrics.EdgeMetricsService;
-import de.htwsaar.minicdn.edge.domain.model.CacheDecision;
-import de.htwsaar.minicdn.edge.domain.model.FilePayload;
 import de.htwsaar.minicdn.edge.domain.exception.IntegrityCheckFailedException;
 import de.htwsaar.minicdn.edge.domain.exception.OriginAccessException;
-import de.htwsaar.minicdn.edge.application.file.EdgeFileService;
+import de.htwsaar.minicdn.edge.domain.model.CacheDecision;
+import de.htwsaar.minicdn.edge.domain.model.FilePayload;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -46,11 +47,12 @@ public class EdgeFileController {
      * @param path angeforderter Dateipfad
      * @return Datei-Bytes mit Content-Type, SHA256 und X-Cache-Header
      */
-    @GetMapping("/files/{path:.+}")
+    @GetMapping("/files/{*path}")
     public ResponseEntity<byte[]> getFile(@PathVariable("path") String path) {
         try {
-            FilePayload payload = fileService.getFile(path);
-            recordDecision(path, payload.cache());
+            String cleanPath = PathUtils.normalizeRelativePath(path);
+            FilePayload payload = fileService.getFile(cleanPath);
+            recordDecision(cleanPath, payload.cache());
             return ResponseEntity.ok().headers(buildHeaders(payload)).body(payload.body());
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
@@ -67,10 +69,11 @@ public class EdgeFileController {
      * @param path angeforderter Dateipfad
      * @return HTTP-Header der Datei
      */
-    @RequestMapping(value = "/files/{path:.+}", method = RequestMethod.HEAD)
+    @RequestMapping(value = "/files/{*path}", method = RequestMethod.HEAD)
     public ResponseEntity<Void> headFile(@PathVariable("path") String path) {
         try {
-            FilePayload payload = fileService.headFile(path);
+            String cleanPath = PathUtils.normalizeRelativePath(path);
+            FilePayload payload = fileService.headFile(cleanPath);
             recordDecision(null, payload.cache());
             return ResponseEntity.ok().headers(buildHeaders(payload)).build();
         } catch (IllegalArgumentException ex) {
