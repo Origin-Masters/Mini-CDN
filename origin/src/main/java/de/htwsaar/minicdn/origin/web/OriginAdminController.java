@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.origin.web;
 
+import de.htwsaar.minicdn.common.util.PathUtils;
 import de.htwsaar.minicdn.origin.config.OriginRuntimeConfigService;
 import de.htwsaar.minicdn.origin.domain.OriginFiles;
 import de.htwsaar.minicdn.origin.domain.OriginPutResult;
@@ -22,23 +23,25 @@ public class OriginAdminController {
         this.runtimeConfigService = runtimeConfigService;
     }
 
-    @PutMapping("/files/{path:.+}")
+    @PutMapping("/files/{*path}")
     public ResponseEntity<Void> put(@PathVariable String path, @RequestBody byte[] body) {
+        String cleanPath = PathUtils.normalizeRelativePath(path);
         long maxUploadBytes = runtimeConfigService.current().maxUploadBytes();
         if (maxUploadBytes > 0 && body != null && body.length > maxUploadBytes) {
             return ResponseEntity.status(413).build();
         }
 
-        OriginPutResult r = origin.put(path, body);
+        OriginPutResult r = origin.put(cleanPath, body);
         return r.created()
-                ? ResponseEntity.created(URI.create("/api/origin/files/" + path))
+                ? ResponseEntity.created(URI.create("/api/origin/files/" + cleanPath))
                         .build()
                 : ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/files/{path:.+}")
+    @DeleteMapping("/files/{*path}")
     public ResponseEntity<Void> delete(@PathVariable String path) {
-        return origin.delete(path)
+        String cleanPath = PathUtils.normalizeRelativePath(path);
+        return origin.delete(cleanPath)
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.notFound().build();
     }

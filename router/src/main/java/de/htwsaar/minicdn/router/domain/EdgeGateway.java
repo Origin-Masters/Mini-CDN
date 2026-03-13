@@ -69,6 +69,16 @@ public interface EdgeGateway {
     CompletableFuture<Boolean> clearCache(EdgeNode node);
 
     /**
+     * Aktualisiert die Origin-Basis-URL einer Edge zur Laufzeit über deren Admin-Config-API.
+     *
+     * @param node Edge-Knoten
+     * @param originBaseUrl neue Origin-Basis-URL
+     * @param timeout Timeout für den Request
+     * @return {@code true}, wenn die Edge die Änderung akzeptiert hat
+     */
+    boolean updateOriginBaseUrl(EdgeNode node, String originBaseUrl, Duration timeout);
+
+    /**
      * Prüft, ob eine Edge-Instanz über ihren Ready-Endpunkt betriebsbereit ist.
      *
      * @param baseUrl Basis-URL der Edge

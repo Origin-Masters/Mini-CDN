@@ -7,6 +7,7 @@ import de.htwsaar.minicdn.router.adapter.RouterRoutingStateStore;
 import de.htwsaar.minicdn.router.domain.EdgeGateway;
 import de.htwsaar.minicdn.router.domain.EdgeNodeStats;
 import de.htwsaar.minicdn.router.domain.FileRouteLocationResolver;
+import de.htwsaar.minicdn.router.domain.OriginAdminGateway;
 import de.htwsaar.minicdn.router.domain.RouteFileResult;
 import de.htwsaar.minicdn.router.domain.RouteStatus;
 import de.htwsaar.minicdn.router.dto.EdgeNode;
@@ -45,9 +46,19 @@ class CdnRoutingServiceLoadBalancingAcceptanceTest {
         RouterStatsService statsService = new RouterStatsService(clock);
         EdgeGateway edgeGateway = new AlwaysHealthyEdgeGateway();
         FileRouteLocationResolver resolver = new TestFileRouteLocationResolver();
+        OriginClusterService originClusterService = new OriginClusterService(
+                new de.htwsaar.minicdn.router.adapter.RouterOriginClusterStateStore(tmp.toString() + ".origin"),
+                new AlwaysHealthyOriginGateway(),
+                routingIndex,
+                edgeGateway,
+                "http://origin",
+                "",
+                500,
+                500);
+        originClusterService.recoverOnStartup();
 
-        CdnRoutingService routingService =
-                new CdnRoutingService(routingIndex, statsService, edgeGateway, resolver, 100, 1, 0);
+        CdnRoutingService routingService = new CdnRoutingService(
+                routingIndex, statsService, edgeGateway, resolver, originClusterService, 100, 1, 0);
 
         RouterAdminService adminService = new RouterAdminService(routingIndex, statsService, edgeGateway);
 
@@ -147,6 +158,11 @@ class CdnRoutingServiceLoadBalancingAcceptanceTest {
         }
 
         @Override
+        public boolean updateOriginBaseUrl(EdgeNode node, String originBaseUrl, Duration timeout) {
+            return true;
+        }
+
+        @Override
         public boolean isReady(URI baseUrl, Duration timeout) {
             return true;
         }
@@ -164,9 +180,39 @@ class CdnRoutingServiceLoadBalancingAcceptanceTest {
         }
 
         @Override
-        public URI resolveOriginFileLocation(String path) {
+        public URI resolveOriginFileLocation(String originBaseUrl, String path) {
             String cleanPath = path.startsWith("/") ? path.substring(1) : path;
-            return URI.create("http://origin/api/origin/files/" + cleanPath);
+            return URI.create(
+                    (originBaseUrl == null ? "http://origin/" : originBaseUrl) + "api/origin/files/" + cleanPath);
+        }
+    }
+
+    private static final class AlwaysHealthyOriginGateway implements OriginAdminGateway {
+
+        @Override
+        public de.htwsaar.minicdn.router.dto.AdminFileResult uploadFile(
+                String originBaseUrl, String path, byte[] body) {
+            return de.htwsaar.minicdn.router.dto.AdminFileResult.success(201, null);
+        }
+
+        @Override
+        public de.htwsaar.minicdn.router.dto.AdminFileResult deleteFile(String originBaseUrl, String path) {
+            return de.htwsaar.minicdn.router.dto.AdminFileResult.success(204, null);
+        }
+
+        @Override
+        public de.htwsaar.minicdn.router.dto.AdminFileResult listFiles(String originBaseUrl, int page, int size) {
+            return de.htwsaar.minicdn.router.dto.AdminFileResult.success(200, "[]");
+        }
+
+        @Override
+        public de.htwsaar.minicdn.router.dto.AdminFileResult getFileMetadata(String originBaseUrl, String path) {
+            return de.htwsaar.minicdn.router.dto.AdminFileResult.success(200, "{}");
+        }
+
+        @Override
+        public boolean isHealthy(String originBaseUrl, Duration timeout) {
+            return true;
         }
     }
 }

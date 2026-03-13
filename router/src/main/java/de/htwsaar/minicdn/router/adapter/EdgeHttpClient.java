@@ -14,6 +14,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.MDC;
@@ -179,6 +180,32 @@ public class EdgeHttpClient implements EdgeGateway {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() >= 200 && response.statusCode() < 300;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateOriginBaseUrl(EdgeNode node, String originBaseUrl, Duration timeout) {
+        if (originBaseUrl == null || originBaseUrl.isBlank()) {
+            return false;
+        }
+
+        try {
+            URI configUri = resolve(node, "api/edge/admin/config");
+            String payload = objectMapper.writeValueAsString(Map.of("originBaseUrl", originBaseUrl));
+
+            Map<String, String> headers = new LinkedHashMap<>();
+            headers.put("Content-Type", "application/json");
+
+            HttpRequest.Builder builder = withCurrentTraceId(HttpRequest.newBuilder()
+                    .uri(configUri)
+                    .timeout(timeout == null ? ADMIN_OPERATION_TIMEOUT : timeout)
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(payload)));
+
+            headers.forEach(builder::header);
+            HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
             return response.statusCode() >= 200 && response.statusCode() < 300;
         } catch (Exception ex) {
             return false;

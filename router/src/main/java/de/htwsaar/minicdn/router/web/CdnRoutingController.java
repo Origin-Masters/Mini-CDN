@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.router.web;
 import de.htwsaar.minicdn.router.domain.RouteFileResult;
 import de.htwsaar.minicdn.router.domain.RouteStatus;
 import de.htwsaar.minicdn.router.service.CdnRoutingService;
+import de.htwsaar.minicdn.router.util.UrlUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,7 @@ public class CdnRoutingController {
      * @param clientIdHeader Client-ID aus Request-Headern
      * @return Redirect-Response oder Fehlermeldung
      */
-    @GetMapping("/files/{path:.+}")
+    @GetMapping("/files/{*path}")
     public ResponseEntity<?> routeToEdge(
             @PathVariable("path") String path,
             @RequestParam(value = "region", required = false) String regionQuery,
@@ -42,10 +43,11 @@ public class CdnRoutingController {
             @RequestHeader(value = "X-Client-Region", required = false) String regionHeader,
             @RequestHeader(value = "X-Client-Id", required = false) String clientIdHeader) {
 
+        String cleanPath = UrlUtil.stripLeadingSlash(path == null ? "" : path);
         String region = firstNonBlank(regionQuery, regionHeader);
         String clientId = firstNonBlank(clientIdQuery, clientIdHeader);
 
-        RouteFileResult result = routingService.route(path, region, clientId);
+        RouteFileResult result = routingService.route(cleanPath, region, clientId);
 
         if (result.status() == RouteStatus.BAD_REQUEST) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.errorMessage());

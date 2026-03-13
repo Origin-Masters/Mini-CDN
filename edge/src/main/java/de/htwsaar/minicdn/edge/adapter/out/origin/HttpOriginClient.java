@@ -1,11 +1,13 @@
 package de.htwsaar.minicdn.edge.adapter.out.origin;
 
+import de.htwsaar.minicdn.edge.application.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.domain.exception.OriginAccessException;
-import de.htwsaar.minicdn.edge.domain.port.OriginClient;
 import de.htwsaar.minicdn.edge.domain.model.OriginContent;
 import de.htwsaar.minicdn.edge.domain.model.OriginMetadata;
+import de.htwsaar.minicdn.edge.domain.port.OriginClient;
 import java.net.URI;
 import java.util.Objects;
+import java.util.function.Supplier;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -26,11 +28,13 @@ public final class HttpOriginClient implements OriginClient {
     private static final String SHA256_HEADER = "X-Content-SHA256";
 
     private final RestTemplate restTemplate;
-    private final URI originBaseUri;
+    private final Supplier<URI> originBaseUriSupplier;
 
-    public HttpOriginClient(RestTemplate restTemplate, URI originBaseUri) {
+    public HttpOriginClient(RestTemplate restTemplate, EdgeConfigService edgeConfigService) {
         this.restTemplate = Objects.requireNonNull(restTemplate, "restTemplate must not be null");
-        this.originBaseUri = Objects.requireNonNull(originBaseUri, "originBaseUri must not be null");
+        Objects.requireNonNull(edgeConfigService, "edgeConfigService must not be null");
+        this.originBaseUriSupplier = () ->
+                URI.create(Objects.requireNonNull(edgeConfigService.current().originBaseUrl(), "originBaseUrl"));
     }
 
     @Override
@@ -96,6 +100,6 @@ public final class HttpOriginClient implements OriginClient {
     }
 
     private URI fileUri(String path) {
-        return originBaseUri.resolve("/api/origin/files/" + path);
+        return originBaseUriSupplier.get().resolve("/api/origin/files/" + path);
     }
 }

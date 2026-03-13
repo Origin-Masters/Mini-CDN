@@ -27,5 +27,16 @@ public interface FileRouteLocationResolver {
      * @param path relativer Dateipfad
      * @return vollständige Ziel-URI
      */
-    URI resolveOriginFileLocation(String path);
+    default URI resolveOriginFileLocation(String path) {
+        return resolveOriginFileLocation(null, path);
+    }
+
+    /**
+     * Ermittelt das Auslieferungsziel für eine Datei über einen konkreten Origin-Knoten.
+     *
+     * @param originBaseUrl Basis-URL des aktiven Origin-Knotens (optional)
+     * @param path relativer Dateipfad
+     * @return vollständige Ziel-URI
+     */
+    URI resolveOriginFileLocation(String originBaseUrl, String path);
 }

@@ -94,6 +94,68 @@ class AdminConfigServiceTest {
         assertEquals(0, transportClient.sendCalls);
     }
 
+    @Test
+    void getOriginCluster_shouldCallRouterEndpointWithHealthFlag() {
+        RecordingTransportClient transportClient = new RecordingTransportClient();
+        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+
+        CallResult result = service.getOriginCluster(URI.create("http://localhost:8082"), true);
+
+        assertEquals(200, result.statusCode());
+        assertNotNull(transportClient.lastRequest);
+        assertEquals("GET", transportClient.lastRequest.method());
+        assertEquals(
+                "http://localhost:8082/api/cdn/admin/origin/cluster?checkHealth=true",
+                transportClient.lastRequest.uri().toString());
+    }
+
+    @Test
+    void addOriginSpare_shouldCallExpectedEndpoint() {
+        RecordingTransportClient transportClient = new RecordingTransportClient();
+        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+
+        CallResult result =
+                service.addOriginSpare(URI.create("http://localhost:8082"), URI.create("http://localhost:8084"));
+
+        assertEquals(200, result.statusCode());
+        assertNotNull(transportClient.lastRequest);
+        assertEquals("POST", transportClient.lastRequest.method());
+        assertEquals(
+                "http://localhost:8082/api/cdn/admin/origin/spares?url=http%3A%2F%2Flocalhost%3A8084",
+                transportClient.lastRequest.uri().toString());
+    }
+
+    @Test
+    void promoteOriginSpare_shouldCallExpectedEndpoint() {
+        RecordingTransportClient transportClient = new RecordingTransportClient();
+        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+
+        CallResult result =
+                service.promoteOriginSpare(URI.create("http://localhost:8082"), URI.create("http://localhost:8084"));
+
+        assertEquals(200, result.statusCode());
+        assertNotNull(transportClient.lastRequest);
+        assertEquals("POST", transportClient.lastRequest.method());
+        assertEquals(
+                "http://localhost:8082/api/cdn/admin/origin/promote?url=http%3A%2F%2Flocalhost%3A8084",
+                transportClient.lastRequest.uri().toString());
+    }
+
+    @Test
+    void checkOriginFailover_shouldCallExpectedEndpoint() {
+        RecordingTransportClient transportClient = new RecordingTransportClient();
+        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+
+        CallResult result = service.checkOriginFailover(URI.create("http://localhost:8082"));
+
+        assertEquals(200, result.statusCode());
+        assertNotNull(transportClient.lastRequest);
+        assertEquals("POST", transportClient.lastRequest.method());
+        assertEquals(
+                "http://localhost:8082/api/cdn/admin/origin/failover/check",
+                transportClient.lastRequest.uri().toString());
+    }
+
     /**
      * Test-Doppel für {@link TransportClient}, das den letzten Request für Assertions erfasst.
      */

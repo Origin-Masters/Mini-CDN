@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.router.web;
 
 import de.htwsaar.minicdn.router.service.RouterAdminFileService;
+import de.htwsaar.minicdn.router.util.UrlUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +22,14 @@ public class RouterAdminFileController {
     /**
      * Hochladen einer Datei zum Origin und invalidieren aller Edge-Caches in der Region (oder global).
      */
-    @PutMapping("/{path:.+}")
+    @PutMapping("/{*path}")
     public ResponseEntity<?> uploadFile(
             @PathVariable("path") String path,
             @RequestParam(value = "region", required = false) String region,
             @RequestBody byte[] body) {
 
-        var result = adminFileService.uploadAndInvalidate(path, body, region);
+        String cleanPath = UrlUtil.stripLeadingSlash(path == null ? "" : path);
+        var result = adminFileService.uploadAndInvalidate(cleanPath, body, region);
 
         if (result.success()) {
             return ResponseEntity.ok(result.toMap());
@@ -38,11 +40,12 @@ public class RouterAdminFileController {
     /**
      * Löschen einer Datei vom Origin und invalidieren aller Edge-Caches in der Region (oder global).
      */
-    @DeleteMapping("/{path:.+}")
+    @DeleteMapping("/{*path}")
     public ResponseEntity<?> deleteFile(
             @PathVariable("path") String path, @RequestParam(value = "region", required = false) String region) {
 
-        var result = adminFileService.deleteAndInvalidate(path, region);
+        String cleanPath = UrlUtil.stripLeadingSlash(path == null ? "" : path);
+        var result = adminFileService.deleteAndInvalidate(cleanPath, region);
 
         if (result.success()) {
             return ResponseEntity.noContent().build();
@@ -64,9 +67,10 @@ public class RouterAdminFileController {
     /**
      * Zeigt Metadaten einer Datei im Origin an. Ruft den Origin direkt über den Router-Admin-API-Endpunkt ab.
      */
-    @GetMapping("{path:.+}")
+    @GetMapping("/{*path}")
     public ResponseEntity<?> showFile(@PathVariable String path) {
-        var result = adminFileService.showOriginFile(path);
+        String cleanPath = UrlUtil.stripLeadingSlash(path == null ? "" : path);
+        var result = adminFileService.showOriginFile(cleanPath);
         return ResponseEntity.status(result.httpStatus()).body(result.body());
     }
 }

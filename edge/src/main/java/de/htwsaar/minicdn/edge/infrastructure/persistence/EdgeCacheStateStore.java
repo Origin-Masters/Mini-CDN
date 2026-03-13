@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.edge.infrastructure.persistence;
 
+import de.htwsaar.minicdn.edge.infrastructure.cache.CachedFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,8 +11,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import de.htwsaar.minicdn.edge.infrastructure.cache.CachedFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

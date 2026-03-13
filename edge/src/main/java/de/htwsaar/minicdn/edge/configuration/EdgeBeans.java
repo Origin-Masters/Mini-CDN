@@ -1,11 +1,10 @@
 package de.htwsaar.minicdn.edge.configuration;
 
 import de.htwsaar.minicdn.edge.adapter.out.origin.HttpOriginClient;
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
 import de.htwsaar.minicdn.edge.application.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
 import de.htwsaar.minicdn.edge.domain.port.OriginClient;
-import java.net.URI;
+import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -56,13 +55,15 @@ public class EdgeBeans {
             @Value("${edge.region:unknown}") String region,
             @Value("${edge.cache.ttl-ms:60000}") long defaultTtlMs,
             @Value("${edge.cache.max-entries:100}") int maxEntries,
-            @Value("${edge.cache.eviction-strategy:LRU}") String evictionStrategy) {
+            @Value("${edge.cache.eviction-strategy:LRU}") String evictionStrategy,
+            @Value("${origin.base-url}") String originBaseUrl) {
 
         EdgeRuntimeConfig initial = new EdgeRuntimeConfig(
                 region,
                 Math.max(0, defaultTtlMs),
                 Math.max(0, maxEntries),
-                ReplacementStrategy.valueOf(evictionStrategy.trim().toUpperCase()));
+                ReplacementStrategy.valueOf(evictionStrategy.trim().toUpperCase()),
+                originBaseUrl);
         return new EdgeConfigService(initial);
     }
 
@@ -74,7 +75,7 @@ public class EdgeBeans {
      * @return {@link HttpOriginClient}
      */
     @Bean
-    public OriginClient originClient(RestTemplate rt, @Value("${origin.base-url}") String originBaseUrl) {
-        return new HttpOriginClient(rt, URI.create(originBaseUrl));
+    public OriginClient originClient(RestTemplate rt, EdgeConfigService edgeConfigService) {
+        return new HttpOriginClient(rt, edgeConfigService);
     }
 }

@@ -2,6 +2,7 @@ package de.htwsaar.minicdn.router.adapter;
 
 import de.htwsaar.minicdn.router.domain.OriginAdminGateway;
 import de.htwsaar.minicdn.router.dto.AdminFileResult;
+import de.htwsaar.minicdn.router.util.UrlUtil;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -23,7 +24,7 @@ public class OriginHttpClient implements OriginAdminGateway {
 
     private final HttpClient httpClient;
     private final String adminToken;
-    private final URI originBaseUrl;
+    private final URI defaultOriginBaseUrl;
     private final Duration timeout;
 
     /**
@@ -40,7 +41,7 @@ public class OriginHttpClient implements OriginAdminGateway {
 
         this.httpClient = httpClient;
         this.adminToken = adminToken;
-        this.originBaseUrl = URI.create(originBaseUrl);
+        this.defaultOriginBaseUrl = URI.create(UrlUtil.ensureTrailingSlash(originBaseUrl));
         this.timeout = Duration.ofSeconds(10);
     }
 
@@ -52,9 +53,9 @@ public class OriginHttpClient implements OriginAdminGateway {
      * @return bei 2xx ein Erfolgsergebnis, sonst ein Fehlerergebnis mit Response-Text
      */
     @Override
-    public AdminFileResult uploadFile(String path, byte[] body) {
+    public AdminFileResult uploadFile(String originBaseUrl, String path, byte[] body) {
         try {
-            URI uploadUri = originBaseUrl.resolve("/api/origin/admin/files/" + path);
+            URI uploadUri = resolveBaseUrl(originBaseUrl).resolve("/api/origin/admin/files/" + path);
 
             HttpRequest request = HttpRequest.newBuilder(uploadUri)
                     .header("X-Admin-Token", adminToken)
@@ -82,9 +83,9 @@ public class OriginHttpClient implements OriginAdminGateway {
      * @return bei 2xx ein Erfolgsergebnis, sonst ein Fehlerergebnis mit Response-Text
      */
     @Override
-    public AdminFileResult deleteFile(String path) {
+    public AdminFileResult deleteFile(String originBaseUrl, String path) {
         try {
-            URI deleteUri = originBaseUrl.resolve("/api/origin/admin/files/" + path);
+            URI deleteUri = resolveBaseUrl(originBaseUrl).resolve("/api/origin/admin/files/" + path);
 
             HttpRequest request = HttpRequest.newBuilder(deleteUri)
                     .header("X-Admin-Token", adminToken)
@@ -112,9 +113,10 @@ public class OriginHttpClient implements OriginAdminGateway {
      * @return Ergebnis mit HTTP-Statuscode und Response-Body der Listen-API
      */
     @Override
-    public AdminFileResult listFiles(int page, int size) {
+    public AdminFileResult listFiles(String originBaseUrl, int page, int size) {
         try {
-            URI listUri = originBaseUrl.resolve(String.format("/api/origin/files?page=%d&size=%d", page, size));
+            URI listUri = resolveBaseUrl(originBaseUrl)
+                    .resolve(String.format("/api/origin/files?page=%d&size=%d", page, size));
 
             HttpRequest request = HttpRequest.newBuilder(listUri)
                     .header("X-Admin-Token", adminToken)
@@ -131,9 +133,9 @@ public class OriginHttpClient implements OriginAdminGateway {
     }
 
     @Override
-    public AdminFileResult getFileMetadata(String path) {
+    public AdminFileResult getFileMetadata(String originBaseUrl, String path) {
         try {
-            URI headUri = originBaseUrl.resolve("api/origin/files/" + path);
+            URI headUri = resolveBaseUrl(originBaseUrl).resolve("api/origin/files/" + path);
             HttpRequest request = HttpRequest.newBuilder(headUri)
                     .header("X-Admin-Token", adminToken)
                     .timeout(timeout)
@@ -155,5 +157,29 @@ public class OriginHttpClient implements OriginAdminGateway {
         } catch (Exception e) {
             return AdminFileResult.error(500, "Origin HEAD failed: " + e.getMessage());
         }
+    }
+
+    @Override
+    public boolean isHealthy(String originBaseUrl, Duration timeout) {
+        try {
+            URI healthUri = resolveBaseUrl(originBaseUrl).resolve("api/origin/health");
+            HttpRequest request = HttpRequest.newBuilder(healthUri)
+                    .timeout(timeout == null ? Duration.ofSeconds(2) : timeout)
+                    .GET()
+                    .build();
+
+            HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+            int status = response.statusCode();
+            return status >= 200 && status < 300;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    private URI resolveBaseUrl(String originBaseUrl) {
+        if (originBaseUrl == null || originBaseUrl.isBlank()) {
+            return defaultOriginBaseUrl;
+        }
+        return URI.create(UrlUtil.ensureTrailingSlash(originBaseUrl));
     }
 }

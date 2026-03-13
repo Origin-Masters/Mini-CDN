@@ -1,7 +1,7 @@
 package de.htwsaar.minicdn.edge.adapter.in.web.admin;
 
-import de.htwsaar.minicdn.edge.application.metrics.EdgeMetricsService;
 import de.htwsaar.minicdn.edge.application.file.EdgeFileService;
+import de.htwsaar.minicdn.edge.application.metrics.EdgeMetricsService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

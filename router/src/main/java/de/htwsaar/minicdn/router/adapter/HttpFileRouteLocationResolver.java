@@ -55,8 +55,12 @@ public class HttpFileRouteLocationResolver implements FileRouteLocationResolver 
      * @return vollständige Ziel-URI für den Abruf über den Origin
      */
     @Override
-    public URI resolveOriginFileLocation(String path) {
-        return resolveFileLocation(originBaseUrl, ORIGIN_FILES_PREFIX, path);
+    public URI resolveOriginFileLocation(String originBaseUrl, String path) {
+        URI activeOrigin = this.originBaseUrl;
+        if (originBaseUrl != null && !originBaseUrl.isBlank()) {
+            activeOrigin = URI.create(UrlUtil.ensureTrailingSlash(originBaseUrl));
+        }
+        return resolveFileLocation(activeOrigin, ORIGIN_FILES_PREFIX, path);
     }
 
     /**

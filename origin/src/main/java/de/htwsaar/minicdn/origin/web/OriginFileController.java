@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.origin.web;
 
+import de.htwsaar.minicdn.common.util.PathUtils;
 import de.htwsaar.minicdn.origin.domain.OriginFileContent;
 import de.htwsaar.minicdn.origin.domain.OriginFileList;
 import de.htwsaar.minicdn.origin.domain.OriginFileMetadata;
@@ -36,15 +37,17 @@ public class OriginFileController {
         }
     }
 
-    @GetMapping("/files/{path:.+}")
+    @GetMapping("/files/{*path}")
     public ResponseEntity<ByteArrayResource> get(@PathVariable String path) {
-        return origin.get(path).map(this::toGetResponse).orElseGet(() -> ResponseEntity.notFound()
+        String cleanPath = PathUtils.normalizeRelativePath(path);
+        return origin.get(cleanPath).map(this::toGetResponse).orElseGet(() -> ResponseEntity.notFound()
                 .build());
     }
 
-    @RequestMapping(value = "/files/{path:.+}", method = RequestMethod.HEAD)
+    @RequestMapping(value = "/files/{*path}", method = RequestMethod.HEAD)
     public ResponseEntity<Void> head(@PathVariable String path) {
-        return origin.getMetadata(path).map(this::toHeadResponse).orElseGet(() -> ResponseEntity.notFound()
+        String cleanPath = PathUtils.normalizeRelativePath(path);
+        return origin.getMetadata(cleanPath).map(this::toHeadResponse).orElseGet(() -> ResponseEntity.notFound()
                 .build());
     }
 

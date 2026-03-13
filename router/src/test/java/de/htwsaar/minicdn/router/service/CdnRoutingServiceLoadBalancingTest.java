@@ -27,6 +27,7 @@ class CdnRoutingServiceLoadBalancingTest {
         RouterStatsService routerStatsService = mock(RouterStatsService.class);
         EdgeGateway edgeGateway = mock(EdgeGateway.class);
         FileRouteLocationResolver resolver = mock(FileRouteLocationResolver.class);
+        OriginClusterService originClusterService = mock(OriginClusterService.class);
 
         EdgeNode dead = new EdgeNode("http://edge-dead/");
         EdgeNode healthy = new EdgeNode("http://edge-healthy/");
@@ -35,11 +36,12 @@ class CdnRoutingServiceLoadBalancingTest {
         when(edgeRegistry.getNextNodes("eu", 2)).thenReturn(List.of(dead, healthy));
         when(edgeGateway.isNodeResponsive(dead, Duration.ofMillis(500))).thenReturn(false);
         when(edgeGateway.isNodeResponsive(healthy, Duration.ofMillis(500))).thenReturn(true);
+        when(originClusterService.resolveActiveOrigin()).thenReturn("http://origin/");
         when(resolver.resolveEdgeFileLocation(healthy, "/a.txt"))
                 .thenReturn(URI.create("http://edge-healthy/api/edge/files/a.txt"));
 
-        CdnRoutingService service =
-                new CdnRoutingService(edgeRegistry, routerStatsService, edgeGateway, resolver, 500, 5, 0);
+        CdnRoutingService service = new CdnRoutingService(
+                edgeRegistry, routerStatsService, edgeGateway, resolver, originClusterService, 500, 5, 0);
 
         RouteFileResult result = service.route("/a.txt", "eu", "c1");
 
@@ -54,6 +56,7 @@ class CdnRoutingServiceLoadBalancingTest {
         RouterStatsService routerStatsService = mock(RouterStatsService.class);
         EdgeGateway edgeGateway = mock(EdgeGateway.class);
         FileRouteLocationResolver resolver = mock(FileRouteLocationResolver.class);
+        OriginClusterService originClusterService = mock(OriginClusterService.class);
 
         EdgeNode deadOne = new EdgeNode("http://edge-1/");
         EdgeNode deadTwo = new EdgeNode("http://edge-2/");
@@ -62,11 +65,12 @@ class CdnRoutingServiceLoadBalancingTest {
         when(edgeRegistry.getNextNodes("eu", 2)).thenReturn(List.of(deadOne, deadTwo));
         when(edgeGateway.isNodeResponsive(deadOne, Duration.ofMillis(500))).thenReturn(false);
         when(edgeGateway.isNodeResponsive(deadTwo, Duration.ofMillis(500))).thenReturn(false);
-        when(resolver.resolveOriginFileLocation("/a.txt"))
+        when(originClusterService.resolveActiveOrigin()).thenReturn("http://origin/");
+        when(resolver.resolveOriginFileLocation("http://origin/", "/a.txt"))
                 .thenReturn(URI.create("http://origin/api/origin/files/a.txt"));
 
-        CdnRoutingService service =
-                new CdnRoutingService(edgeRegistry, routerStatsService, edgeGateway, resolver, 500, 5, 0);
+        CdnRoutingService service = new CdnRoutingService(
+                edgeRegistry, routerStatsService, edgeGateway, resolver, originClusterService, 500, 5, 0);
 
         RouteFileResult result = service.route("/a.txt", "eu", "c1");
 
@@ -82,14 +86,16 @@ class CdnRoutingServiceLoadBalancingTest {
         RouterStatsService routerStatsService = mock(RouterStatsService.class);
         EdgeGateway edgeGateway = mock(EdgeGateway.class);
         FileRouteLocationResolver resolver = mock(FileRouteLocationResolver.class);
+        OriginClusterService originClusterService = mock(OriginClusterService.class);
 
         when(edgeRegistry.getNodeCount("eu")).thenReturn(5);
         when(edgeRegistry.getNextNodes("eu", 3)).thenReturn(List.of());
-        when(resolver.resolveOriginFileLocation("/a.txt"))
+        when(originClusterService.resolveActiveOrigin()).thenReturn("http://origin/");
+        when(resolver.resolveOriginFileLocation("http://origin/", "/a.txt"))
                 .thenReturn(URI.create("http://origin/api/origin/files/a.txt"));
 
-        CdnRoutingService service =
-                new CdnRoutingService(edgeRegistry, routerStatsService, edgeGateway, resolver, 500, 3, 0);
+        CdnRoutingService service = new CdnRoutingService(
+                edgeRegistry, routerStatsService, edgeGateway, resolver, originClusterService, 500, 3, 0);
 
         service.route("/a.txt", "eu", "c1");
 
