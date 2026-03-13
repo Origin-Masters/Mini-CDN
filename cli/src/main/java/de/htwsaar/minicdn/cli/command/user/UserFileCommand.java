@@ -1,11 +1,18 @@
 package de.htwsaar.minicdn.cli.command.user;
 
+import static de.htwsaar.minicdn.common.util.DefaultsURL.ROUTER_URL;
+import static de.htwsaar.minicdn.common.util.ExitCodes.REJECTED;
+import static de.htwsaar.minicdn.common.util.ExitCodes.REQUEST_FAILED;
+import static de.htwsaar.minicdn.common.util.ExitCodes.SERVER_ERROR;
+import static de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS;
+import static de.htwsaar.minicdn.common.util.ExitCodes.VALIDATION;
+
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.dto.DownloadResult;
 import de.htwsaar.minicdn.cli.service.user.UserFileService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
-import de.htwsaar.minicdn.cli.util.PathUtils;
-import de.htwsaar.minicdn.cli.util.UriUtils;
+import de.htwsaar.minicdn.common.util.PathUtils;
+import de.htwsaar.minicdn.common.util.UriUtils;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +26,11 @@ import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
 /**
- * Datei-Operationen (Download über den Router).
+ * Stellt User-Befehle für Dateioperationen über den Router bereit.
+ *
+ * <p>Die Klasse kapselt ausschließlich CLI-spezifische Aufgaben wie
+ * Usage-Anzeige, Eingabevalidierung, Exit-Code-Mapping und Konsolenausgabe.
+ * Die eigentliche Download-Fachlogik bleibt im {@link UserFileService}.</p>
  */
 @Command(
         name = "file",
@@ -27,7 +38,7 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082",
+            "  user file download -r EU docs/manual.pdf -o ./manual.pdf ",
             "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --client-id alice",
             "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --overwrite"
         },
@@ -35,12 +46,31 @@ import picocli.CommandLine.Spec;
 public final class UserFileCommand implements Runnable {
 
     private final CliContext ctx;
+    private final UserFileService downloadService;
 
     @Spec
     private CommandSpec spec;
 
+    /**
+     * Erzeugt den Command mit gemeinsamem CLI-Kontext.
+     *
+     * @param ctx gemeinsamer CLI-Kontext
+     */
     public UserFileCommand(CliContext ctx) {
+        this(
+                ctx,
+                new UserFileService(Objects.requireNonNull(ctx, "ctx").transportClient(), ctx.defaultRequestTimeout()));
+    }
+
+    /**
+     * Interner Konstruktor für Tests und explizite Dependency Injection.
+     *
+     * @param ctx gemeinsamer CLI-Kontext
+     * @param downloadService fachlicher Download-Service
+     */
+    UserFileCommand(CliContext ctx, UserFileService downloadService) {
         this.ctx = Objects.requireNonNull(ctx, "ctx");
+        this.downloadService = Objects.requireNonNull(downloadService, "downloadService");
     }
 
     @Override
@@ -49,10 +79,152 @@ public final class UserFileCommand implements Runnable {
         ctx.out().flush();
     }
 
+    /**
+     * Liefert den fachlichen Download-Service.
+     *
+     * @return Download-Service
+     */
     UserFileService downloadService() {
-        return new UserFileService(ctx.transportClient(), ctx.defaultRequestTimeout());
+        return downloadService;
     }
 
+    /**
+     * Normalisiert und validiert die Router-Basis-URL.
+     *
+     * @param router rohe Router-URI
+     * @return normalisierte Basis-URI mit Trailing Slash
+     * @throws IllegalArgumentException falls die URI ungültig ist
+     */
+    URI normalizeRouter(URI router) {
+        URI value = Objects.requireNonNull(router, "router");
+        if (!value.isAbsolute() || value.getScheme() == null) {
+            throw new IllegalArgumentException("router URL must be an absolute http/https URI");
+        }
+
+        String scheme = value.getScheme().toLowerCase();
+        if (!"http".equals(scheme) && !"https".equals(scheme)) {
+            throw new IllegalArgumentException("router URL must use http or https");
+        }
+
+        return UriUtils.ensureTrailingSlash(value);
+    }
+
+    /**
+     * Normalisiert und validiert den Remote-Pfad.
+     *
+     * @param rawPath roher Eingabepfad
+     * @return sicherer relativer Pfad
+     * @throws IllegalArgumentException falls der Pfad ungültig ist
+     */
+    String normalizeRemotePath(String rawPath) {
+        return PathUtils.normalizeRelativePath(rawPath);
+    }
+
+    /**
+     * Validiert und normalisiert die Region.
+     *
+     * @param rawRegion rohe Region
+     * @return getrimmte Region
+     * @throws IllegalArgumentException falls die Region leer ist
+     */
+    String normalizeRegion(String rawRegion) {
+        String value = Objects.toString(rawRegion, "").trim();
+        if (value.isBlank()) {
+            throw new IllegalArgumentException("region must not be blank");
+        }
+        return value;
+    }
+
+    /**
+     * Normalisiert die optionale Client-ID.
+     *
+     * @param rawClientId rohe Client-ID
+     * @return getrimmte Client-ID oder {@code null}, wenn leer
+     */
+    String normalizeClientId(String rawClientId) {
+        String value = Objects.toString(rawClientId, "").trim();
+        return value.isBlank() ? null : value;
+    }
+
+    /**
+     * Prüft, ob die angegebene Ausgabedatei grundsätzlich gültig ist.
+     *
+     * @param outFile Zieldatei
+     * @param overwrite Kennzeichen, ob bestehende Dateien überschrieben werden dürfen
+     * @throws IllegalArgumentException falls das Ziel ungültig ist
+     */
+    void validateOutputFile(Path outFile, boolean overwrite) {
+        if (outFile == null) {
+            throw new IllegalArgumentException("output file must not be null");
+        }
+        if (Files.exists(outFile) && Files.isDirectory(outFile)) {
+            throw new IllegalArgumentException("output path is a directory: " + outFile);
+        }
+        if (Files.exists(outFile) && !overwrite) {
+            throw new IllegalArgumentException("output file already exists: " + outFile);
+        }
+    }
+
+    /**
+     * Gibt einen Validierungsfehler einheitlich aus.
+     *
+     * @param message Fehlermeldung
+     * @return Exit-Code für Validierungsfehler
+     */
+    int validationError(String message) {
+        ConsoleUtils.error(ctx.err(), "[FILE] %s", Objects.toString(message, "invalid input"));
+        return VALIDATION.code();
+    }
+
+    /**
+     * Gibt einen technischen Fehler einheitlich aus.
+     *
+     * @param message Fehlermeldung
+     * @return Exit-Code für technische Fehler
+     */
+    int requestFailed(String message) {
+        ConsoleUtils.error(ctx.err(), "[FILE] %s", Objects.toString(message, "request failed"));
+        return REQUEST_FAILED.code();
+    }
+
+    /**
+     * Bewertet das Download-Ergebnis zentral und gibt den passenden Exit-Code zurück.
+     *
+     * @param remotePath normalisierter Remote-Pfad
+     * @param outFile lokale Zieldatei
+     * @param result Ergebnis des Download-Aufrufs
+     * @return passender Exit-Code
+     */
+    int handleDownloadResult(String remotePath, Path outFile, DownloadResult result) {
+        Objects.requireNonNull(result, "result");
+
+        if (result.error() != null) {
+            return requestFailed("Download failed: " + result.error());
+        }
+
+        Integer statusCode = Objects.requireNonNull(result.statusCode(), "statusCode");
+        if (result.is2xx()) {
+            ConsoleUtils.info(
+                    ctx.out(), "[FILE] Downloaded '%s' -> %s (%d bytes)", remotePath, outFile, result.bytesWritten());
+            return SUCCESS.code();
+        }
+
+        if (result.is4xx()) {
+            ConsoleUtils.error(ctx.err(), "[FILE] Request rejected (HTTP %d) for '%s'", statusCode, remotePath);
+            return REJECTED.code();
+        }
+
+        ConsoleUtils.error(ctx.err(), "[FILE] Server error (HTTP %d) for '%s'", statusCode, remotePath);
+        return SERVER_ERROR.code();
+    }
+
+    /**
+     * Download-Command für Dateien über den Router.
+     *
+     * <p>Der Command validiert alle CLI-Eingaben, delegiert den eigentlichen
+     * Download an den {@link UserFileService} und mappt das Ergebnis auf
+     * konsistente Exit-Codes.</p>
+     */
     @Command(
             name = "download",
             description = "Download a file via router (handles redirect to edge)",
@@ -68,9 +240,15 @@ public final class UserFileCommand implements Runnable {
         @ParentCommand
         private UserFileCommand parent;
 
-        @Parameters(index = "0", paramLabel = "<remotePath>", description = "Remote file path, e.g. docs/manual.pdf")
+        /**
+         * Relativer Remote-Pfad der herunterzuladenden Datei.
+         */
+        @Parameters(index = "0", paramLabel = "REMOTE_PATH", description = "Remote file path, e.g. docs/manual.pdf")
         private String remotePath;
 
+        /**
+         * Lokale Zieldatei.
+         */
         @Option(
                 names = {"-o", "--out"},
                 required = true,
@@ -78,13 +256,19 @@ public final class UserFileCommand implements Runnable {
                 description = "Local output file path")
         private Path out;
 
+        /**
+         * Router-Basis-URL.
+         */
         @Option(
                 names = {"-H", "--host"},
-                defaultValue = "http://localhost:8082",
+                defaultValue = ROUTER_URL,
                 paramLabel = "ROUTER_URL",
                 description = "Router base URL (scheme://host:port)")
         private URI host;
 
+        /**
+         * Client-Region für das Routing.
+         */
         @Option(
                 names = {"-r", "--region"},
                 required = true,
@@ -92,12 +276,18 @@ public final class UserFileCommand implements Runnable {
                 description = "Client region for routing, e.g. EU")
         private String region;
 
+        /**
+         * Optionale Client-ID für Routing- und Statistikzwecke.
+         */
         @Option(
                 names = {"--client-id"},
                 paramLabel = "CLIENT_ID",
-                description = "Optional client id (used by router stats), e.g. alice")
+                description = "Optional client id, e.g. alice")
         private String clientId;
 
+        /**
+         * Steuert, ob eine bestehende Datei überschrieben werden darf.
+         */
         @Option(
                 names = {"--overwrite"},
                 defaultValue = "false",
@@ -106,60 +296,27 @@ public final class UserFileCommand implements Runnable {
 
         @Override
         public Integer call() {
-            String cleanRemote =
-                    PathUtils.stripLeadingSlash(Objects.toString(remotePath, "").trim());
-            if (cleanRemote.isBlank() || PathUtils.isUnsafeRemotePath(cleanRemote)) {
-                ConsoleUtils.error(
-                        parent.ctx.err(), "[FILE] Invalid remotePath (must be a safe, non-blank relative path)");
-                return 3;
-            }
+            try {
+                URI routerBaseUrl = parent.normalizeRouter(host);
+                String cleanRemotePath = parent.normalizeRemotePath(remotePath);
+                String cleanRegion = parent.normalizeRegion(region);
+                String cleanClientId = parent.normalizeClientId(clientId);
+                Path targetFile =
+                        Objects.requireNonNull(out, "out").toAbsolutePath().normalize();
 
-            String cleanRegion = Objects.toString(region, "").trim();
-            if (cleanRegion.isBlank()) {
-                ConsoleUtils.error(parent.ctx.err(), "[FILE] Missing/blank --region");
-                return 3;
-            }
+                parent.validateOutputFile(targetFile, overwrite);
 
-            if (out == null) {
-                ConsoleUtils.error(parent.ctx.err(), "[FILE] Missing --out");
-                return 3;
-            }
-            if (Files.exists(out) && !overwrite) {
-                ConsoleUtils.error(parent.ctx.err(), "[FILE] Output file already exists (use --overwrite): %s", out);
-                return 3;
-            }
-            if (Files.exists(out) && Files.isDirectory(out)) {
-                ConsoleUtils.error(parent.ctx.err(), "[FILE] Output path is a directory: %s", out);
-                return 3;
-            }
+                DownloadResult result = parent.downloadService()
+                        .downloadViaRouter(
+                                routerBaseUrl, cleanRemotePath, cleanRegion, cleanClientId, targetFile, overwrite);
 
-            URI base = UriUtils.ensureTrailingSlash(host);
-            DownloadResult result = parent.downloadService()
-                    .downloadViaRouter(base, cleanRemote, cleanRegion, clientId, out, overwrite);
+                return parent.handleDownloadResult(cleanRemotePath, targetFile, result);
 
-            if (result.error() != null) {
-                ConsoleUtils.error(parent.ctx.err(), "[FILE] Download failed: %s", result.error());
-                return 1;
+            } catch (IllegalArgumentException ex) {
+                return parent.validationError(ex.getMessage());
+            } catch (Exception ex) {
+                return parent.requestFailed("Download failed: " + ex.getMessage());
             }
-
-            int sc = Objects.requireNonNull(result.statusCode(), "statusCode");
-            if (sc >= 200 && sc < 300) {
-                ConsoleUtils.info(
-                        parent.ctx.out(),
-                        "[FILE] Downloaded '%s' -> %s (%d bytes)",
-                        cleanRemote,
-                        out,
-                        result.bytesWritten());
-                return 0;
-            }
-
-            if (sc >= 400 && sc < 500) {
-                ConsoleUtils.error(parent.ctx.err(), "[FILE] Request rejected (HTTP %d) for '%s'", sc, cleanRemote);
-                return 4;
-            }
-
-            ConsoleUtils.error(parent.ctx.err(), "[FILE] Server error (HTTP %d) for '%s'", sc, cleanRemote);
-            return 2;
         }
     }
 }

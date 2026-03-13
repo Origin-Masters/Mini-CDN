@@ -1,17 +1,18 @@
 package de.htwsaar.minicdn.cli;
 
+import static de.htwsaar.minicdn.common.util.ExitCodes.REJECTED;
+
 import de.htwsaar.minicdn.cli.command.admin.AdminCommand;
 import de.htwsaar.minicdn.cli.command.root.MiniCdnRootCommand;
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.di.CliSessionState;
 import de.htwsaar.minicdn.cli.di.ContextFactory;
 import de.htwsaar.minicdn.cli.shell.MiniCdnInteractiveShell;
-import de.htwsaar.minicdn.cli.transport.HttpTransportClient;
 import de.htwsaar.minicdn.cli.transport.TransportClient;
+import de.htwsaar.minicdn.cli.transport.TransportClientFactory;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Objects;
 import org.jline.terminal.Terminal;
@@ -104,10 +105,7 @@ public final class MiniCdnCliMain {
      * @return transportneutrales Client-Interface auf Basis des vorhandenen HTTP-Adapters
      */
     private static TransportClient createTransportClient() {
-        HttpClient httpClient =
-                HttpClient.newBuilder().connectTimeout(CONNECT_TIMEOUT).build();
-
-        return new HttpTransportClient(httpClient);
+        return TransportClientFactory.http(CONNECT_TIMEOUT, true);
     }
 
     /**
@@ -140,7 +138,7 @@ public final class MiniCdnCliMain {
             err.println("[AUTH] Zugriff verweigert: Für Admin-Befehle ist ein Login als Admin nötig.");
             err.println("[AUTH] Reihenfolge: 1) system init  2) user login --name <admin>  3) admin ...");
             err.flush();
-            return 1;
+            return REJECTED.code();
         }
 
         return new CommandLine.RunLast().execute(parseResult);

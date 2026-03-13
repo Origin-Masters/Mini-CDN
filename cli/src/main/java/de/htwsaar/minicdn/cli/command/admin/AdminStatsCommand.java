@@ -1,11 +1,12 @@
 package de.htwsaar.minicdn.cli.command.admin;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static de.htwsaar.minicdn.common.util.ExitCodes.REJECTED;
+import static de.htwsaar.minicdn.common.util.ExitCodes.REQUEST_FAILED;
+import static de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS;
+
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.service.admin.AdminStatsService;
 import de.htwsaar.minicdn.cli.util.ConsoleUtils;
-import de.htwsaar.minicdn.cli.util.StatsFormatter;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Objects;
@@ -13,10 +14,16 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 
 /**
- * Admin-Command zum Abruf von Router/Edge-Statistiken über die Admin-API.
+ * Stellt Admin-Befehle zum Abruf von Router-/Edge-Statistiken bereit.
+ *
+ * <p>Die Klasse bildet die CLI-Adapter-Schicht für Statistikoperationen.
+ * Sie validiert Benutzereingaben, nutzt Default-Werte aus dem {@link CliContext}
+ * und delegiert den eigentlichen Abruf sowie die Formatierung an den
+ * {@link AdminStatsService}.</p>
  */
 @Command(
         name = "stats",
@@ -24,20 +31,49 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  admin stats show -H http://localhost:8080",
-            "  admin stats show -H http://localhost:8080 --window-sec 120 --aggregate-edge=false",
-            "  admin stats show -H http://localhost:8080 --json"
+            "  admin stats show",
+            "  admin stats show -H http://localhost:8082",
+            "  admin stats show --window-sec 120 --aggregate-edge=false",
+            "  admin stats show --json",
+            "  admin stats show --token my-admin-token"
         },
         subcommands = {AdminStatsCommand.AdminStatsShowCommand.class})
 public final class AdminStatsCommand implements Runnable {
 
+    /**
+     * Gemeinsamer CLI-Kontext.
+     */
     private final CliContext ctx;
+
+    /**
+     * Fachlicher Service für Statistikabrufe.
+     */
+    private final AdminStatsService adminStatsService;
 
     @Spec
     private CommandSpec spec;
 
+    /**
+     * Erzeugt den Command mit gemeinsamem CLI-Kontext.
+     *
+     * @param ctx gemeinsamer CLI-Kontext
+     */
     public AdminStatsCommand(CliContext ctx) {
+        this(
+                ctx,
+                new AdminStatsService(
+                        Objects.requireNonNull(ctx, "ctx").transportClient(), ctx.defaultRequestTimeout()));
+    }
+
+    /**
+     * Interner Konstruktor für Tests und explizite Dependency Injection.
+     *
+     * @param ctx gemeinsamer CLI-Kontext
+     * @param adminStatsService fachlicher Statistik-Service
+     */
+    AdminStatsCommand(CliContext ctx, AdminStatsService adminStatsService) {
         this.ctx = Objects.requireNonNull(ctx, "ctx");
+        this.adminStatsService = Objects.requireNonNull(adminStatsService, "adminStatsService");
     }
 
     @Override
@@ -46,37 +82,71 @@ public final class AdminStatsCommand implements Runnable {
         ctx.out().flush();
     }
 
+    /**
+     * Liefert den gemeinsamen CLI-Kontext.
+     *
+     * @return CLI-Kontext
+     */
+    CliContext ctx() {
+        return ctx;
+    }
+
+    /**
+     * Liefert den Statistik-Service.
+     *
+     * @return Statistik-Service
+     */
+    AdminStatsService service() {
+        return adminStatsService;
+    }
+
+    /**
+     * Unterbefehl zum Abruf und zur Ausgabe strukturierter Router-Statistiken.
+     *
+     * <p>Der Command orchestriert nur den Ablauf: Eingaben prüfen, Service aufrufen
+     * und das vom Service formatierte Ergebnis ausgeben.</p>
+     */
     @Command(
             name = "show",
             description = "Fetch and display structured stats from the router",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  admin stats show -H http://localhost:8080",
-                "  admin stats show -H http://localhost:8080 --window-sec 10",
-                "  admin stats show -H http://localhost:8080 --aggregate-edge=false",
-                "  admin stats show -H http://localhost:8080 --json"
+                "  admin stats show",
+                "  admin stats show -H http://localhost:8082",
+                "  admin stats show --window-sec 10",
+                "  admin stats show --aggregate-edge=false",
+                "  admin stats show --json"
             })
     public static final class AdminStatsShowCommand implements Callable<Integer> {
 
-        private static final ObjectMapper MAPPER = new ObjectMapper();
-        private final CliContext ctx;
-        private final AdminStatsService adminStatsService;
+        @ParentCommand
+        private AdminStatsCommand parent;
 
+        /**
+         * Basis-URL des Routers.
+         *
+         * <p>Wenn kein Wert gesetzt wird, wird die Router-URL aus dem CLI-Kontext verwendet.</p>
+         */
         @Option(
                 names = {"-H", "--host"},
-                defaultValue = "http://localhost:8082",
                 paramLabel = "ROUTER_URL",
-                description = "Basis-URL des Routers, z.B. http://localhost:8080")
+                description = "Basis-URL des Routers, z. B. http://localhost:8082")
         private URI host;
 
+        /**
+         * Zeitfenster in Sekunden für Requests/Minute.
+         */
         @Option(
                 names = "--window-sec",
                 defaultValue = "60",
                 paramLabel = "SECONDS",
-                description = "Zeitfenster in Sekunden für exakte Requests/Minute (min. 1)")
+                description = "Zeitfenster in Sekunden für Requests/Minute (min. 1)")
         private int windowSec;
 
+        /**
+         * Steuert, ob Edge-Metriken aggregiert werden sollen.
+         */
         @Option(
                 names = "--aggregate-edge",
                 defaultValue = "true",
@@ -84,95 +154,99 @@ public final class AdminStatsCommand implements Runnable {
                 description = "Edge-Metriken aggregieren (true/false)")
         private boolean aggregateEdge;
 
+        /**
+         * Gibt die komplette JSON-Antwort pretty-printed aus.
+         */
         @Option(
                 names = "--json",
                 defaultValue = "false",
                 description = "Vollständige JSON-Antwort pretty-printed ausgeben")
         private boolean printJson;
 
+        /**
+         * Optionales Admin-Token.
+         *
+         * <p>Wenn kein Wert gesetzt wird, wird das Token aus dem CLI-Kontext verwendet.</p>
+         */
         @Option(
-                names = {"--token"},
-                defaultValue = "secret-token",
+                names = "--token",
                 paramLabel = "TOKEN",
-                description = "Admin token")
-        private String token;
-
-        public AdminStatsShowCommand(CliContext ctx) {
-            this.ctx = Objects.requireNonNull(ctx, "ctx");
-            this.adminStatsService = new AdminStatsService(ctx.transportClient(), ctx.defaultRequestTimeout());
-        }
+                description = "Optionales Admin-Token, Standard ist das Token aus dem CLI-Kontext")
+        private String tokenOverride;
 
         @Override
         public Integer call() {
-            PrintWriter out = ctx.out();
-            PrintWriter err = ctx.err();
+            PrintWriter out = parent.ctx().out();
+            PrintWriter err = parent.ctx().err();
 
-            URI effectiveHost = Objects.requireNonNull(host, "host");
-            int safeWindow = Math.max(1, windowSec);
+            if (windowSec < 1) {
+                ConsoleUtils.error(err, "[ADMIN] --window-sec muss >= 1 sein.");
+                return REJECTED.code();
+            }
+
+            URI effectiveHost = host != null ? host : parent.ctx().routerBaseUrl();
+            String effectiveToken =
+                    hasText(tokenOverride) ? tokenOverride.trim() : parent.ctx().adminToken();
 
             try {
                 AdminStatsService.StatsResponse response =
-                        adminStatsService.fetchStats(effectiveHost, safeWindow, aggregateEdge, token);
+                        parent.service().fetchStats(effectiveHost, windowSec, aggregateEdge, effectiveToken);
 
                 if (!response.isSuccess()) {
-                    ConsoleUtils.error(err, "[ADMIN] Stats request failed: HTTP %d", response.getStatusCode());
-
-                    if (response.getRawBody() != null && !response.getRawBody().isBlank()) {
-                        ConsoleUtils.error(err, response.getRawBody());
-                    }
-
-                    if (response.getStatusCode() == 401) {
-                        ConsoleUtils.error(
-                                err,
-                                "[ADMIN] Hint: pass --admin-token <TOKEN> or set MINICDN_ADMIN_TOKEN / -Dminicdn.admin.token.");
-                    }
-                    return 2;
+                    return handleFailure(err, response);
                 }
 
-                JsonNode root = response.getJsonData();
+                String output = printJson
+                        ? parent.service().formatPrettyJson(response)
+                        : parent.service().formatHumanReadable(response, windowSec);
 
-                if (printJson) {
-                    out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(root));
-                    out.flush();
-                    return 0;
-                }
-
-                formatAndPrintStats(out, root, safeWindow);
+                out.println(output);
                 out.flush();
-                return 0;
+                return SUCCESS.code();
 
             } catch (Exception ex) {
                 ConsoleUtils.error(err, "[ADMIN] Stats request failed: %s", ex.getMessage());
-                return 1;
+                return REQUEST_FAILED.code();
             }
         }
 
-        private void formatAndPrintStats(PrintWriter out, JsonNode root, int safeWindow) {
-            JsonNode router = root.path("router");
-            JsonNode cache = root.path("cache");
-            JsonNode nodes = root.path("nodes");
-            JsonNode downloads = root.path("downloads");
+        /**
+         * Behandelt nicht erfolgreiche Antworten des Statistik-Services einheitlich.
+         *
+         * @param err Fehlerausgabe
+         * @param response Service-Antwort
+         * @return passender Exit-Code
+         */
+        private int handleFailure(PrintWriter err, AdminStatsService.StatsResponse response) {
+            if (response.hasError()) {
+                ConsoleUtils.error(err, "[ADMIN] Stats request failed: %s", response.error());
+                return REQUEST_FAILED.code();
+            }
 
-            out.println("[ADMIN] Mini-CDN Stats");
-            out.printf("  timestamp         : %s%n", root.path("timestamp").asText("n/a"));
-            out.printf("  windowSec         : %d%n", root.path("windowSec").asInt(safeWindow));
-            out.printf(
-                    "  totalRequests     : %d%n", router.path("totalRequests").asLong());
-            out.printf(
-                    "  requestsPerMinute : %d%n",
-                    router.path("requestsPerMinute").asLong());
-            out.printf(
-                    "  activeClients     : %d%n", router.path("activeClients").asLong());
-            out.printf(
-                    "  routingErrors     : %d%n", router.path("routingErrors").asLong());
-            out.printf("  cacheHits         : %d%n", cache.path("hits").asLong());
-            out.printf("  cacheMisses       : %d%n", cache.path("misses").asLong());
-            out.printf("  cacheHitRatio     : %.4f%n", cache.path("hitRatio").asDouble());
-            out.printf("  filesLoaded       : %d%n", cache.path("filesLoaded").asLong());
-            out.printf("  nodesTotal        : %d%n", nodes.path("total").asLong());
+            Integer statusCode = response.statusCode();
+            ConsoleUtils.error(err, "[ADMIN] Stats request failed: HTTP %s", statusCode);
 
-            StatsFormatter.printDownloadTotals(out, downloads.path("byFileTotal"));
-            StatsFormatter.printDownloadByEdge(out, downloads.path("byFileByEdge"));
+            if (hasText(response.rawBody())) {
+                ConsoleUtils.error(err, response.rawBody());
+            }
+
+            if (response.isAuthError()) {
+                ConsoleUtils.error(
+                        err,
+                        "[ADMIN] Hint: pass --token TOKEN or configure MINICDN_ADMIN_TOKEN / -Dminicdn.admin.token.");
+            }
+
+            return REJECTED.code();
+        }
+
+        /**
+         * Prüft, ob ein Text gesetzt ist.
+         *
+         * @param value zu prüfender Text
+         * @return {@code true}, wenn der Text nicht leer ist
+         */
+        private static boolean hasText(String value) {
+            return value != null && !value.isBlank();
         }
     }
 }

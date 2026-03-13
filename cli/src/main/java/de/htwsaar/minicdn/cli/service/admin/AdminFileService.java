@@ -1,12 +1,11 @@
 package de.htwsaar.minicdn.cli.service.admin;
 
-import de.htwsaar.minicdn.cli.dto.HttpCallResult;
+import de.htwsaar.minicdn.cli.dto.CallResult;
+import de.htwsaar.minicdn.cli.transport.TransportCallAdapter;
 import de.htwsaar.minicdn.cli.transport.TransportClient;
 import de.htwsaar.minicdn.cli.transport.TransportRequest;
-import de.htwsaar.minicdn.cli.transport.TransportResponse;
-import de.htwsaar.minicdn.cli.util.JsonUtils;
-import de.htwsaar.minicdn.cli.util.PathUtils;
-import de.htwsaar.minicdn.cli.util.UriUtils;
+import de.htwsaar.minicdn.common.util.PathUtils;
+import de.htwsaar.minicdn.common.util.UriUtils;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -15,16 +14,11 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Admin-File-Service ausschließlich über den Router.
+ * Fachlicher Service für Admin-Dateioperationen über den Router.
  *
- * Erwartete Router-Admin-APIs:
- *   - PUT    /api/cdn/admin/files/{path}?region=REGION    (Upload + Cache-Invalidation)
- *   - DELETE /api/cdn/admin/files/{path}?region=REGION    (Delete + Cache-Invalidation)
- *   - GET    /api/cdn/admin/files?page=&size=             (List, Router fragt Origin)
- *   - GET    /api/cdn/admin/files/{path}                  (Metadata als JSON)
- *
- * Download nutzt den normalen User-Path:
- *   - GET    /api/cdn/files/{path}?region=REGION          (307 Redirect zu Edge)
+ * <p>Die Klasse kapselt ausschließlich den Zugriff auf die Router-Admin-API.
+ * Sie enthält keine CLI-Ausgabe, keine Exit-Code-Logik und keine direkte
+ * Kenntnis von Picocli-Kommandos.</p>
  */
 public final class AdminFileService {
 
@@ -34,25 +28,119 @@ public final class AdminFileService {
     private final String adminToken;
     private final long loggedInUserId;
 
+    /**
+     * Erzeugt den Service mit allen benötigten technischen Abhängigkeiten.
+     *
+     * @param transportClient Transport-Abstraktion für HTTP-Aufrufe
+     * @param requestTimeout Standard-Timeout für Requests
+     * @param routerBaseUrl Basis-URL des Routers
+     * @param adminToken Admin-Token für geschützte Endpunkte
+     * @param loggedInUserId technische ID des aktuell eingeloggten Users
+     */
     public AdminFileService(
             TransportClient transportClient,
             Duration requestTimeout,
             URI routerBaseUrl,
             String adminToken,
-            long loggedInUserId1) {
+            long loggedInUserId) {
+
         this.transportClient = Objects.requireNonNull(transportClient, "transportClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
         this.routerBaseUrl = Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
-        this.adminToken = Objects.requireNonNull(adminToken, "adminToken");
-        this.loggedInUserId = loggedInUserId1;
+        this.adminToken = requireText(adminToken, "adminToken");
+        this.loggedInUserId = loggedInUserId;
     }
 
+    /**
+     * Lädt eine Datei über die Router-Admin-API hoch und stößt die Cache-Invalidierung an.
+     *
+     * @param targetPath relativer Zielpfad im CDN
+     * @param localFile lokale Quelldatei
+     * @param region Zielregion für die Invalidierung
+     * @return normiertes HTTP-Ergebnis
+     */
+    public CallResult uploadViaRouter(String targetPath, Path localFile, String region) {
+        Objects.requireNonNull(localFile, "localFile");
+
+        String cleanPath = normalizeTargetPath(targetPath, "targetPath");
+        String cleanRegion = requireText(region, "region");
+
+        URI url = adminFileUrl(cleanPath, cleanRegion);
+        return send(TransportRequest.putFile(url, requestTimeout, adminBinaryHeaders(), localFile));
+    }
+
+    /**
+     * Löscht eine Datei über die Router-Admin-API und stößt die Cache-Invalidierung an.
+     *
+     * @param targetPath relativer Zielpfad im CDN
+     * @param region Zielregion für die Invalidierung
+     * @return normiertes HTTP-Ergebnis
+     */
+    public CallResult deleteViaRouter(String targetPath, String region) {
+        String cleanPath = normalizeTargetPath(targetPath, "path");
+        String cleanRegion = requireText(region, "region");
+
+        URI url = adminFileUrl(cleanPath, cleanRegion);
+        return send(TransportRequest.delete(url, requestTimeout, adminHeaders()));
+    }
+
+    /**
+     * Listet Dateien über die Router-Admin-API auf.
+     *
+     * @return normiertes HTTP-Ergebnis
+     */
+    public CallResult listFilesRaw() {
+        URI url = base().resolve("api/cdn/admin/files");
+        return send(TransportRequest.get(url, requestTimeout, adminHeaders()));
+    }
+
+    /**
+     * Liefert Metadaten einer Datei über die Router-Admin-API.
+     *
+     * @param targetPath relativer Zielpfad im CDN
+     * @return normiertes HTTP-Ergebnis
+     */
+    public CallResult showViaRouter(String targetPath) {
+        String cleanPath = normalizeTargetPath(targetPath, "path");
+        URI url = base().resolve("api/cdn/admin/files/" + cleanPath);
+        return send(TransportRequest.get(url, requestTimeout, adminHeaders()));
+    }
+
+    /**
+     * Liefert die normalisierte Router-Basis-URL mit Trailing Slash.
+     *
+     * @return normalisierte Router-Basis-URL
+     */
     private URI base() {
         return UriUtils.ensureTrailingSlash(routerBaseUrl);
     }
 
     /**
-     * Hilfsmethode für Admin-Header, die bei allen Admin-API-Aufrufen benötigt werden.
+     * Baut die Ziel-URL für Admin-Dateioperationen mit Regionsparameter.
+     *
+     * @param cleanPath bereits validierter relativer Zielpfad
+     * @param cleanRegion bereits validierte Region
+     * @return vollständige Ziel-URL
+     */
+    private URI adminFileUrl(String cleanPath, String cleanRegion) {
+        String pathAndQuery = "api/cdn/admin/files/" + cleanPath + "?region=" + UriUtils.urlEncode(cleanRegion);
+        return base().resolve(pathAndQuery);
+    }
+
+    /**
+     * Führt einen Transport-Request aus und normalisiert das Ergebnis.
+     *
+     * @param request vorbereiteter Transport-Request
+     * @return normiertes HTTP-Ergebnis
+     */
+    private CallResult send(TransportRequest request) {
+        return TransportCallAdapter.execute(transportClient, request);
+    }
+
+    /**
+     * Liefert Standard-Header für Admin-Requests.
+     *
+     * @return Header mit Admin-Token und User-ID
      */
     private Map<String, String> adminHeaders() {
         Map<String, String> headers = new LinkedHashMap<>();
@@ -62,112 +150,44 @@ public final class AdminFileService {
     }
 
     /**
-     * Upload via Router-Admin-API:
-     *   PUT /api/cdn/admin/files/{path}?region=REGION
+     * Liefert Header für binäre Upload-Requests.
+     *
+     * @return Header mit Admin-Token, User-ID und Content-Type
      */
-    public HttpCallResult uploadViaRouter(URI routerBaseUrl, String targetPath, Path localFile, String region) {
-        Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
-        Objects.requireNonNull(localFile, "localFile");
-
-        String cleanPath = PathUtils.stripLeadingSlash(Objects.toString(targetPath, ""));
-        if (cleanPath.isBlank()) {
-            return HttpCallResult.clientError("targetPath must not be blank");
-        }
-        String cleanRegion = Objects.toString(region, "").trim();
-        if (cleanRegion.isBlank()) {
-            return HttpCallResult.clientError("region must not be blank");
-        }
-
-        URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
-        String pathAndQuery = "/api/cdn/admin/files/" + cleanPath + "?region=" + JsonUtils.urlEncode(cleanRegion);
-
-        URI url = base.resolve(pathAndQuery);
-
-        TransportResponse response = transportClient.send(TransportRequest.putFile(
-                url,
-                requestTimeout,
-                Map.of("X-Admin-Token", resolveAdminToken(), "Content-Type", "application/octet-stream"),
-                localFile));
-        return toHttpCallResult(response);
+    private Map<String, String> adminBinaryHeaders() {
+        Map<String, String> headers = new LinkedHashMap<>(adminHeaders());
+        headers.put("Content-Type", "application/octet-stream");
+        return headers;
     }
 
     /**
-     * Delete via Router-Admin-API:
-     *   DELETE /api/cdn/admin/files/{path}?region=REGION
+     * Validiert einen relativen Zielpfad.
+     *
+     * @param rawPath roher Zielpfad
+     * @param fieldName Feldname für Fehlermeldungen
+     * @return normalisierter relativer Zielpfad
      */
-    public HttpCallResult deleteViaRouter(URI routerBaseUrl, String targetPath, String region) {
-        Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
-
-        String cleanPath = PathUtils.stripLeadingSlash(Objects.toString(targetPath, ""));
+    private static String normalizeTargetPath(String rawPath, String fieldName) {
+        String cleanPath =
+                PathUtils.stripLeadingSlash(Objects.toString(rawPath, "").trim());
         if (cleanPath.isBlank()) {
-            return HttpCallResult.clientError("path must not be blank");
+            throw new IllegalArgumentException(fieldName + " must not be blank");
         }
-        String cleanRegion = Objects.toString(region, "").trim();
-        if (cleanRegion.isBlank()) {
-            return HttpCallResult.clientError("region must not be blank");
-        }
-
-        URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
-        String pathAndQuery = "/api/cdn/admin/files/" + cleanPath + "?region=" + JsonUtils.urlEncode(cleanRegion);
-
-        URI url = base.resolve(pathAndQuery);
-
-        TransportResponse response = transportClient.send(
-                TransportRequest.delete(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
-        return toHttpCallResult(response);
+        return cleanPath;
     }
 
     /**
-     * Listet Dateien über den Router:
-     *   GET /api/cdn/admin/files
+     * Validiert einen Pflichttext und liefert die getrimmte Form zurück.
+     *
+     * @param value Eingabewert
+     * @param fieldName Feldname für Fehlermeldungen
+     * @return getrimmter Pflichttext
      */
-    public HttpCallResult listFilesRaw() {
-        try {
-            URI url = base().resolve("api/cdn/admin/files");
-            TransportRequest request = TransportRequest.get(url, requestTimeout, adminHeaders());
-            TransportResponse response = transportClient.send(request);
-            return HttpCallResult.http(Objects.requireNonNull(response.statusCode(), "statusCode"), response.body());
-        } catch (Exception ex) {
-            return HttpCallResult.ioError(ex.getMessage());
+    private static String requireText(String value, String fieldName) {
+        String trimmed = Objects.toString(value, "").trim();
+        if (trimmed.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " must not be blank");
         }
-    }
-
-    /**
-     * Liefert Metadaten zu einer Datei über den Router:
-     *   GET /api/cdn/admin/files/{path}
-     *  Erwartet JSON-Antwort vom Router (z. B. contentType, size, sha256, lastModified, ...)
-     */
-    public HttpCallResult showViaRouter(URI routerBaseUrl, String targetPath) {
-        Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
-
-        String cleanPath = PathUtils.stripLeadingSlash(Objects.toString(targetPath, ""));
-        if (cleanPath.isBlank()) {
-            return HttpCallResult.clientError("path must not be blank");
-        }
-
-        URI base = UriUtils.ensureTrailingSlash(routerBaseUrl);
-        URI url = base.resolve("/api/cdn/admin/files/" + cleanPath);
-
-        TransportResponse response = transportClient.send(
-                TransportRequest.get(url, requestTimeout, Map.of("X-Admin-Token", resolveAdminToken())));
-        return toHttpCallResult(response);
-    }
-
-    private static HttpCallResult toHttpCallResult(TransportResponse response) {
-        if (response.error() != null) {
-            return HttpCallResult.ioError(response.error());
-        }
-        return HttpCallResult.http(Objects.requireNonNull(response.statusCode(), "statusCode"), response.body());
-    }
-
-    private static String resolveAdminToken() {
-        String token = System.getenv("MINICDN_ADMIN_TOKEN");
-        if (token == null || token.isBlank()) {
-            token = System.getProperty("minicdn.admin.token");
-        }
-        if (token == null || token.isBlank()) {
-            token = "secret-token";
-        }
-        return token;
+        return trimmed;
     }
 }
