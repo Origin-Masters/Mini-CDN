@@ -3,6 +3,7 @@ package de.htwsaar.minicdn.cli.service.system;
 import de.htwsaar.minicdn.cli.transport.TransportClient;
 import de.htwsaar.minicdn.cli.transport.TransportRequest;
 import de.htwsaar.minicdn.cli.transport.TransportResponse;
+import de.htwsaar.minicdn.cli.util.JsonUtils;
 import de.htwsaar.minicdn.common.util.UriUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -37,8 +38,8 @@ public final class SystemInitService {
     /** Region, unter der sich der lokale Edge beim Router registriert. */
     private static final String EDGE_REGION = "EU";
 
-    /** Basis-URL des lokal gestarteten Edge-Servers. */
-    private static final String EDGE_URL = "http://localhost:8081";
+    /** Basis-URL des lokalen Origin-Servers fuer den Edge-Start ueber den Router. */
+    private static final String ORIGIN_BASE_URL = "http://localhost:" + ORIGIN_PORT;
 
     /** Verantwortlich für das Starten der Java-Prozesse. */
     private final ServiceLauncher launcher;
@@ -101,7 +102,7 @@ public final class SystemInitService {
         }
 
         ServiceStatus edge = startEdge
-                ? ensureEdgeRunningAndRegistered(root, routerBaseUrl, timeout, adminToken)
+                ? ensureEdgeRunningAndRegistered(routerBaseUrl, timeout, adminToken)
                 : ServiceStatus.skipped("edge");
 
         if (isFailed(edge)) {
@@ -114,24 +115,32 @@ public final class SystemInitService {
     /**
      * Stellt sicher, dass der Edge läuft und beim Router registriert ist.
      *
-     * @param root Projektwurzel
      * @param routerBaseUrl Basis-URL des Routers
      * @param timeout Timeout für HTTP-Anfragen
      * @param adminToken optionales Admin-Token
      * @return Status des Edge-Services oder Fehlerstatus bei fehlgeschlagener Registrierung
      */
-    private ServiceStatus ensureEdgeRunningAndRegistered(
-            Path root, URI routerBaseUrl, Duration timeout, String adminToken) {
-        ServiceStatus edge = ensureRunning(root, "edge", "edge", EDGE_PORT, "edge");
-        if (isFailed(edge)) {
-            return edge;
+    private ServiceStatus ensureEdgeRunningAndRegistered(URI routerBaseUrl, Duration timeout, String adminToken) {
+        TransportResponse response = startManagedEdgeAtRouter(routerBaseUrl, timeout, adminToken);
+        if (!response.is2xx()) {
+            Integer statusCode = response.statusCode();
+            if (statusCode != null && statusCode == 409 && isPortOpen(EDGE_PORT)) {
+                return ServiceStatus.failed(
+                        "edge",
+                        EDGE_PORT,
+                        "Edge-Port " + EDGE_PORT
+                                + " ist bereits belegt. Starte die bestehende Edge neu ueber '/api/cdn/admin/edges/start', damit sie managed wird.");
+            }
+
+            String detail = response.error();
+            if (detail == null || detail.isBlank()) {
+                detail = "HTTP " + Objects.toString(statusCode, "n/a")
+                        + (response.body() == null || response.body().isBlank() ? "" : ": " + response.body());
+            }
+            return ServiceStatus.failed("edge", EDGE_PORT, "Managed Edge-Start fehlgeschlagen: " + detail);
         }
 
-        if (!registerEdgeAtRouter(routerBaseUrl, timeout, adminToken)) {
-            return ServiceStatus.failed("edge", EDGE_PORT, "Edge konnte nicht beim Router registriert werden.");
-        }
-
-        return edge;
+        return ServiceStatus.started("edge", EDGE_PORT, null);
     }
 
     /**
@@ -194,21 +203,29 @@ public final class SystemInitService {
     }
 
     /**
-     * Registriert den lokalen Edge-Server beim Router.
+     * Startet den lokalen Edge ueber den Router-Lifecycle-Endpunkt inklusive Auto-Registrierung.
      *
      * @param routerBaseUrl Basis-URL des Routers
-     * @param timeout Timeout für den Registrierungs-Request
+     * @param timeout Timeout fuer den Start-Request
      * @param adminToken optionales Admin-Token für geschützte Router-Endpunkte
-     * @return {@code true}, wenn der Router die Registrierung mit 2xx bestätigt
+     * @return HTTP-Antwort des Router-Requests
      */
-    private boolean registerEdgeAtRouter(URI routerBaseUrl, Duration timeout, String adminToken) {
-        URI uri = UriUtils.ensureTrailingSlash(routerBaseUrl)
-                .resolve("api/cdn/routing?region=" + EDGE_REGION + "&url=" + EDGE_URL);
-        Map<String, String> headers =
-                adminToken == null || adminToken.isBlank() ? Map.of() : Map.of("X-Admin-Token", adminToken);
+    private TransportResponse startManagedEdgeAtRouter(URI routerBaseUrl, Duration timeout, String adminToken) {
+        URI uri = UriUtils.ensureTrailingSlash(routerBaseUrl).resolve("api/cdn/admin/edges/start");
 
-        TransportResponse response = transportClient.send(TransportRequest.postJson(uri, timeout, headers, ""));
-        return response.is2xx();
+        String jsonBody = "{"
+                + "\"region\":\"" + JsonUtils.escapeJson(EDGE_REGION) + "\","
+                + "\"port\":" + EDGE_PORT + ","
+                + "\"originBaseUrl\":\"" + JsonUtils.escapeJson(ORIGIN_BASE_URL) + "\","
+                + "\"autoRegister\":true,"
+                + "\"waitUntilReady\":true"
+                + "}";
+
+        Map<String, String> headers = adminToken == null || adminToken.isBlank()
+                ? Map.of("Content-Type", "application/json")
+                : Map.of("X-Admin-Token", adminToken, "Content-Type", "application/json");
+
+        return transportClient.send(TransportRequest.postJson(uri, timeout, headers, jsonBody));
     }
 
     /**

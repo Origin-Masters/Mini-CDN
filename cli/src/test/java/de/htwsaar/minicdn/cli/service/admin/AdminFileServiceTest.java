@@ -77,21 +77,20 @@ class AdminFileServiceTest {
 
     @Test
     void uploadViaRouter_shouldRejectNullLocalFile() {
-        assertThrows(NullPointerException.class,
-                () -> service.uploadViaRouter("docs/manual.pdf", null, "eu"));
+        assertThrows(NullPointerException.class, () -> service.uploadViaRouter("docs/manual.pdf", null, "eu"));
         assertEquals(0, transportClient.sendCalls);
     }
 
     @Test
     void uploadViaRouter_shouldRejectBlankTargetPath() {
-        assertThrows(IllegalArgumentException.class,
-                () -> service.uploadViaRouter("   ", Path.of("manual.pdf"), "eu"));
+        assertThrows(IllegalArgumentException.class, () -> service.uploadViaRouter("   ", Path.of("manual.pdf"), "eu"));
         assertEquals(0, transportClient.sendCalls);
     }
 
     @Test
     void uploadViaRouter_shouldRejectBlankRegion() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> service.uploadViaRouter("docs/manual.pdf", Path.of("manual.pdf"), "   "));
         assertEquals(0, transportClient.sendCalls);
     }
@@ -123,15 +122,13 @@ class AdminFileServiceTest {
 
     @Test
     void deleteViaRouter_shouldRejectBlankTargetPath() {
-        assertThrows(IllegalArgumentException.class,
-                () -> service.deleteViaRouter("   ", "eu"));
+        assertThrows(IllegalArgumentException.class, () -> service.deleteViaRouter("   ", "eu"));
         assertEquals(0, transportClient.sendCalls);
     }
 
     @Test
     void deleteViaRouter_shouldRejectBlankRegion() {
-        assertThrows(IllegalArgumentException.class,
-                () -> service.deleteViaRouter("docs/manual.pdf", "   "));
+        assertThrows(IllegalArgumentException.class, () -> service.deleteViaRouter("docs/manual.pdf", "   "));
         assertEquals(0, transportClient.sendCalls);
     }
 
@@ -196,8 +193,7 @@ class AdminFileServiceTest {
 
     @Test
     void showViaRouter_shouldRejectBlankPath() {
-        assertThrows(IllegalArgumentException.class,
-                () -> service.showViaRouter("   "));
+        assertThrows(IllegalArgumentException.class, () -> service.showViaRouter("   "));
         assertEquals(0, transportClient.sendCalls);
     }
 

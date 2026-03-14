@@ -1,24 +1,20 @@
 package de.htwsaar.minicdn.cli.service.admin;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 class AdminUserServiceTest {
 
     @Test
-    void addUser() {
-    }
+    void addUser() {}
 
     @Test
-    void listUsersRaw() {
-    }
+    void listUsersRaw() {}
 
     @Test
-    void parseUsers() {
-    }
+    void parseUsers() {}
 
     @Test
-    void deleteUser() {
-    }
+    void deleteUser() {}
 }

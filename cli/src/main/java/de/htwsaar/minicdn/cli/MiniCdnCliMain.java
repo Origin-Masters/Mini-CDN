@@ -4,6 +4,8 @@ import static de.htwsaar.minicdn.common.util.ExitCodes.REJECTED;
 
 import de.htwsaar.minicdn.cli.command.admin.AdminCommand;
 import de.htwsaar.minicdn.cli.command.root.MiniCdnRootCommand;
+import de.htwsaar.minicdn.cli.command.system.SystemCommand;
+import de.htwsaar.minicdn.cli.command.user.UserCommand;
 import de.htwsaar.minicdn.cli.di.CliContext;
 import de.htwsaar.minicdn.cli.di.CliSessionState;
 import de.htwsaar.minicdn.cli.di.ContextFactory;
@@ -122,7 +124,7 @@ public final class MiniCdnCliMain {
     }
 
     /**
-     * Führt ein geparstes Kommando aus und blockiert Admin-Kommandos ohne Admin-Login.
+     * Führt ein geparstes Kommando aus und erzwingt Login- bzw. Rollenregeln.
      *
      * @param parseResult Picocli-Parsergebnis
      * @param ctx zentraler CLI-Kontext
@@ -132,11 +134,23 @@ public final class MiniCdnCliMain {
     private static int executeWithAdminGuard(CommandLine.ParseResult parseResult, CliContext ctx, PrintWriter err) {
 
         boolean adminCommandRequested = isAdminCommandRequested(parseResult);
+        boolean userCommandRequested = isUserCommandRequested(parseResult);
+        boolean systemCommandRequested = isSystemCommandRequested(parseResult);
         boolean helpRequested = parseResult.isUsageHelpRequested() || parseResult.isVersionHelpRequested();
+
+        if (!helpRequested
+                && !systemCommandRequested
+                && (adminCommandRequested || userCommandRequested)
+                && !ctx.sessionState().isLoggedIn()) {
+            err.println("[AUTH] Zugriff verweigert: Bitte zuerst einloggen.");
+            err.println("[AUTH] Reihenfolge: 1) system init  2) system login --name <user>  3) user/admin ...");
+            err.flush();
+            return REJECTED.code();
+        }
 
         if (adminCommandRequested && !helpRequested && !ctx.sessionState().isAdminLoggedIn()) {
             err.println("[AUTH] Zugriff verweigert: Für Admin-Befehle ist ein Login als Admin nötig.");
-            err.println("[AUTH] Reihenfolge: 1) system init  2) user login --name <admin>  3) admin ...");
+            err.println("[AUTH] Reihenfolge: 1) system init  2) system login --name <admin>  3) admin ...");
             err.flush();
             return REJECTED.code();
         }
@@ -173,5 +187,15 @@ public final class MiniCdnCliMain {
     private static boolean isAdminCommandRequested(CommandLine.ParseResult parseResult) {
         return parseResult.asCommandLineList().stream()
                 .anyMatch(commandLine -> commandLine.getCommand() instanceof AdminCommand);
+    }
+
+    private static boolean isUserCommandRequested(CommandLine.ParseResult parseResult) {
+        return parseResult.asCommandLineList().stream()
+                .anyMatch(commandLine -> commandLine.getCommand() instanceof UserCommand);
+    }
+
+    private static boolean isSystemCommandRequested(CommandLine.ParseResult parseResult) {
+        return parseResult.asCommandLineList().stream()
+                .anyMatch(commandLine -> commandLine.getCommand() instanceof SystemCommand);
     }
 }

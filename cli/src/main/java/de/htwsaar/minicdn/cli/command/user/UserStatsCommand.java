@@ -147,7 +147,7 @@ public final class UserStatsCommand implements Runnable {
      */
     void requireLoggedInUser() {
         if (!ctx.sessionState().isLoggedIn()) {
-            throw new IllegalArgumentException("Bitte zuerst einloggen: user login --name <user>");
+            throw new IllegalArgumentException("Bitte zuerst einloggen: system login --name <user>");
         }
     }
 
