@@ -19,6 +19,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -30,16 +32,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class RouterAdminService {
 
+    private static final Logger log = LoggerFactory.getLogger(RouterAdminService.class);
+
     private final RoutingIndex routingIndex;
     private final RouterStatsService routerStatsService;
     private final EdgeGateway edgeGateway;
+    private final OriginClusterService originClusterService;
 
     public RouterAdminService(
-            RoutingIndex routingIndex, RouterStatsService routerStatsService, EdgeGateway edgeGateway) {
+            RoutingIndex routingIndex,
+            RouterStatsService routerStatsService,
+            EdgeGateway edgeGateway,
+            OriginClusterService originClusterService) {
 
         this.routingIndex = routingIndex;
         this.routerStatsService = routerStatsService;
         this.edgeGateway = edgeGateway;
+        this.originClusterService = originClusterService;
     }
 
     /**
@@ -49,7 +58,9 @@ public class RouterAdminService {
      * @param url Basis-URL der Edge
      */
     public void addEdgeNode(String region, String url) {
-        routingIndex.addEdge(region, new EdgeNode(url));
+        EdgeNode node = new EdgeNode(url);
+        routingIndex.addEdge(region, node);
+        syncNewEdgeToActiveOrigin(region, node);
     }
 
     /**
@@ -67,7 +78,7 @@ public class RouterAdminService {
         for (BulkRequest req : requests) {
             String status;
             if (req != null && "add".equalsIgnoreCase(req.action())) {
-                routingIndex.addEdge(req.region(), new EdgeNode(req.url()));
+                addEdgeNode(req.region(), req.url());
                 status = "added";
             } else if (req != null && "remove".equalsIgnoreCase(req.action())) {
                 boolean removed = routingIndex.removeEdge(req.region(), new EdgeNode(req.url()), true);
@@ -80,6 +91,16 @@ public class RouterAdminService {
         }
 
         return results;
+    }
+
+    private void syncNewEdgeToActiveOrigin(String region, EdgeNode node) {
+        boolean synced = originClusterService.syncEdgeToActiveOrigin(node, region);
+        if (!synced) {
+            log.warn(
+                    "[ROUTING-REGISTER] Edge {} in Region {} konnte nicht auf aktive Origin synchronisiert werden.",
+                    node.url(),
+                    region);
+        }
     }
 
     /**

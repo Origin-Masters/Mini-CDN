@@ -41,13 +41,15 @@ public class CdnRoutingController {
             @RequestParam(value = "region", required = false) String regionQuery,
             @RequestParam(value = "clientId", required = false) String clientIdQuery,
             @RequestHeader(value = "X-Client-Region", required = false) String regionHeader,
-            @RequestHeader(value = "X-Client-Id", required = false) String clientIdHeader) {
+            @RequestHeader(value = "X-Client-Id", required = false) String clientIdHeader,
+            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
 
         String cleanPath = UrlUtil.stripLeadingSlash(path == null ? "" : path);
         String region = firstNonBlank(regionQuery, regionHeader);
         String clientId = firstNonBlank(clientIdQuery, clientIdHeader);
+        Long userId = parsePositiveLong(userIdHeader);
 
-        RouteFileResult result = routingService.route(cleanPath, region, clientId);
+        RouteFileResult result = routingService.route(cleanPath, region, clientId, userId);
 
         if (result.status() == RouteStatus.BAD_REQUEST) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.errorMessage());
@@ -82,5 +84,23 @@ public class CdnRoutingController {
             return fallback.trim();
         }
         return null;
+    }
+
+    /**
+     * Parst einen optionalen positiven Long-Wert aus einem Header.
+     *
+     * @param rawValue Headerwert
+     * @return positive ID oder {@code null}
+     */
+    private static Long parsePositiveLong(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            return null;
+        }
+        try {
+            long value = Long.parseLong(rawValue.trim());
+            return value > 0 ? value : null;
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }

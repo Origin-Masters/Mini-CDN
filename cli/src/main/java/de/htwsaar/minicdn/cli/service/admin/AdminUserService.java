@@ -113,7 +113,7 @@ public final class AdminUserService {
             return CallResult.clientError("id must be greater than 0");
         }
 
-        URI url = usersUrl().resolve(String.valueOf(id));
+        URI url = base().resolve("api/cdn/admin/users/" + id);
         return send(TransportRequest.delete(url, requestTimeout, adminHeaders()));
     }
 
@@ -123,7 +123,7 @@ public final class AdminUserService {
      * @return URL des User-Endpunkts
      */
     private URI usersUrl() {
-        return base().resolve("api/cdn/admin/users/");
+        return base().resolve("api/cdn/admin/users");
     }
 
     /**
