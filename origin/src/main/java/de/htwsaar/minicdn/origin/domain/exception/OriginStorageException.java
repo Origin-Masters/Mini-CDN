@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.origin.domain;
+package de.htwsaar.minicdn.origin.domain.exception;
 
 /**
  * Technische Exception für Fehler im Storage-Adapter.

@@ -1,7 +1,7 @@
 package de.htwsaar.minicdn.edge.infrastructure.persistence;
 
 import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.domain.model.ReplacementStrategy;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,34 +15,34 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- *  persistence for edge runtime state using a .properties file.
- * Format:
- *   region=eu-west
- *   defaultTtlMs=60000
- *   maxEntries=100
- *   replacementStrategy=LRU
- *   ttl.images/=90000
+ * Dateibasierter Adapter für den persistierten Runtime-Zustand der Edge-Node.
+ *
+ * <p>Gespeichert werden Konfiguration und TTL-Policies in einer einzelnen
+ * {@code .properties}-Datei.</p>
  */
 @Component
 public class EdgeRuntimeStateStore {
 
+    /** Pfad zur Datei mit dem persistierten Runtime-Zustand. */
     private final Path stateFile;
 
     /**
-     * Creates a state store backed by the given properties file path.
+     * Erstellt den Adapter mit dem konfigurierten Dateipfad.
      *
-     * @param stateFile path to the properties file used for persistence */
+     * @param stateFile Pfad zur State-Datei
+     */
     public EdgeRuntimeStateStore(
             @Value("${edge.recovery.state-file:data/edge-runtime-state.properties}") String stateFile) {
         this.stateFile = Path.of(stateFile);
     }
 
     /**
-     * Persists the runtime configuration and TTL policies to the properties file.
+     * Persistiert Runtime-Konfiguration und TTL-Policies.
      *
-     * @param config the runtime configuration to persist
-     * @param ttlPolicies map of path prefixes to TTL values in milliseconds; may be {@code null}
-     * @throws IllegalStateException if writing to disk fails */
+     * @param config zu speichernde Konfiguration
+     * @param ttlPolicies TTL-Policies nach Präfix, darf {@code null} sein
+     * @throws IllegalStateException wenn das Schreiben fehlschlägt
+     */
     public synchronized void save(EdgeRuntimeConfig config, Map<String, Long> ttlPolicies) {
         Properties props = new Properties();
         props.setProperty("region", config.region());
@@ -62,15 +62,14 @@ public class EdgeRuntimeStateStore {
         try {
             writeProps(props);
         } catch (IOException ex) {
-            throw new IllegalStateException("Failed to persist edge runtime state", ex);
+            throw new IllegalStateException("Persistieren des Edge-Runtime-Zustands fehlgeschlagen", ex);
         }
     }
 
     /**
-     * Loads the previously persisted runtime configuration and TTL policies.
+     * Lädt den zuletzt gespeicherten Runtime-Zustand.
      *
-     * @return restored state or {@code null} if the file is missing/invalid
-     *
+     * @return wiederhergestellter Zustand oder {@code null}, falls keine gültigen Daten vorliegen
      */
     public synchronized RestoredState load() {
         try {
@@ -108,15 +107,20 @@ public class EdgeRuntimeStateStore {
     }
 
     /**
-     * Combines the restored runtime configuration and TTL policies.
+     * Bündelt wiederhergestellte Konfiguration und TTL-Policies.
      *
-     * @param config restored runtime configuration * @param ttlPolicies restored TTL policies */
+     * @param config wiederhergestellte Konfiguration
+     * @param ttlPolicies wiederhergestellte TTL-Policies
+     */
     public record RestoredState(EdgeRuntimeConfig config, Map<String, Long> ttlPolicies) {}
 
     /**
-     * Parses a string to {@code long} with a fallback if invalid.
+     * Parst einen String in einen {@code long}-Wert mit Fallback.
      *
-     * @param value string value to parse * @param fallback value returned on null/blank/parse error * @return parsed long or fallback */
+     * @param value zu parsende Zeichenkette
+     * @param fallback Rückgabewert bei ungültigem Input
+     * @return geparster Wert oder Fallback
+     */
     private static long parseLong(String value, long fallback) {
         if (value == null || value.isBlank()) return fallback;
         try {
@@ -127,10 +131,10 @@ public class EdgeRuntimeStateStore {
     }
 
     /**
-     * Reads properties from the state file.
+     * Liest die Properties-Datei des Runtime-Zustands.
      *
-     * @return loaded properties or {@code null} if file does not exist
-     * * @throws IOException if reading fails
+     * @return geladene Properties oder {@code null}, wenn keine Datei existiert
+     * @throws IOException bei Lesefehlern
      */
     private Properties readProps() throws IOException {
         if (!Files.exists(stateFile)) return null;
@@ -142,10 +146,10 @@ public class EdgeRuntimeStateStore {
     }
 
     /**
-     * Writes the given properties atomically to the state file.
+     * Schreibt die Properties atomar auf die Ziel-Datei.
      *
-     * @param props properties to persist
-     * @throws IOException if writing or moving the temp file fails
+     * @param props zu speichernde Properties
+     * @throws IOException bei Schreib- oder Move-Fehlern
      */
     private void writeProps(Properties props) throws IOException {
         Path parent = stateFile.getParent();

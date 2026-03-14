@@ -1,23 +1,25 @@
 package de.htwsaar.minicdn.edge.infrastructure.cache;
 
+import de.htwsaar.minicdn.edge.domain.model.CacheEntry;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * LFU Cache-Store (Least Frequently Used).
+ * LFU-Cache mit Frequenzzählung pro Schlüssel.
  *
- * <p>Eviction entfernt den Key mit der kleinsten Zugriffszahl;
- * Tie-Breaker: ältester Zugriff (Insertion-Order via Counter).</p>
- * <p>Thread-Safety: einfaches {@code synchronized}.</p>
+ * <p>Bei Eviction wird der Eintrag mit der kleinsten Zugriffszahl entfernt.
+ * Bei Gleichstand entscheidet der älteste Zugriff.</p>
+ * <p>Threadsicherheit erfolgt bewusst über einfaches {@code synchronized}.</p>
  */
 public final class LfuCacheStore implements CacheStore {
 
+    /** Interner Zustand je Cache-Schlüssel. */
     private static final class Node {
-        CachedFile value;
+        CacheEntry value;
         long freq;
         long lastAccessCounter;
 
-        Node(CachedFile value, long counter) {
+        Node(CacheEntry value, long counter) {
             this.value = value;
             this.freq = 1;
             this.lastAccessCounter = counter;
@@ -28,7 +30,7 @@ public final class LfuCacheStore implements CacheStore {
     private long counter = 0;
 
     @Override
-    public synchronized CachedFile getFresh(String key, long nowMs) {
+    public synchronized CacheEntry getFresh(String key, long nowMs) {
         if (key == null || key.isBlank()) return null;
         Node n = map.get(key);
         if (n == null) return null;
@@ -42,7 +44,7 @@ public final class LfuCacheStore implements CacheStore {
     }
 
     @Override
-    public synchronized void put(String key, CachedFile value, int maxEntries, long nowMs) {
+    public synchronized void put(String key, CacheEntry value, int maxEntries, long nowMs) {
         if (key == null || key.isBlank() || value == null) return;
         Node existing = map.get(key);
         if (existing != null) {
@@ -80,8 +82,8 @@ public final class LfuCacheStore implements CacheStore {
     }
 
     @Override
-    public synchronized Map<String, CachedFile> snapshot() {
-        Map<String, CachedFile> out = new HashMap<>();
+    public synchronized Map<String, CacheEntry> snapshot() {
+        Map<String, CacheEntry> out = new HashMap<>();
         map.forEach((k, v) -> out.put(k, v.value));
         return Map.copyOf(out);
     }

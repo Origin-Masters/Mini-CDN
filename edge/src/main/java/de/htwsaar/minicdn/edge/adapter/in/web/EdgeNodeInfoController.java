@@ -20,9 +20,9 @@ public class EdgeNodeInfoController {
     private final EdgeConfigService configService;
 
     /**
-     * Constructor Injection.
+     * Erstellt den HTTP-Adapter für Knoteninformations-Endpunkte.
      *
-     * @param configService Live-Konfiguration (enthält Region)
+     * @param configService Live-Konfiguration mit Regions- und Cache-Informationen
      */
     public EdgeNodeInfoController(EdgeConfigService configService) {
         this.configService = configService;

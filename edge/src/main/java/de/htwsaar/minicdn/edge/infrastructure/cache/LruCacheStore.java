@@ -1,22 +1,23 @@
 package de.htwsaar.minicdn.edge.infrastructure.cache;
 
+import de.htwsaar.minicdn.edge.domain.model.CacheEntry;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * LRU Cache-Store via {@link LinkedHashMap} mit {@code accessOrder=true}.
+ * LRU-Cache auf Basis einer {@link LinkedHashMap} mit {@code accessOrder=true}.
  *
- * <p>Thread-Safety: einfaches {@code synchronized} – ausreichend für Demobetrieb.</p>
+ * <p>Threadsicherheit erfolgt bewusst über einfaches {@code synchronized}.</p>
  */
 public final class LruCacheStore implements CacheStore {
 
-    private final Map<String, CachedFile> map = new LinkedHashMap<>(16, 0.75f, true);
+    private final Map<String, CacheEntry> map = new LinkedHashMap<>(16, 0.75f, true);
 
     @Override
-    public synchronized CachedFile getFresh(String key, long nowMs) {
+    public synchronized CacheEntry getFresh(String key, long nowMs) {
         if (key == null || key.isBlank()) return null;
-        CachedFile v = map.get(key);
+        CacheEntry v = map.get(key);
         if (v == null) return null;
         if (v.expiresAtMs() <= nowMs) {
             map.remove(key);
@@ -26,7 +27,7 @@ public final class LruCacheStore implements CacheStore {
     }
 
     @Override
-    public synchronized void put(String key, CachedFile value, int maxEntries, long nowMs) {
+    public synchronized void put(String key, CacheEntry value, int maxEntries, long nowMs) {
         if (key == null || key.isBlank() || value == null) return;
         map.put(key, value);
         evictIfNeeded(maxEntries, nowMs);
@@ -57,15 +58,15 @@ public final class LruCacheStore implements CacheStore {
     }
 
     @Override
-    public synchronized Map<String, CachedFile> snapshot() {
+    public synchronized Map<String, CacheEntry> snapshot() {
         return Map.copyOf(map);
     }
 
     private void evictIfNeeded(int maxEntries, long nowMs) {
         if (maxEntries <= 0) return;
-        // opportunistisch abgelaufene Einträge entfernen
+        // Opportunistisch abgelaufene Einträge entfernen.
         map.entrySet().removeIf(e -> e.getValue().expiresAtMs() <= nowMs);
-        // LRU-Eviction: ältester Zugriff fliegt zuerst raus
+        // LRU-Eviction: Der am längsten nicht genutzte Eintrag wird zuerst entfernt.
         while (map.size() > maxEntries) {
             Iterator<String> it = map.keySet().iterator();
             if (!it.hasNext()) break;

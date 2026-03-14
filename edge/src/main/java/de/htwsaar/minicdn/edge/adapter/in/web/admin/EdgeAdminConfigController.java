@@ -3,7 +3,7 @@ package de.htwsaar.minicdn.edge.adapter.in.web.admin;
 import de.htwsaar.minicdn.edge.application.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
 import de.htwsaar.minicdn.edge.application.config.TtlPolicyService;
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.domain.model.ReplacementStrategy;
 import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeRuntimeStateStore;
 import java.util.Map;
 import org.springframework.context.annotation.Profile;
@@ -32,10 +32,11 @@ public class EdgeAdminConfigController {
     private final EdgeRuntimeStateStore runtimeStateStore;
 
     /**
-     * Constructor Injection.
+     * Erstellt den HTTP-Adapter für die Runtime-Konfiguration der Edge-Node.
      *
-     * @param configService    Live-Konfiguration
+     * @param configService Live-Konfiguration
      * @param ttlPolicyService TTL-Policies
+     * @param runtimeStateStore Persistenz des Runtime-Zustands
      */
     public EdgeAdminConfigController(
             EdgeConfigService configService,
@@ -126,6 +127,7 @@ public class EdgeAdminConfigController {
         return ResponseEntity.ok(Map.of("prefix", prefix, "removed", removed));
     }
 
+    /** Persistiert die aktuelle Runtime-Konfiguration zusammen mit allen TTL-Policies. */
     private void persistRuntimeState() {
         runtimeStateStore.save(configService.current(), ttlPolicyService.snapshot());
     }

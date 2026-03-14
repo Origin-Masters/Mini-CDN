@@ -1,14 +1,14 @@
-package de.htwsaar.minicdn.origin.service;
+package de.htwsaar.minicdn.origin.application.file;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.htwsaar.minicdn.common.util.Sha256Util;
-import de.htwsaar.minicdn.origin.domain.OriginFileContent;
-import de.htwsaar.minicdn.origin.domain.OriginFileMeta;
-import de.htwsaar.minicdn.origin.domain.OriginFileMetadata;
-import de.htwsaar.minicdn.origin.domain.OriginStorage;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileContent;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileMeta;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileMetadata;
+import de.htwsaar.minicdn.origin.domain.port.OriginStorage;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;

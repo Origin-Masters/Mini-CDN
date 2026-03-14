@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.origin.domain;
+package de.htwsaar.minicdn.origin.domain.model;
 
 /**
  * Ergebnis eines PUT im Origin.

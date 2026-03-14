@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.origin.config;
+package de.htwsaar.minicdn.origin.application.config;
 
 /**
  * Laufzeit-Konfiguration des Origin-Servers.

@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.edge.infrastructure.persistence;
 
-import de.htwsaar.minicdn.edge.infrastructure.cache.CachedFile;
+import de.htwsaar.minicdn.edge.domain.model.CacheEntry;
+import de.htwsaar.minicdn.edge.domain.port.EdgeCacheStatePort;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,119 +16,123 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * Simple file-based persistence for edge cache entries.
- * Everything is stored in one .properties file.
+ * Dateibasierter Adapter zur Persistenz von Cache-Einträgen.
+ *
+ * <p>Alle Einträge werden in einer einzelnen {@code .properties}-Datei gespeichert.</p>
  */
 @Component
-public class EdgeCacheStateStore {
+public class EdgeCacheStateStore implements EdgeCacheStatePort {
 
-    /** Absolute or relative path to the persisted cache-state properties file. */
+    /** Pfad zur persistierten Cache-State-Datei. */
     private final Path stateFile;
 
     /**
-     * Creates the state store using a configurable file path.
+     * Erstellt den Adapter mit einem konfigurierbaren Dateipfad.
      *
-     * <p>Default: {@code data/edge-cache-state.properties}
+     * @param stateFile Pfad zur Cache-State-Datei
      */
     public EdgeCacheStateStore(@Value("${edge.cache.state-file:data/edge-cache-state.properties}") String stateFile) {
         this.stateFile = Path.of(stateFile);
     }
 
     /**
-     * Persists the current in-memory cache snapshot to disk.
+     * Persistiert den aktuellen Cache-Snapshot.
      *
-     * <p>Only valid, non-expired entries are written.
+     * @param entries Cache-Einträge
+     * @param nowMs aktueller Zeitpunkt in Millisekunden
      */
-    public synchronized void save(Map<String, CachedFile> entries, long nowMs) {
-        // Flat key/value representation that can be written to a single file.
+    @Override
+    public synchronized void save(Map<String, CacheEntry> entries, long nowMs) {
+        // Flache Schlüssel/Wert-Repräsentation für eine einzelne Properties-Datei.
         Properties props = new Properties();
-        // Running index for keys like entry.0.*, entry.1.*, ...
+        // Laufender Index für Schlüssel wie entry.0.*, entry.1.*, ...
         int index = 0;
 
         if (entries != null) {
-            for (Map.Entry<String, CachedFile> entry : entries.entrySet()) {
+            for (Map.Entry<String, CacheEntry> entry : entries.entrySet()) {
                 String key = entry.getKey();
-                CachedFile file = entry.getValue();
-                // Skip invalid data to keep the persisted file clean.
+                CacheEntry file = entry.getValue();
+                // Ungültige Daten werden übersprungen, damit die Datei konsistent bleibt.
                 if (isBlank(key) || file == null || file.body() == null) continue;
-                // Do not persist already expired entries.
+                // Bereits abgelaufene Einträge werden nicht gespeichert.
                 if (file.expiresAtMs() <= nowMs) continue;
 
                 String prefix = "entry." + index + ".";
-                // Logical cache key (e.g. file path).
+                // Fachlicher Cache-Schlüssel, z. B. ein Dateipfad.
                 props.setProperty(prefix + "key", key);
-                // Binary body is stored as Base64 text in the properties file.
+                // Binärdaten werden Base64-kodiert abgelegt.
                 props.setProperty(prefix + "bodyBase64", Base64.getEncoder().encodeToString(file.body()));
-                // Optional metadata fields.
+                // Optionale Metadaten.
                 if (!isBlank(file.contentType())) props.setProperty(prefix + "contentType", file.contentType());
                 if (!isBlank(file.sha256())) props.setProperty(prefix + "sha256", file.sha256());
-                // Absolute expiry timestamp in epoch milliseconds.
+                // Absoluter Ablaufzeitpunkt in Millisekunden seit Epoch.
                 props.setProperty(prefix + "expiresAtMs", Long.toString(file.expiresAtMs()));
                 index++;
             }
         }
 
         try {
-            // Ensure target directory exists.
+            // Zielverzeichnis bei Bedarf anlegen.
             Path parent = stateFile.getParent();
             if (parent != null) Files.createDirectories(parent);
 
-            // Write to temp file first, then atomically replace target file.
+            // Zuerst temporär schreiben, dann atomar ersetzen.
             Path tmp = stateFile.resolveSibling(stateFile.getFileName() + ".tmp");
             try (OutputStream out = Files.newOutputStream(tmp)) {
                 props.store(out, "edge cache state");
             }
             Files.move(tmp, stateFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException ex) {
-            throw new IllegalStateException("Failed to persist cache state", ex);
+            throw new IllegalStateException("Persistieren des Cache-Zustands fehlgeschlagen", ex);
         }
     }
 
     /**
-     * Loads previously persisted cache entries from disk.
+     * Lädt zuvor gespeicherte Cache-Einträge.
      *
-     * <p>Broken entries are ignored so one bad record does not block recovery.
+     * @return geladene Cache-Einträge, ggf. leer
      */
-    public synchronized Map<String, CachedFile> load() {
-        // No state file means "nothing to recover".
+    @Override
+    public synchronized Map<String, CacheEntry> load() {
+        // Fehlende Datei bedeutet: nichts wiederherzustellen.
         if (!Files.exists(stateFile)) return Map.of();
 
         Properties props = new Properties();
         try (InputStream in = Files.newInputStream(stateFile)) {
             props.load(in);
         } catch (IOException ex) {
-            // I/O problems should not break app startup; recover with empty state.
+            // I/O-Probleme dürfen den Start nicht blockieren.
             return Map.of();
         }
 
-        Map<String, CachedFile> out = new HashMap<>();
+        Map<String, CacheEntry> out = new HashMap<>();
 
-        // Iterate over all keys and pick the "entry.N.key" records.
+        // Nur Einträge im Schema entry.N.key berücksichtigen.
         for (String propName : props.stringPropertyNames()) {
             if (!propName.startsWith("entry.") || !propName.endsWith(".key")) continue;
 
             String prefix = propName.substring(0, propName.length() - "key".length());
             String key = props.getProperty(propName);
             String encodedBody = props.getProperty(prefix + "bodyBase64");
-            // Key and body are mandatory fields.
+            // Schlüssel und Body sind Pflichtfelder.
             if (isBlank(key) || isBlank(encodedBody)) continue;
 
             try {
-                // Rebuild the original CachedFile from persisted text values.
+                // Cache-Eintrag aus den gespeicherten Textwerten rekonstruieren.
                 byte[] body = Base64.getDecoder().decode(encodedBody);
                 long expiresAtMs = Long.parseLong(props.getProperty(prefix + "expiresAtMs", "0"));
                 String contentType = props.getProperty(prefix + "contentType");
                 String sha256 = props.getProperty(prefix + "sha256");
-                out.put(key, new CachedFile(body, contentType, sha256, expiresAtMs));
+                out.put(key, new CacheEntry(body, contentType, sha256, expiresAtMs));
             } catch (RuntimeException ex) {
-                // Ignore broken entries and keep loading the rest.
+                // Defekte Einzel-Einträge werden ignoriert.
             }
         }
 
         return out;
     }
 
-    /** Small utility used throughout save/load to validate text values. */
+    /** Prüft, ob ein Textwert leer oder nur aus Whitespace besteht. */
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
     }

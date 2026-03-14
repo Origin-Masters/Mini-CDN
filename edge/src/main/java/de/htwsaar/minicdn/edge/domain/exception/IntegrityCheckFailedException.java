@@ -5,6 +5,11 @@ package de.htwsaar.minicdn.edge.domain.exception;
  */
 public class IntegrityCheckFailedException extends RuntimeException {
 
+    /**
+     * Erstellt die Exception mit einer fachlichen Fehlermeldung.
+     *
+     * @param message Fehlerbeschreibung
+     */
     public IntegrityCheckFailedException(String message) {
         super(message);
     }

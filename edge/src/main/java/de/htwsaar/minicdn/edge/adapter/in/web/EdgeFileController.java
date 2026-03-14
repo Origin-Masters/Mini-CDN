@@ -32,9 +32,9 @@ public class EdgeFileController {
     private final EdgeMetricsService metricsService;
 
     /**
-     * Constructor Injection.
+     * Erstellt den HTTP-Adapter für Datei-Zugriffe.
      *
-     * @param fileService    fachlicher Datei-Service
+     * @param fileService fachlicher Datei-Service
      * @param metricsService Metriken-Service
      */
     public EdgeFileController(EdgeFileService fileService, EdgeMetricsService metricsService) {

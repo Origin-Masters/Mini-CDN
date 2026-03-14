@@ -24,9 +24,9 @@ public class EdgeCacheAdminController {
     private final EdgeFileService fileService;
 
     /**
-     * Constructor Injection.
+     * Erstellt den HTTP-Adapter für Cache-Administrations-Endpunkte.
      *
-     * @param fileService fachlicher Service (enthält Cache-Zugriff)
+     * @param fileService fachlicher Service mit Cache-Zugriff
      */
     public EdgeCacheAdminController(EdgeFileService fileService) {
         this.fileService = fileService;

@@ -1,10 +1,11 @@
-package de.htwsaar.minicdn.origin.web;
+package de.htwsaar.minicdn.origin.adapter.in.web.admin;
 
 import de.htwsaar.minicdn.common.util.PathUtils;
-import de.htwsaar.minicdn.origin.config.OriginRuntimeConfigService;
-import de.htwsaar.minicdn.origin.domain.OriginFiles;
-import de.htwsaar.minicdn.origin.domain.OriginPutResult;
+import de.htwsaar.minicdn.origin.application.config.OriginRuntimeConfigService;
+import de.htwsaar.minicdn.origin.domain.model.OriginPutResult;
+import de.htwsaar.minicdn.origin.domain.port.OriginFiles;
 import java.net.URI;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/origin/admin")
+@Profile("origin")
 public class OriginAdminController {
 
     private final OriginFiles origin;

@@ -19,10 +19,10 @@ public class EdgeAdminStatsController {
     private final EdgeFileService fileService;
 
     /**
-     * Constructor Injection.
+     * Erstellt den HTTP-Adapter für Statistik-Endpunkte.
      *
      * @param metricsService Metriken-Service
-     * @param fileService    Service für Cache-Größe
+     * @param fileService Service für Cache-Größe
      */
     public EdgeAdminStatsController(EdgeMetricsService metricsService, EdgeFileService fileService) {
         this.metricsService = metricsService;

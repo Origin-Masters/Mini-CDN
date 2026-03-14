@@ -1,10 +1,15 @@
 package de.htwsaar.minicdn.edge.infrastructure.cache;
 
+import de.htwsaar.minicdn.edge.domain.model.CacheEntry;
+import de.htwsaar.minicdn.edge.domain.port.EdgeCache;
+
 /**
- * Abstraktion des Cache-Stores.
- * Ermöglicht den Austausch von LRU/LFU ohne Anpassung der Fach- oder Controller-Schicht.
+ * Infrastrukturinterne Cache-Abstraktion.
+ *
+ * <p>Erweitert den fachlichen Port {@link EdgeCache} um die konkrete In-Memory-Verwendung
+ * innerhalb der Adapter- und Infrastrukturklassen.</p>
  */
-public interface CacheStore {
+public interface CacheStore extends EdgeCache {
 
     /**
      * Gibt einen frischen Eintrag zurück oder {@code null} wenn abgelaufen/nicht vorhanden.
@@ -13,7 +18,8 @@ public interface CacheStore {
      * @param nowMs aktueller Zeitstempel in ms
      * @return frischer Eintrag oder {@code null}
      */
-    CachedFile getFresh(String key, long nowMs);
+    @Override
+    CacheEntry getFresh(String key, long nowMs);
 
     /**
      * Speichert einen Eintrag und führt bei Bedarf Eviction durch.
@@ -23,7 +29,8 @@ public interface CacheStore {
      * @param maxEntries maximale Einträge (0 = unbegrenzt)
      * @param nowMs      aktueller Zeitstempel in ms
      */
-    void put(String key, CachedFile value, int maxEntries, long nowMs);
+    @Override
+    void put(String key, CacheEntry value, int maxEntries, long nowMs);
 
     /**
      * Entfernt einen einzelnen Eintrag.
@@ -31,6 +38,7 @@ public interface CacheStore {
      * @param key Cache-Schlüssel
      * @return {@code true} wenn ein Eintrag entfernt wurde
      */
+    @Override
     boolean remove(String key);
 
     /**
@@ -39,9 +47,11 @@ public interface CacheStore {
      * @param prefix Schlüssel-Präfix
      * @return Anzahl entfernter Einträge
      */
+    @Override
     int removeByPrefix(String prefix);
 
     /** Leert den gesamten Cache. */
+    @Override
     void clear();
 
     /**
@@ -49,12 +59,14 @@ public interface CacheStore {
      *
      * @return Eintragsanzahl
      */
+    @Override
     int size();
 
     /**
      * Snapshot des aktuellen Cache-Inhalts.
      *
-     * @return Map aus Cache-Key zu {@link CachedFile}
+     * @return Map aus Cache-Key zu {@link CacheEntry}
      */
-    java.util.Map<String, CachedFile> snapshot();
+    @Override
+    java.util.Map<String, CacheEntry> snapshot();
 }

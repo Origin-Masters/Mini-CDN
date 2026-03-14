@@ -6,16 +6,15 @@ import de.htwsaar.minicdn.edge.application.config.TtlPolicyService;
 import de.htwsaar.minicdn.edge.domain.exception.IntegrityCheckFailedException;
 import de.htwsaar.minicdn.edge.domain.exception.OriginAccessException;
 import de.htwsaar.minicdn.edge.domain.model.CacheDecision;
+import de.htwsaar.minicdn.edge.domain.model.CacheEntry;
 import de.htwsaar.minicdn.edge.domain.model.FilePayload;
 import de.htwsaar.minicdn.edge.domain.model.OriginContent;
 import de.htwsaar.minicdn.edge.domain.model.OriginMetadata;
+import de.htwsaar.minicdn.edge.domain.model.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.domain.port.EdgeCache;
+import de.htwsaar.minicdn.edge.domain.port.EdgeCacheFactory;
+import de.htwsaar.minicdn.edge.domain.port.EdgeCacheStatePort;
 import de.htwsaar.minicdn.edge.domain.port.OriginClient;
-import de.htwsaar.minicdn.edge.infrastructure.cache.CacheStore;
-import de.htwsaar.minicdn.edge.infrastructure.cache.CachedFile;
-import de.htwsaar.minicdn.edge.infrastructure.cache.LfuCacheStore;
-import de.htwsaar.minicdn.edge.infrastructure.cache.LruCacheStore;
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
-import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeCacheStateStore;
 import java.time.Clock;
 import java.util.Map;
 import java.util.Objects;
@@ -37,28 +36,44 @@ public class EdgeFileService {
     private final OriginClient originClient;
     private final EdgeConfigService configService;
     private final TtlPolicyService ttlPolicyService;
-    private final EdgeCacheStateStore cacheStateStore;
+    private final EdgeCacheFactory cacheFactory;
+    private final EdgeCacheStatePort cacheStatePort;
     private final Clock clock;
 
     /**
      * Cache-Store – wird bei Strategie-Wechsel live ausgetauscht.
      * {@code volatile} reicht, da die Implementierungen intern synchronisiert sind.
      */
-    private volatile CacheStore cacheStore;
+    private volatile EdgeCache cacheStore;
 
+    private volatile ReplacementStrategy activeStrategy;
+
+    /**
+     * Erstellt den fachlichen Dateiservice der Edge-Node.
+     *
+     * @param originClient fachlicher Origin-Port
+     * @param configService Runtime-Konfiguration
+     * @param ttlPolicyService TTL-Policies
+     * @param cacheFactory Fabrik für Cache-Implementierungen
+     * @param cacheStatePort Persistenzport für Cache-Snapshots
+     * @param clock Zeitquelle
+     */
     public EdgeFileService(
             OriginClient originClient,
             EdgeConfigService configService,
             TtlPolicyService ttlPolicyService,
-            EdgeCacheStateStore cacheStateStore,
+            EdgeCacheFactory cacheFactory,
+            EdgeCacheStatePort cacheStatePort,
             Clock clock) {
 
         this.originClient = Objects.requireNonNull(originClient, "originClient must not be null");
         this.configService = Objects.requireNonNull(configService, "configService must not be null");
         this.ttlPolicyService = Objects.requireNonNull(ttlPolicyService, "ttlPolicyService must not be null");
-        this.cacheStateStore = Objects.requireNonNull(cacheStateStore, "cacheStateStore must not be null");
+        this.cacheFactory = Objects.requireNonNull(cacheFactory, "cacheFactory must not be null");
+        this.cacheStatePort = Objects.requireNonNull(cacheStatePort, "cacheStatePort must not be null");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
-        this.cacheStore = new LruCacheStore();
+        this.activeStrategy = ReplacementStrategy.LRU;
+        this.cacheStore = cacheFactory.create(activeStrategy);
     }
 
     /**
@@ -72,7 +87,7 @@ public class EdgeFileService {
         long now = clock.millis();
         ensureStrategy();
 
-        CachedFile cached = cacheStore.getFresh(clean, now);
+        CacheEntry cached = cacheStore.getFresh(clean, now);
         if (cached != null) {
             return new FilePayload(clean, cached.body(), cached.contentType(), cached.sha256(), CacheDecision.HIT);
         }
@@ -88,7 +103,7 @@ public class EdgeFileService {
 
         cacheStore.put(
                 clean,
-                new CachedFile(origin.body(), origin.contentType(), actualSha, now + ttlMs),
+                new CacheEntry(origin.body(), origin.contentType(), actualSha, now + ttlMs),
                 cfg.maxEntries(),
                 now);
         persistCacheSnapshot(now);
@@ -107,7 +122,7 @@ public class EdgeFileService {
         long now = clock.millis();
         ensureStrategy();
 
-        CachedFile cached = cacheStore.getFresh(clean, now);
+        CacheEntry cached = cacheStore.getFresh(clean, now);
         if (cached != null) {
             return new FilePayload(clean, new byte[0], cached.contentType(), cached.sha256(), CacheDecision.HIT);
         }
@@ -118,23 +133,41 @@ public class EdgeFileService {
         return new FilePayload(clean, new byte[0], metadata.contentType(), metadata.sha256(), CacheDecision.MISS);
     }
 
+    /**
+     * Invalidiert genau eine Datei im Cache.
+     *
+     * @param path relativer Dateipfad
+     * @return {@code true}, wenn ein Eintrag entfernt wurde
+     */
     public boolean invalidateFile(String path) {
         boolean removed = cacheStore.remove(normalizePath(path));
         persistCacheSnapshot(clock.millis());
         return removed;
     }
 
+    /**
+     * Invalidiert alle Cache-Einträge unterhalb eines Präfixes.
+     *
+     * @param prefix Pfad-Präfix
+     * @return Anzahl entfernter Einträge
+     */
     public int invalidatePrefix(String prefix) {
         int removed = cacheStore.removeByPrefix(normalizePath(prefix));
         persistCacheSnapshot(clock.millis());
         return removed;
     }
 
+    /** Leert den kompletten Cache und persistiert den neuen Zustand. */
     public void clearCache() {
         cacheStore.clear();
         persistCacheSnapshot(clock.millis());
     }
 
+    /**
+     * Gibt die aktuelle Anzahl der Cache-Einträge zurück.
+     *
+     * @return Anzahl gespeicherter Einträge
+     */
     public int cacheSize() {
         return cacheStore.size();
     }
@@ -145,47 +178,42 @@ public class EdgeFileService {
     public void restoreCacheFromDisk() {
         ensureStrategy();
         long now = clock.millis();
-        Map<String, CachedFile> restored = cacheStateStore.load();
+        Map<String, CacheEntry> restored = cacheStatePort.load();
         if (restored.isEmpty()) return;
         var cfg = configService.current();
         int loaded = 0;
         for (var e : restored.entrySet()) {
             String key = e.getKey();
-            CachedFile value = e.getValue();
+            CacheEntry value = e.getValue();
             if (key == null || key.isBlank() || value == null) continue;
             if (value.expiresAtMs() <= now) continue;
             cacheStore.put(key, value, cfg.maxEntries(), now);
             loaded++;
         }
         if (loaded > 0) {
-            log.info("Recovered {} cache entries", loaded);
+            log.info("Wiederhergestellt: {} Cache-Einträge", loaded);
         }
     }
 
+    /** Stellt sicher, dass die aktive Cache-Implementierung zur konfigurierten Strategie passt. */
     private void ensureStrategy() {
         ReplacementStrategy strategy = configService.current().replacementStrategy();
-        switch (strategy) {
-            case LRU -> {
-                if (!(cacheStore instanceof LruCacheStore)) {
-                    cacheStore = new LruCacheStore();
-                }
-            }
-            case LFU -> {
-                if (!(cacheStore instanceof LfuCacheStore)) {
-                    cacheStore = new LfuCacheStore();
-                }
-            }
+        if (strategy != activeStrategy) {
+            cacheStore = cacheFactory.create(strategy);
+            activeStrategy = strategy;
         }
     }
 
+    /** Persistiert den aktuellen Cache-Snapshot und toleriert dabei I/O-Fehler. */
     private void persistCacheSnapshot(long now) {
         try {
-            cacheStateStore.save(cacheStore.snapshot(), now);
+            cacheStatePort.save(cacheStore.snapshot(), now);
         } catch (Exception ex) {
-            log.warn("Failed to persist cache state", ex);
+            log.warn("Persistieren des Cache-Zustands fehlgeschlagen", ex);
         }
     }
 
+    /** Prüft, ob der Origin-Response die fachlich erforderlichen Hash-Metadaten enthält. */
     private void validateOriginContent(OriginContent origin) {
         if (origin.sha256() == null || origin.sha256().isBlank()) {
             throw new OriginAccessException(
@@ -193,6 +221,7 @@ public class EdgeFileService {
         }
     }
 
+    /** Prüft, ob die Origin-Metadaten die fachlich erforderlichen Hash-Informationen enthalten. */
     private void validateOriginMetadata(OriginMetadata metadata) {
         if (metadata.sha256() == null || metadata.sha256().isBlank()) {
             throw new OriginAccessException(
@@ -200,12 +229,19 @@ public class EdgeFileService {
         }
     }
 
+    /** Vergleicht erwarteten und tatsächlichen SHA-256-Hash. */
     private void validateSha256(String expected, String actual) {
         if (!expected.equalsIgnoreCase(actual)) {
-            throw new IntegrityCheckFailedException("Integrity check failed: sha256 mismatch");
+            throw new IntegrityCheckFailedException("Integritätsprüfung fehlgeschlagen: SHA-256 stimmt nicht überein");
         }
     }
 
+    /**
+     * Normalisiert einen relativen Dateipfad für die fachliche Verarbeitung.
+     *
+     * @param path roher Dateipfad
+     * @return normalisierter relativer Pfad
+     */
     private static String normalizePath(String path) {
         if (path == null) {
             throw new IllegalArgumentException("path must not be null");
