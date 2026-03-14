@@ -172,7 +172,7 @@ public final class UserFileCommand implements Runnable {
      * @return Exit-Code für Validierungsfehler
      */
     int validationError(String message) {
-        ConsoleUtils.error(ctx.err(), "[FILE] %s", Objects.toString(message, "invalid input"));
+        ConsoleUtils.error(ctx.err(), "[USER] %s", Objects.toString(message, "invalid input"));
         return VALIDATION.code();
     }
 
@@ -183,7 +183,7 @@ public final class UserFileCommand implements Runnable {
      * @return Exit-Code für technische Fehler
      */
     int requestFailed(String message) {
-        ConsoleUtils.error(ctx.err(), "[FILE] %s", Objects.toString(message, "request failed"));
+        ConsoleUtils.error(ctx.err(), "[USER] %s", Objects.toString(message, "request failed"));
         return REQUEST_FAILED.code();
     }
 
@@ -206,7 +206,7 @@ public final class UserFileCommand implements Runnable {
         if (result.is2xx()) {
             ConsoleUtils.info(
                     ctx.out(),
-                    "[FILE] Download via router successful HTTP %d router=%s path=%s out=%s bytes=%d",
+                    "[USER] Download via router successful HTTP %d router=%s path=%s out=%s bytes=%d",
                     statusCode,
                     routerBaseUrl,
                     remotePath,
@@ -216,11 +216,11 @@ public final class UserFileCommand implements Runnable {
         }
 
         if (result.is4xx()) {
-            ConsoleUtils.error(ctx.err(), "[FILE] Request rejected (HTTP %d) for '%s'", statusCode, remotePath);
+            ConsoleUtils.error(ctx.err(), "[USER] Request rejected (HTTP %d) for '%s'", statusCode, remotePath);
             return REJECTED.code();
         }
 
-        ConsoleUtils.error(ctx.err(), "[FILE] Server error (HTTP %d) for '%s'", statusCode, remotePath);
+        ConsoleUtils.error(ctx.err(), "[USER] Server error (HTTP %d) for '%s'", statusCode, remotePath);
         return SERVER_ERROR.code();
     }
 
