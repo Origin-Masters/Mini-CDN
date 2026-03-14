@@ -107,7 +107,8 @@ class AdminUserServiceTest {
 
     @Test
     void parseUsers_shouldParseValidJsonArray() {
-        String body = """
+        String body =
+                """
                 [
                   {"id":1,"name":"alice","role":1},
                   {"id":2,"name":"bob","role":0}
@@ -123,9 +124,8 @@ class AdminUserServiceTest {
 
     @Test
     void parseUsers_shouldThrowIllegalArgumentExceptionOnInvalidJson() {
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> service.parseUsers("{not-valid-json"));
+        IllegalArgumentException ex =
+                assertThrows(IllegalArgumentException.class, () -> service.parseUsers("{not-valid-json"));
 
         assertEquals("failed to parse users JSON", ex.getMessage());
         assertNotNull(ex.getCause());

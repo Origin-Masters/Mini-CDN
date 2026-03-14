@@ -12,8 +12,6 @@ import de.htwsaar.minicdn.cli.transport.TransportResponse;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +62,8 @@ class UserFileServiceTest {
 
     @Test
     void downloadViaRouter_shouldTrimRegionAndClientId() {
-        service.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "  eu  ", "  client-1  ", Path.of("x.bin"), false);
+        service.downloadViaRouter(
+                ROUTER_BASE_URL, "docs/manual.pdf", "  eu  ", "  client-1  ", Path.of("x.bin"), false);
 
         assertEquals("eu", transportClient.lastRequest.headers().get("X-Client-Region"));
         assertEquals("client-1", transportClient.lastRequest.headers().get("X-Client-Id"));
@@ -113,7 +112,8 @@ class UserFileServiceTest {
     void downloadViaRouter_shouldRejectBlankRegion() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> service.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "   ", "client-1", Path.of("x.bin"), false));
+                () -> service.downloadViaRouter(
+                        ROUTER_BASE_URL, "docs/manual.pdf", "   ", "client-1", Path.of("x.bin"), false));
         assertEquals(0, transportClient.downloadCalls);
     }
 
@@ -133,8 +133,8 @@ class UserFileServiceTest {
     void downloadViaRouter_shouldMapTransportExceptionToIoErrorResult() {
         transportClient.throwOnDownload = new RuntimeException("boom");
 
-        DownloadResult result =
-                service.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", Path.of("x.bin"), false);
+        DownloadResult result = service.downloadViaRouter(
+                ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", Path.of("x.bin"), false);
 
         assertEquals(null, result.statusCode());
         assertEquals(0L, result.bytesWritten());

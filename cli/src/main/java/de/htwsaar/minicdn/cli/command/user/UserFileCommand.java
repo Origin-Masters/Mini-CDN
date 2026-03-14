@@ -38,9 +38,9 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  user file download -r EU docs/manual.pdf -o ./manual.pdf ",
-            "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --client-id alice",
-            "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --overwrite"
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf --host http://localhost:8082",
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf --host http://localhost:8082 --client-id alice",
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf --host http://localhost:8082 --overwrite"
         },
         subcommands = {UserFileCommand.FileDownloadCommand.class})
 public final class UserFileCommand implements Runnable {
@@ -195,7 +195,7 @@ public final class UserFileCommand implements Runnable {
      * @param result Ergebnis des Download-Aufrufs
      * @return passender Exit-Code
      */
-    int handleDownloadResult(String remotePath, Path outFile, DownloadResult result) {
+    int handleDownloadResult(URI routerBaseUrl, String remotePath, Path outFile, DownloadResult result) {
         Objects.requireNonNull(result, "result");
 
         if (result.error() != null) {
@@ -205,7 +205,13 @@ public final class UserFileCommand implements Runnable {
         Integer statusCode = Objects.requireNonNull(result.statusCode(), "statusCode");
         if (result.is2xx()) {
             ConsoleUtils.info(
-                    ctx.out(), "[FILE] Downloaded '%s' -> %s (%d bytes)", remotePath, outFile, result.bytesWritten());
+                    ctx.out(),
+                    "[FILE] Download via router successful HTTP %d router=%s path=%s out=%s bytes=%d",
+                    statusCode,
+                    routerBaseUrl,
+                    remotePath,
+                    outFile,
+                    result.bytesWritten());
             return SUCCESS.code();
         }
 
@@ -231,9 +237,9 @@ public final class UserFileCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082",
-                "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --client-id alice",
-                "  user file download -r EU docs/manual.pdf -o ./manual.pdf -H http://localhost:8082 --overwrite"
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf --host http://localhost:8082",
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf --host http://localhost:8082 --client-id alice",
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf --host http://localhost:8082 --overwrite"
             })
     public static final class FileDownloadCommand implements Callable<Integer> {
 
@@ -243,14 +249,20 @@ public final class UserFileCommand implements Runnable {
         /**
          * Relativer Remote-Pfad der herunterzuladenden Datei.
          */
-        @Parameters(index = "0", paramLabel = "REMOTE_PATH", description = "Remote file path, e.g. docs/manual.pdf")
+        @Option(
+                names = {"--path"},
+                required = true,
+                paramLabel = "REMOTE_PATH",
+                description = "Remote file path, e.g. docs/manual.pdf")
         private String remotePath;
+
+
 
         /**
          * Lokale Zieldatei.
          */
         @Option(
-                names = {"-o", "--out"},
+                names = {"--out"},
                 required = true,
                 paramLabel = "OUT_FILE",
                 description = "Local output file path")
@@ -260,7 +272,7 @@ public final class UserFileCommand implements Runnable {
          * Router-Basis-URL.
          */
         @Option(
-                names = {"-H", "--host"},
+                names = {"--host"},
                 defaultValue = ROUTER_URL,
                 paramLabel = "ROUTER_URL",
                 description = "Router base URL (scheme://host:port)")
@@ -270,7 +282,7 @@ public final class UserFileCommand implements Runnable {
          * Client-Region für das Routing.
          */
         @Option(
-                names = {"-r", "--region"},
+                names = {"--region"},
                 required = true,
                 paramLabel = "REGION",
                 description = "Client region for routing, e.g. EU")
@@ -317,7 +329,7 @@ public final class UserFileCommand implements Runnable {
                                 targetFile,
                                 overwrite);
 
-                return parent.handleDownloadResult(cleanRemotePath, targetFile, result);
+                return parent.handleDownloadResult(routerBaseUrl, cleanRemotePath, out, result);
 
             } catch (IllegalArgumentException ex) {
                 return parent.validationError(ex.getMessage());
