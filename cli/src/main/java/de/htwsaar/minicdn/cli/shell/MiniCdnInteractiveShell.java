@@ -1,7 +1,11 @@
 package de.htwsaar.minicdn.cli.shell;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.htwsaar.minicdn.cli.di.CliContext;
+import de.htwsaar.minicdn.cli.dto.CallResult;
+import de.htwsaar.minicdn.cli.service.admin.AdminEdgeService;
 import de.htwsaar.minicdn.cli.service.system.SystemShutdownService;
+import de.htwsaar.minicdn.common.serialization.JacksonCodec;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.List;
@@ -214,8 +218,9 @@ public final class MiniCdnInteractiveShell {
      * @param err Fehlerausgabe für fehlgeschlagene Statusmeldungen
      */
     private void shutdownOnExit(SystemShutdownService shutdownService, PrintWriter out, PrintWriter err) {
-        // Wenn die Session keine gestarteten/verwalteten Ressourcen kennt,
-        // gibt es beim Exit nichts zu tun.
+        StopManagedEdgesResult managedEdgesResult = stopAllManagedEdgesOnExit();
+        printStopStatus(out, err, managedEdgesResult.asStopStatus());
+
         if (!ctx.sessionState().hasManagedResources()) {
             return;
         }
@@ -227,6 +232,74 @@ public final class MiniCdnInteractiveShell {
         printStopStatus(out, err, result.edge());
         printStopStatus(out, err, result.router());
         printStopStatus(out, err, result.origin());
+    }
+
+    /**
+     * Stoppt beim Exit alle aktuell beim Router als managed gefuehrten Edge-Instanzen.
+     */
+    private StopManagedEdgesResult stopAllManagedEdgesOnExit() {
+        try {
+            AdminEdgeService edgeService =
+                    new AdminEdgeService(ctx.transportClient(), ctx.defaultRequestTimeout(), ctx.adminToken());
+
+            CallResult listResult = edgeService.listManaged(ctx.routerBaseUrl());
+            if (listResult.error() != null) {
+                return StopManagedEdgesResult.failed(
+                        "Managed-Edges konnten nicht abgefragt werden: " + listResult.error());
+            }
+            if (!listResult.is2xx()) {
+                return StopManagedEdgesResult.failed("Managed-Edges konnten nicht abgefragt werden (HTTP "
+                        + Objects.toString(listResult.statusCode(), "n/a") + ").");
+            }
+
+            JsonNode managedEdges = JacksonCodec.fromJson(Objects.toString(listResult.body(), ""), JsonNode.class);
+            if (!managedEdges.isArray()) {
+                return StopManagedEdgesResult.failed("Ungueltige Antwort fuer managed Edges.");
+            }
+            if (managedEdges.isEmpty()) {
+                return StopManagedEdgesResult.skipped();
+            }
+
+            int total = managedEdges.size();
+            int stopped = 0;
+            StringBuilder errors = new StringBuilder();
+
+            for (JsonNode edge : managedEdges) {
+                String instanceId = edge.path("instanceId").asText("").trim();
+                if (instanceId.isBlank()) {
+                    appendError(errors, "instanceId fehlt in managed-Liste");
+                    continue;
+                }
+
+                CallResult stopResult = edgeService.stopEdge(ctx.routerBaseUrl(), instanceId, true);
+                if (stopResult.error() != null) {
+                    appendError(errors, instanceId + ": " + stopResult.error());
+                    continue;
+                }
+                if (!stopResult.is2xx()) {
+                    appendError(errors, instanceId + ": HTTP " + Objects.toString(stopResult.statusCode(), "n/a"));
+                    continue;
+                }
+
+                stopped++;
+            }
+
+            if (errors.length() > 0) {
+                return StopManagedEdgesResult.failed(
+                        "Managed-Edges gestoppt " + stopped + "/" + total + ". Fehler: " + errors);
+            }
+
+            return StopManagedEdgesResult.stopped(stopped);
+        } catch (Exception ex) {
+            return StopManagedEdgesResult.failed("Managed-Edge-Stop fehlgeschlagen: " + ex.getMessage());
+        }
+    }
+
+    private static void appendError(StringBuilder errors, String msg) {
+        if (errors.length() > 0) {
+            errors.append("; ");
+        }
+        errors.append(msg);
     }
 
     /**
@@ -259,5 +332,27 @@ public final class MiniCdnInteractiveShell {
         // Erfolgs- oder Informationsstatus werden regulär auf STDOUT ausgegeben.
         out.printf("[EXIT] %s: %s%n", status.serviceName().toUpperCase(), status.message());
         out.flush();
+    }
+
+    private record StopManagedEdgesResult(String state, String message) {
+        private static StopManagedEdgesResult skipped() {
+            return new StopManagedEdgesResult("SKIPPED", "keine managed Edges vorhanden");
+        }
+
+        private static StopManagedEdgesResult stopped(int count) {
+            return new StopManagedEdgesResult("STOPPED", "alle managed Edges gestoppt (count=" + count + ")");
+        }
+
+        private static StopManagedEdgesResult failed(String message) {
+            return new StopManagedEdgesResult("FAILED", message);
+        }
+
+        private SystemShutdownService.StopStatus asStopStatus() {
+            return switch (state) {
+                case "FAILED" -> SystemShutdownService.StopStatus.failed("edge-managed", message);
+                case "STOPPED" -> SystemShutdownService.StopStatus.stopped("edge-managed", message);
+                default -> SystemShutdownService.StopStatus.skipped("edge-managed");
+            };
+        }
     }
 }

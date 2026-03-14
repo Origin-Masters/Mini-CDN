@@ -31,7 +31,7 @@ import picocli.CommandLine.Spec;
         name = "system",
         description = "Lokale System-Kommandos (Bootstrap/Init)",
         mixinStandardHelpOptions = true,
-        subcommands = {SystemCommand.InitCommand.class})
+        subcommands = {SystemCommand.InitCommand.class, SystemLoginCommand.class})
 public final class SystemCommand implements Runnable {
 
     /**
