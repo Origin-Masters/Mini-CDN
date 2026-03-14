@@ -1,7 +1,8 @@
-package de.htwsaar.minicdn.origin.web;
+package de.htwsaar.minicdn.origin.adapter.in.web.admin;
 
-import de.htwsaar.minicdn.origin.config.OriginRuntimeConfig;
-import de.htwsaar.minicdn.origin.config.OriginRuntimeConfigService;
+import de.htwsaar.minicdn.origin.application.config.OriginRuntimeConfig;
+import de.htwsaar.minicdn.origin.application.config.OriginRuntimeConfigService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/origin/admin/config")
+@Profile("origin")
 public class OriginAdminConfigController {
 
     private final OriginRuntimeConfigService runtimeConfigService;

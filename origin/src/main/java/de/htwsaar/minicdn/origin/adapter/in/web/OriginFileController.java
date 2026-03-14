@@ -1,10 +1,11 @@
-package de.htwsaar.minicdn.origin.web;
+package de.htwsaar.minicdn.origin.adapter.in.web;
 
 import de.htwsaar.minicdn.common.util.PathUtils;
-import de.htwsaar.minicdn.origin.domain.OriginFileContent;
-import de.htwsaar.minicdn.origin.domain.OriginFileList;
-import de.htwsaar.minicdn.origin.domain.OriginFileMetadata;
-import de.htwsaar.minicdn.origin.domain.OriginFiles;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileContent;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileList;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileMetadata;
+import de.htwsaar.minicdn.origin.domain.port.OriginFiles;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/origin")
+@Profile("origin")
 public class OriginFileController {
 
     private static final String SHA256_HEADER = "X-Content-SHA256";

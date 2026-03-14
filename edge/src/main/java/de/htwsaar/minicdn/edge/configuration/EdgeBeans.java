@@ -3,8 +3,8 @@ package de.htwsaar.minicdn.edge.configuration;
 import de.htwsaar.minicdn.edge.adapter.out.origin.HttpOriginClient;
 import de.htwsaar.minicdn.edge.application.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
+import de.htwsaar.minicdn.edge.domain.model.ReplacementStrategy;
 import de.htwsaar.minicdn.edge.domain.port.OriginClient;
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -70,8 +70,7 @@ public class EdgeBeans {
     /**
      * Adapter-Implementierung des {@link OriginClient}-Ports via HTTP.
      *
-     * @param rt             RestTemplate
-     * @param originBaseUrl  Basis-URL des Origin-Servers
+     * @param rt RestTemplate
      * @return {@link HttpOriginClient}
      */
     @Bean

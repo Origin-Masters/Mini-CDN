@@ -1,13 +1,13 @@
-package de.htwsaar.minicdn.origin.service;
+package de.htwsaar.minicdn.origin.application.file;
 
 import de.htwsaar.minicdn.common.util.Sha256Util;
-import de.htwsaar.minicdn.origin.domain.OriginFileContent;
-import de.htwsaar.minicdn.origin.domain.OriginFileList;
-import de.htwsaar.minicdn.origin.domain.OriginFileMeta;
-import de.htwsaar.minicdn.origin.domain.OriginFileMetadata;
-import de.htwsaar.minicdn.origin.domain.OriginFiles;
-import de.htwsaar.minicdn.origin.domain.OriginPutResult;
-import de.htwsaar.minicdn.origin.domain.OriginStorage;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileContent;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileList;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileMeta;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileMetadata;
+import de.htwsaar.minicdn.origin.domain.model.OriginPutResult;
+import de.htwsaar.minicdn.origin.domain.port.OriginFiles;
+import de.htwsaar.minicdn.origin.domain.port.OriginStorage;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;

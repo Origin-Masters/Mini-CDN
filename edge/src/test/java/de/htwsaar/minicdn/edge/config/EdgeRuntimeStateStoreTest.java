@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.domain.model.ReplacementStrategy;
 import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeRuntimeStateStore;
 import java.nio.file.Files;
 import java.nio.file.Path;

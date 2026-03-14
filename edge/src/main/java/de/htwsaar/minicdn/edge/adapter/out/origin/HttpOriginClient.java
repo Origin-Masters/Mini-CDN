@@ -30,6 +30,12 @@ public final class HttpOriginClient implements OriginClient {
     private final RestTemplate restTemplate;
     private final Supplier<URI> originBaseUriSupplier;
 
+    /**
+     * Erstellt den HTTP-Adapter für Origin-Zugriffe.
+     *
+     * @param restTemplate HTTP-Client
+     * @param edgeConfigService Zugriff auf die aktuelle Origin-Basis-URL
+     */
     public HttpOriginClient(RestTemplate restTemplate, EdgeConfigService edgeConfigService) {
         this.restTemplate = Objects.requireNonNull(restTemplate, "restTemplate must not be null");
         Objects.requireNonNull(edgeConfigService, "edgeConfigService must not be null");
@@ -37,6 +43,12 @@ public final class HttpOriginClient implements OriginClient {
                 URI.create(Objects.requireNonNull(edgeConfigService.current().originBaseUrl(), "originBaseUrl"));
     }
 
+    /**
+     * Lädt den vollständigen Dateiinhalt über HTTP und übersetzt die Antwort in ein Fachobjekt.
+     *
+     * @param path relativer Dateipfad
+     * @return fachlicher Dateiinhalt
+     */
     @Override
     public OriginContent fetchFile(String path) {
         try {
@@ -62,6 +74,12 @@ public final class HttpOriginClient implements OriginClient {
         }
     }
 
+    /**
+     * Lädt ausschließlich Metadaten per HTTP-HEAD und übersetzt sie in ein Fachobjekt.
+     *
+     * @param path relativer Dateipfad
+     * @return fachliche Metadaten
+     */
     @Override
     public OriginMetadata fetchMetadata(String path) {
         try {
@@ -80,6 +98,13 @@ public final class HttpOriginClient implements OriginClient {
         }
     }
 
+    /**
+     * Übersetzt HTTP-Fehler in fachliche Origin-Fehler.
+     *
+     * @param path angefragter Dateipfad
+     * @param ex ursprüngliche HTTP-Exception
+     * @return fachliche Exception
+     */
     private RuntimeException mapHttpException(String path, HttpStatusCodeException ex) {
         HttpStatusCode status = ex.getStatusCode();
 
@@ -95,10 +120,16 @@ public final class HttpOriginClient implements OriginClient {
 
         return new OriginAccessException(
                 OriginAccessException.Reason.INVALID_RESPONSE,
-                "Unexpected origin response for path " + path + ": " + status.value(),
+                "Unerwartete Origin-Antwort für Pfad " + path + ": " + status.value(),
                 ex);
     }
 
+    /**
+     * Baut die Ziel-URI für einen Datei-Endpunkt des Origin.
+     *
+     * @param path relativer Dateipfad
+     * @return vollständige Ziel-URI
+     */
     private URI fileUri(String path) {
         return originBaseUriSupplier.get().resolve("/api/origin/files/" + path);
     }

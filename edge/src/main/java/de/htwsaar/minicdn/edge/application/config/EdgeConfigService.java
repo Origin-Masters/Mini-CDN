@@ -1,6 +1,6 @@
 package de.htwsaar.minicdn.edge.application.config;
 
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.domain.model.ReplacementStrategy;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 

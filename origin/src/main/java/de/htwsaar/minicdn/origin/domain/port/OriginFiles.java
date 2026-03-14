@@ -1,5 +1,9 @@
-package de.htwsaar.minicdn.origin.domain;
+package de.htwsaar.minicdn.origin.domain.port;
 
+import de.htwsaar.minicdn.origin.domain.model.OriginFileContent;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileList;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileMetadata;
+import de.htwsaar.minicdn.origin.domain.model.OriginPutResult;
 import java.util.Optional;
 
 /**

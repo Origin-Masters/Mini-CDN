@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.origin.config;
+package de.htwsaar.minicdn.origin.application.config;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -7,6 +7,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.logging.LogLevel;
 import org.springframework.boot.logging.LoggingSystem;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
  * ermöglicht Änderungen ohne Neustart.</p>
  */
 @Service
+@Profile("origin")
 public class OriginRuntimeConfigService {
 
     private final AtomicReference<OriginRuntimeConfig> ref;

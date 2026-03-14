@@ -1,6 +1,6 @@
-// src/main/java/de/htwsaar/minicdn/origin/web/OriginProbeController.java
-package de.htwsaar.minicdn.origin.web;
+package de.htwsaar.minicdn.origin.adapter.in.web;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/origin")
+@Profile("origin")
 public class OriginProbeController {
 
     @GetMapping("/health")

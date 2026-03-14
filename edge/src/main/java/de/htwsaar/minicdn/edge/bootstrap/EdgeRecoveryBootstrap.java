@@ -11,10 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-/** Applies persisted state on startup.
- * Restores configuration and TTL policies
- * from {@link EdgeRuntimeStateStore} so the edge resumes previous runtime behavior
- * after restart.
+/**
+ * Stellt beim Start persistierten Laufzeitstatus der Edge-Node wieder her.
+ *
+ * <p>Geladen werden Konfiguration, TTL-Policies und der gespeicherte Cache-Zustand,
+ * damit die Instanz nach einem Neustart mit dem zuletzt bekannten Zustand weiterläuft.</p>
  */
 @Component
 @Profile("edge")
@@ -22,23 +23,25 @@ public class EdgeRecoveryBootstrap {
 
     private static final Logger log = LoggerFactory.getLogger(EdgeRecoveryBootstrap.class);
 
-    /** Provides access to persisted runtime state for the edge node. */
+    /** Persistierter Laufzeitstatus der Edge-Node. */
     private final EdgeRuntimeStateStore runtimeStateStore;
 
-    /** Service to apply restored edge configuration settings. */
+    /** Nimmt wiederhergestellte Konfigurationswerte entgegen. */
     private final EdgeConfigService edgeConfigService;
 
-    /** Service to manage TTL policies for cached content prefixes. */
+    /** Verwaltet TTL-Policies für Cache-Präfixe. */
     private final TtlPolicyService ttlPolicyService;
 
-    /** Service to restore cache content. */
+    /** Stellt Cache-Inhalte wieder her. */
     private final EdgeFileService edgeFileService;
 
     /**
-     * Creates a recovery bootstrap that can restore edge runtime state.
-     * @param runtimeStateStore store for persisted runtime state
-     * @param edgeConfigService service to update edge configuration
-     * @param ttlPolicyService service to manage TTL policies
+     * Erstellt die Bootstrap-Komponente für die Wiederherstellung.
+     *
+     * @param runtimeStateStore Zugriff auf persistierte Laufzeitdaten
+     * @param edgeConfigService Service für Runtime-Konfiguration
+     * @param ttlPolicyService Service für TTL-Policies
+     * @param edgeFileService Service für Cache-Wiederherstellung
      */
     public EdgeRecoveryBootstrap(
             EdgeRuntimeStateStore runtimeStateStore,
@@ -51,10 +54,7 @@ public class EdgeRecoveryBootstrap {
         this.edgeFileService = edgeFileService;
     }
 
-    /**
-     * Loads persisted state on startup and applies configuration and TTL policies
-     * so the edge resumes its previous runtime behavior.
-     */
+    /** Lädt den gespeicherten Zustand nach dem Start und übernimmt ihn in den Arbeitsspeicher. */
     @PostConstruct
     public void restoreOnStartup() {
         EdgeRuntimeStateStore.RestoredState restored = runtimeStateStore.load();
@@ -65,7 +65,7 @@ public class EdgeRecoveryBootstrap {
                 ttlPolicyService.setPrefixTtlMs(e.getKey(), e.getValue());
             }
             log.info(
-                    "Recovered edge runtime config and {} TTL policies",
+                    "Wiederhergestellt: Runtime-Konfiguration und {} TTL-Policies",
                     restored.ttlPolicies().size());
         }
         edgeFileService.restoreCacheFromDisk();

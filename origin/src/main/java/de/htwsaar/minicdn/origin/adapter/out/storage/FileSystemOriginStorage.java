@@ -1,8 +1,8 @@
-package de.htwsaar.minicdn.origin.adapter;
+package de.htwsaar.minicdn.origin.adapter.out.storage;
 
-import de.htwsaar.minicdn.origin.domain.OriginFileMeta;
-import de.htwsaar.minicdn.origin.domain.OriginStorage;
-import de.htwsaar.minicdn.origin.domain.OriginStorageException;
+import de.htwsaar.minicdn.origin.domain.exception.OriginStorageException;
+import de.htwsaar.minicdn.origin.domain.model.OriginFileMeta;
+import de.htwsaar.minicdn.origin.domain.port.OriginStorage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

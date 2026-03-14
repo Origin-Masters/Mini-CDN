@@ -12,8 +12,11 @@ import de.htwsaar.minicdn.edge.domain.model.CacheDecision;
 import de.htwsaar.minicdn.edge.domain.model.FilePayload;
 import de.htwsaar.minicdn.edge.domain.model.OriginContent;
 import de.htwsaar.minicdn.edge.domain.model.OriginMetadata;
+import de.htwsaar.minicdn.edge.domain.model.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.domain.port.EdgeCacheFactory;
 import de.htwsaar.minicdn.edge.domain.port.OriginClient;
-import de.htwsaar.minicdn.edge.infrastructure.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.infrastructure.cache.LfuCacheStore;
+import de.htwsaar.minicdn.edge.infrastructure.cache.LruCacheStore;
 import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeCacheStateStore;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,6 +27,11 @@ import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 
 class EdgeFileServiceTest {
+
+    private static final EdgeCacheFactory CACHE_FACTORY = strategy -> switch (strategy) {
+        case LFU -> new LfuCacheStore();
+        case LRU -> new LruCacheStore();
+    };
 
     @Test
     void shouldWorkAgainstPortAndNotAgainstHttpImplementation() throws Exception {
@@ -43,6 +51,7 @@ class EdgeFileServiceTest {
                 fakeOrigin,
                 configService,
                 new TtlPolicyService(),
+                CACHE_FACTORY,
                 stateStore,
                 new FixedClock(Instant.parse("2026-01-01T00:00:00Z")));
 
@@ -86,7 +95,7 @@ class EdgeFileServiceTest {
         FakeOriginClient firstOrigin = new FakeOriginClient(
                 new OriginContent(body, "text/plain", sha256), new OriginMetadata("text/plain", sha256));
         EdgeFileService firstService = new EdgeFileService(
-                firstOrigin, configService, new TtlPolicyService(), stateStore, new FixedClock(now));
+                firstOrigin, configService, new TtlPolicyService(), CACHE_FACTORY, stateStore, new FixedClock(now));
 
         FilePayload initial = firstService.getFile("docs/recovery.txt");
         assertEquals(CacheDecision.MISS, initial.cache());
@@ -95,7 +104,7 @@ class EdgeFileServiceTest {
         FakeOriginClient restartedOrigin = new FakeOriginClient(
                 new OriginContent(body, "text/plain", sha256), new OriginMetadata("text/plain", sha256));
         EdgeFileService restartedService = new EdgeFileService(
-                restartedOrigin, configService, new TtlPolicyService(), stateStore, new FixedClock(now));
+                restartedOrigin, configService, new TtlPolicyService(), CACHE_FACTORY, stateStore, new FixedClock(now));
 
         restartedService.restoreCacheFromDisk();
         FilePayload recovered = restartedService.getFile("docs/recovery.txt");

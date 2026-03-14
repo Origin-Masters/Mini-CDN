@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.origin.domain;
+package de.htwsaar.minicdn.origin.domain.model;
 
 /**
  * Transportneutrale Metadaten einer Datei im Origin.
