@@ -38,21 +38,29 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
     @Test
     void integrity_is_identical_on_three_edges() throws Exception {
 
+        String edge2StateDir = "target/e2e-edge-state-edge2-" + System.nanoTime();
+
         edge2Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
                 .run(
                         "--server.port=0",
                         "--origin.base-url=" + ORIGIN_BASE,
+                        "--edge.recovery.state-file=" + edge2StateDir + "/edge-runtime-state.properties",
+                        "--edge.cache.state-file=" + edge2StateDir + "/edge-cache-state.properties",
                         "--edge.cache.ttl-ms=60000",
                         "--edge.cache.max-entries=100",
                         "--minicdn.admin.token=" + ADMIN_TOKEN);
         edge2Base = "http://localhost:" + localPort(edge2Ctx);
+
+        String edge3StateDir = "target/e2e-edge-state-edge3-" + System.nanoTime();
 
         edge3Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
                 .run(
                         "--server.port=0",
                         "--origin.base-url=" + ORIGIN_BASE,
+                        "--edge.recovery.state-file=" + edge3StateDir + "/edge-runtime-state.properties",
+                        "--edge.cache.state-file=" + edge3StateDir + "/edge-cache-state.properties",
                         "--edge.cache.ttl-ms=60000",
                         "--edge.cache.max-entries=100",
                         "--minicdn.admin.token=" + ADMIN_TOKEN);

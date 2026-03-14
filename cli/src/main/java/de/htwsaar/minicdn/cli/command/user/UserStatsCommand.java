@@ -55,7 +55,10 @@ public final class UserStatsCommand implements Runnable {
                         Objects.requireNonNull(ctx, "ctx").transportClient(),
                         ctx.defaultRequestTimeout(),
                         ctx.routerBaseUrl(),
-                        ctx.adminToken()));
+                        () -> {
+                            Long loggedInUserId = ctx.sessionState().loggedInUserId();
+                            return loggedInUserId == null ? -1L : loggedInUserId;
+                        }));
     }
 
     /**
@@ -135,6 +138,17 @@ public final class UserStatsCommand implements Runnable {
     int validationError(String message) {
         ConsoleUtils.error(ctx.err(), "[USER] %s", Objects.toString(message, "Ungültige Eingabe"));
         return VALIDATION.code();
+    }
+
+    /**
+     * Prüft, ob ein User eingeloggt ist.
+     *
+     * @throws IllegalArgumentException falls kein Login vorhanden ist
+     */
+    void requireLoggedInUser() {
+        if (!ctx.sessionState().isLoggedIn()) {
+            throw new IllegalArgumentException("Bitte zuerst einloggen: user login --name <user>");
+        }
     }
 
     /**
@@ -245,6 +259,7 @@ public final class UserStatsCommand implements Runnable {
         @Override
         public Integer call() {
             try {
+                parent.requireLoggedInUser();
                 long validatedFileId = parent.validateFileId(fileId);
                 CallResult result = parent.statsService().fileStatsForCurrentUser(validatedFileId);
                 return parent.handleResult("Datei-Statistik", "Datei-Statistik erfolgreich geladen", result);
@@ -283,6 +298,7 @@ public final class UserStatsCommand implements Runnable {
         @Override
         public Integer call() {
             try {
+                parent.requireLoggedInUser();
                 int validatedLimit = parent.validateLimit(limit);
                 CallResult result = parent.statsService().listUserFilesStats(validatedLimit);
                 return parent.handleResult("Datei-Statistikliste", "Datei-Statistikliste erfolgreich geladen", result);
@@ -321,6 +337,7 @@ public final class UserStatsCommand implements Runnable {
         @Override
         public Integer call() {
             try {
+                parent.requireLoggedInUser();
                 int validatedWindowSec = parent.validateWindowSec(windowSec);
                 CallResult result = parent.statsService().overallStatsForCurrentUser(validatedWindowSec);
                 return parent.handleResult("Gesamtstatistik", "Gesamtstatistik erfolgreich geladen", result);

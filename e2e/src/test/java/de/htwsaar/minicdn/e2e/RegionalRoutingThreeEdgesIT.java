@@ -113,12 +113,16 @@ class RegionalRoutingThreeEdgesIT extends AbstractE2E {
      * sondern pro Edge-Server konfigurierbar gesetzt werden kann.</p>
      */
     private static ConfigurableApplicationContext startEdgeWithRegion(String region) {
+        String edgeId = region + "-" + System.nanoTime();
+        String stateDir = "target/e2e-edge-state-" + edgeId;
         return new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
                 .run(
                         "--server.port=0",
                         "--origin.base-url=" + ORIGIN_BASE,
                         "--edge.region=" + region,
+                        "--edge.recovery.state-file=" + stateDir + "/edge-runtime-state.properties",
+                        "--edge.cache.state-file=" + stateDir + "/edge-cache-state.properties",
                         "--edge.cache.ttl-ms=60000",
                         "--edge.cache.max-entries=100",
                         "--minicdn.admin.token=" + ADMIN_TOKEN);

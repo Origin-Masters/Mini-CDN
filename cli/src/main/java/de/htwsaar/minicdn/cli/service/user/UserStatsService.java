@@ -9,27 +9,24 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.LongSupplier;
 
 /**
  * Fachlicher Service für User-spezifische Statistiken vom Router.
  *
  * <p>Die Klasse kapselt ausschließlich den technischen Zugriff auf die
- * Statistik-Endpunkte des Routers. Sie enthält keine CLI-Ausgabe,
+ * User-Statistik-Endpunkte des Routers unter {@code /api/cdn/stats}. Sie enthält keine CLI-Ausgabe,
  * keine Exit-Code-Logik und keine Interpretation der JSON-Antworten.</p>
  */
 public final class UserStatsService {
 
-    /**
-     * Header-Name für das Zugriffstoken.
-     *
-     * <p>Aktuell verwendet der Router dafür den Header {@code X-Admin-Token}.</p>
-     */
-    private static final String AUTH_TOKEN_HEADER = "X-Admin-Token";
+    /** Header-Name der technischen User-ID. */
+    private static final String USER_ID_HEADER = "X-User-Id";
 
     private final TransportClient transportClient;
     private final Duration requestTimeout;
     private final URI routerBaseUrl;
-    private final String authToken;
+    private final LongSupplier loggedInUserIdSupplier;
 
     /**
      * Erzeugt den Service mit allen benötigten technischen Abhängigkeiten.
@@ -37,15 +34,18 @@ public final class UserStatsService {
      * @param transportClient Transport-Abstraktion für HTTP-Aufrufe
      * @param requestTimeout Standard-Timeout für Requests
      * @param routerBaseUrl Basis-URL des Routers
-     * @param authToken Zugriffstoken für geschützte Statistik-Endpunkte
+     * @param loggedInUserIdSupplier liefert die technische ID des aktuell eingeloggten Users
      */
     public UserStatsService(
-            TransportClient transportClient, Duration requestTimeout, URI routerBaseUrl, String authToken) {
+            TransportClient transportClient,
+            Duration requestTimeout,
+            URI routerBaseUrl,
+            LongSupplier loggedInUserIdSupplier) {
 
         this.transportClient = Objects.requireNonNull(transportClient, "transportClient");
         this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
         this.routerBaseUrl = Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
-        this.authToken = requireText(authToken, "authToken");
+        this.loggedInUserIdSupplier = Objects.requireNonNull(loggedInUserIdSupplier, "loggedInUserIdSupplier");
     }
 
     /**
@@ -95,8 +95,12 @@ public final class UserStatsService {
      */
     private CallResult sendGet(String relativePath) {
         try {
+            long loggedInUserId = loggedInUserIdSupplier.getAsLong();
+            if (loggedInUserId <= 0) {
+                return CallResult.transportError("login required: missing user id");
+            }
             URI url = base().resolve(relativePath);
-            TransportRequest request = TransportRequest.get(url, requestTimeout, authHeaders());
+            TransportRequest request = TransportRequest.get(url, requestTimeout, authHeaders(loggedInUserId));
             return TransportCallAdapter.execute(transportClient, request);
         } catch (Exception ex) {
             return CallResult.transportError(ex.getMessage());
@@ -113,26 +117,12 @@ public final class UserStatsService {
     }
 
     /**
-     * Liefert die Header für geschützte Statistik-Requests.
+     * Liefert die Header für userbezogene Statistik-Requests.
      *
-     * @return Header-Map mit Zugriffstoken
+     * @param loggedInUserId technische ID des aktuellen Users
+     * @return Header-Map mit technischer User-ID
      */
-    private Map<String, String> authHeaders() {
-        return Map.of(AUTH_TOKEN_HEADER, authToken);
-    }
-
-    /**
-     * Validiert einen Pflichttext und liefert die getrimmte Form zurück.
-     *
-     * @param value Eingabewert
-     * @param fieldName Feldname für Fehlermeldungen
-     * @return getrimmter Pflichttext
-     */
-    private static String requireText(String value, String fieldName) {
-        String trimmed = Objects.toString(value, "").trim();
-        if (trimmed.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be blank");
-        }
-        return trimmed;
+    private Map<String, String> authHeaders(long loggedInUserId) {
+        return Map.of(USER_ID_HEADER, String.valueOf(loggedInUserId));
     }
 }

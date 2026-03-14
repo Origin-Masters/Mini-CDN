@@ -31,6 +31,10 @@ public abstract class AbstractE2E {
 
         if (originCtx != null) return;
 
+        String runId = String.valueOf(System.nanoTime());
+        String edgeStateDir = "target/e2e-edge-state-" + runId;
+        String routerStateDir = "target/e2e-router-state-" + runId;
+
         originCtx = new SpringApplicationBuilder(OriginApp.class)
                 .profiles("origin")
                 .run("--server.port=0", "--minicdn.admin.token=" + ADMIN_TOKEN);
@@ -43,6 +47,8 @@ public abstract class AbstractE2E {
                 .run(
                         "--server.port=0",
                         "--origin.base-url=" + ORIGIN_BASE,
+                        "--edge.recovery.state-file=" + edgeStateDir + "/edge-runtime-state.properties",
+                        "--edge.cache.state-file=" + edgeStateDir + "/edge-cache-state.properties",
                         "--edge.cache.ttl-ms=60000",
                         "--edge.cache.max-entries=100",
                         "--minicdn.admin.token=" + ADMIN_TOKEN);
@@ -52,7 +58,11 @@ public abstract class AbstractE2E {
 
         routerCtx = new SpringApplicationBuilder(RouterApp.class)
                 .profiles("cdn")
-                .run("--server.port=0", "--minicdn.admin.token=" + ADMIN_TOKEN);
+                .run(
+                        "--server.port=0",
+                        "--minicdn.admin.token=" + ADMIN_TOKEN,
+                        "--cdn.routing.state-file=" + routerStateDir + "/routing-state.properties",
+                        "--cdn.origin.cluster.state-file=" + routerStateDir + "/origin-cluster-state.properties");
 
         ROUTER_PORT = localPort(routerCtx);
         ROUTER_BASE = "http://localhost:" + ROUTER_PORT;

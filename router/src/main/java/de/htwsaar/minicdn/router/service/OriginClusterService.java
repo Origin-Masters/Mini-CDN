@@ -174,6 +174,36 @@ public class OriginClusterService {
         return false;
     }
 
+    public boolean syncEdgeToActiveOrigin(EdgeNode node, String region) {
+        if (node == null) {
+            return false;
+        }
+
+        String currentActiveOrigin = resolveActiveOrigin();
+        if (currentActiveOrigin == null || currentActiveOrigin.isBlank()) {
+            return true;
+        }
+
+        if (!isHealthy(currentActiveOrigin)) {
+            log.info(
+                    "[ORIGIN-SYNC] Ueberspringe Sync fuer Edge {} in Region {}, da aktive Origin {} derzeit ungesund ist.",
+                    node.url(),
+                    region,
+                    currentActiveOrigin);
+            return true;
+        }
+
+        boolean updated = edgeGateway.updateOriginBaseUrl(node, currentActiveOrigin, edgeOriginSyncTimeout);
+        if (!updated) {
+            log.warn(
+                    "[ORIGIN-SYNC] Konnte aktive Origin {} nicht an Edge {} in Region {} propagieren.",
+                    currentActiveOrigin,
+                    node.url(),
+                    region);
+        }
+        return updated;
+    }
+
     public List<String> spareOriginsSnapshot() {
         return List.copyOf(spareOrigins);
     }
@@ -193,6 +223,13 @@ public class OriginClusterService {
 
     private void syncEdgesToActiveOrigin(String newActiveOrigin) {
         if (newActiveOrigin == null || newActiveOrigin.isBlank()) {
+            return;
+        }
+
+        if (!isHealthy(newActiveOrigin)) {
+            log.warn(
+                    "[ORIGIN-FAILOVER] Ueberspringe Edge-Sync, da aktive Origin {} derzeit ungesund ist.",
+                    newActiveOrigin);
             return;
         }
 

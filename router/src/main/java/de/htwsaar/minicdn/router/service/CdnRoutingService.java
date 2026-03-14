@@ -71,6 +71,19 @@ public class CdnRoutingService {
      * @return fachliches Ergebnis
      */
     public RouteFileResult route(String path, String region, String clientId) {
+        return route(path, region, clientId, null);
+    }
+
+    /**
+     * Führt die Routing-Entscheidung für eine Datei mit optionalem User-Kontext aus.
+     *
+     * @param path Dateipfad
+     * @param region Zielregion
+     * @param clientId optionale Client-ID
+     * @param userId optionale technische User-ID
+     * @return fachliches Ergebnis
+     */
+    public RouteFileResult route(String path, String region, String clientId, Long userId) {
         String cleanRegion = normalize(region);
         if (cleanRegion == null) {
             routerStatsService.recordError();
@@ -82,7 +95,7 @@ public class CdnRoutingService {
                     "Fehler: Region fehlt. Bitte region Query-Parameter oder X-Client-Region Header setzen.");
         }
 
-        routerStatsService.recordRequest(cleanRegion, clientId);
+        routerStatsService.recordRequest(cleanRegion, clientId, userId);
 
         int attemptsLimit = resolveAttemptsLimit(edgeRegistry.getNodeCount(cleanRegion));
         List<EdgeNode> candidates = edgeRegistry.getNextNodes(cleanRegion, attemptsLimit);
@@ -92,7 +105,7 @@ public class CdnRoutingService {
             boolean responsive = edgeGateway.isNodeResponsive(candidate, Duration.ofMillis(ackTimeoutMs));
             if (responsive) {
                 URI location = fileRouteLocationResolver.resolveEdgeFileLocation(candidate, path);
-                routerStatsService.recordDownload(path, candidate.url());
+                routerStatsService.recordDownload(path, candidate.url(), userId);
                 return new RouteFileResult(
                         RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
             }

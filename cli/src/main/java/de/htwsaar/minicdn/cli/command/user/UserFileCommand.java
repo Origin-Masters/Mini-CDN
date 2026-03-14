@@ -301,6 +301,7 @@ public final class UserFileCommand implements Runnable {
                 String cleanRemotePath = parent.normalizeRemotePath(remotePath);
                 String cleanRegion = parent.normalizeRegion(region);
                 String cleanClientId = parent.normalizeClientId(clientId);
+                Long loggedInUserId = parent.ctx.sessionState().loggedInUserId();
                 Path targetFile =
                         Objects.requireNonNull(out, "out").toAbsolutePath().normalize();
 
@@ -308,7 +309,13 @@ public final class UserFileCommand implements Runnable {
 
                 DownloadResult result = parent.downloadService()
                         .downloadViaRouter(
-                                routerBaseUrl, cleanRemotePath, cleanRegion, cleanClientId, targetFile, overwrite);
+                                routerBaseUrl,
+                                cleanRemotePath,
+                                cleanRegion,
+                                cleanClientId,
+                                loggedInUserId,
+                                targetFile,
+                                overwrite);
 
                 return parent.handleDownloadResult(cleanRemotePath, targetFile, result);
 

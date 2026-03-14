@@ -41,6 +41,7 @@ public class EdgeLifecycleService {
 
     private final RoutingIndex routingIndex;
     private final EdgeGateway edgeGateway;
+    private final RouterAdminService routerAdminService;
     private final boolean enabled;
     private final Path edgeJarPath;
 
@@ -55,6 +56,7 @@ public class EdgeLifecycleService {
     public EdgeLifecycleService(
             RoutingIndex routingIndex,
             EdgeGateway edgeGateway,
+            RouterAdminService routerAdminService,
             @Value("${cdn.edge-launcher.enabled:false}") boolean enabled,
             @Value("${cdn.edge-launcher.jar-path:edge/target/edge.jar}") String edgeJarPath,
             @Value("${cdn.edge-launcher.auto-port.range-start:10000}") int autoPortRangeStart,
@@ -62,6 +64,7 @@ public class EdgeLifecycleService {
             @Value("${cdn.edge-launcher.auto-port.max-count:200}") int maxAutoStartCount) {
         this.routingIndex = Objects.requireNonNull(routingIndex, "routingIndex must not be null");
         this.edgeGateway = Objects.requireNonNull(edgeGateway, "edgeGateway must not be null");
+        this.routerAdminService = Objects.requireNonNull(routerAdminService, "routerAdminService must not be null");
         this.enabled = enabled;
         this.edgeJarPath = Path.of(edgeJarPath);
         this.autoPortRangeStart = autoPortRangeStart;
@@ -328,7 +331,7 @@ public class EdgeLifecycleService {
         managedMeta.put(instanceId, new ManagedEdge(instanceId, region, url, process.pid()));
 
         if (autoRegister) {
-            routingIndex.addEdge(region, new EdgeNode(UrlUtil.ensureTrailingSlash(url)));
+            routerAdminService.addEdgeNode(region, UrlUtil.ensureTrailingSlash(url));
         }
 
         return new StartEdgeResponse(instanceId, url, process.pid(), region);

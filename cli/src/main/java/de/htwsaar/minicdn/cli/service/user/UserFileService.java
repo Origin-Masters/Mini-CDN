@@ -23,6 +23,7 @@ public final class UserFileService {
 
     private static final String HEADER_REGION = "X-Client-Region";
     private static final String HEADER_CLIENT_ID = "X-Client-Id";
+    private static final String HEADER_USER_ID = "X-User-Id";
 
     private final TransportClient transportClient;
     private final Duration requestTimeout;
@@ -52,13 +53,37 @@ public final class UserFileService {
     public DownloadResult downloadViaRouter(
             URI routerBaseUrl, String remotePath, String region, String clientId, Path out, boolean overwrite) {
 
+        return downloadViaRouter(routerBaseUrl, remotePath, region, clientId, null, out, overwrite);
+    }
+
+    /**
+     * Lädt eine Datei über den Router herunter und übergibt optional die eingeloggte User-ID.
+     *
+     * @param routerBaseUrl Basis-URL des Routers
+     * @param remotePath relativer Remote-Pfad der Datei
+     * @param region Client-Region für das Routing
+     * @param clientId optionale Client-ID für Statistikzwecke
+     * @param userId optionale technische User-ID
+     * @param out lokale Zieldatei
+     * @param overwrite {@code true}, wenn eine bestehende Datei überschrieben werden darf
+     * @return normiertes Download-Ergebnis
+     */
+    public DownloadResult downloadViaRouter(
+            URI routerBaseUrl,
+            String remotePath,
+            String region,
+            String clientId,
+            Long userId,
+            Path out,
+            boolean overwrite) {
+
         Objects.requireNonNull(routerBaseUrl, "routerBaseUrl");
         Objects.requireNonNull(out, "out");
 
         String cleanRemotePath = normalizeRemotePath(remotePath);
         String cleanRegion = requireText(region, "region");
         URI routingUri = routingUri(routerBaseUrl, cleanRemotePath);
-        Map<String, String> routingHeaders = routingHeaders(cleanRegion, clientId);
+        Map<String, String> routingHeaders = routingHeaders(cleanRegion, clientId, userId);
         TransportRequest routingRequest = TransportRequest.get(routingUri, requestTimeout, routingHeaders);
 
         try {
@@ -87,12 +112,16 @@ public final class UserFileService {
      * @param clientId optionale Client-ID
      * @return Header-Map für den Request
      */
-    private static Map<String, String> routingHeaders(String region, String clientId) {
+    private static Map<String, String> routingHeaders(String region, String clientId, Long userId) {
         Map<String, String> headers = new LinkedHashMap<>();
         headers.put(HEADER_REGION, region);
 
         if (hasText(clientId)) {
             headers.put(HEADER_CLIENT_ID, clientId.trim());
+        }
+
+        if (userId != null && userId > 0) {
+            headers.put(HEADER_USER_ID, String.valueOf(userId));
         }
 
         return headers;

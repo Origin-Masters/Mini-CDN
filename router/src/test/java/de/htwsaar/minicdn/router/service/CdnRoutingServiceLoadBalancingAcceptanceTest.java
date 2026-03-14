@@ -60,7 +60,8 @@ class CdnRoutingServiceLoadBalancingAcceptanceTest {
         CdnRoutingService routingService = new CdnRoutingService(
                 routingIndex, statsService, edgeGateway, resolver, originClusterService, 100, 1, 0);
 
-        RouterAdminService adminService = new RouterAdminService(routingIndex, statsService, edgeGateway);
+        RouterAdminService adminService =
+                new RouterAdminService(routingIndex, statsService, edgeGateway, originClusterService);
 
         for (int i = 0; i < 1000; i++) {
             RouteFileResult result = routingService.route("/asset-" + (i % 5) + ".txt", region, "client-" + i);
