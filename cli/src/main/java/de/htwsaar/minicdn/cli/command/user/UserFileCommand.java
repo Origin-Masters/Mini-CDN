@@ -39,9 +39,9 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  user file download -r EU docs/manual.pdf -o ./manual.pdf",
-            "  user file download -r EU docs/manual.pdf -o ./manual.pdf --client-id alice",
-            "  user file download-segmented -r EU docs/manual.pdf -o ./manual-seg.pdf --segments 4 --retries 2"
+            "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf",
+            "  user file download -region EU --path docs/manual.pdf -out ./manual.pdf --client-id alice",
+            "  user file download-segmented -region EU --path docs/manual.pdf --out ./manual-seg.pdf --segments 4 --retries 2"
         },
         subcommands = {UserFileCommand.FileDownloadCommand.class, UserFileCommand.FileSegmentedDownloadCommand.class})
 public final class UserFileCommand implements Runnable {
@@ -66,7 +66,7 @@ public final class UserFileCommand implements Runnable {
     /**
      * Interner Konstruktor für Tests und explizite Dependency Injection.
      *
-     * @param ctx gemeinsamer CLI-Kontext
+     * @param ctx             gemeinsamer CLI-Kontext
      * @param downloadService fachlicher Download-Service
      */
     UserFileCommand(CliContext ctx, UserFileService downloadService) {
@@ -150,7 +150,7 @@ public final class UserFileCommand implements Runnable {
     /**
      * Prüft, ob die angegebene Ausgabedatei grundsätzlich gültig ist.
      *
-     * @param outFile Zieldatei
+     * @param outFile   Zieldatei
      * @param overwrite Kennzeichen, ob bestehende Dateien überschrieben werden dürfen
      * @throws IllegalArgumentException falls das Ziel ungültig ist
      */
@@ -218,9 +218,9 @@ public final class UserFileCommand implements Runnable {
      * Bewertet das Download-Ergebnis zentral und gibt den passenden Exit-Code zurück.
      *
      * @param routerBaseUrl normalisierte Router-Basis-URL
-     * @param remotePath normalisierter Remote-Pfad
-     * @param outFile lokale Zieldatei
-     * @param result Ergebnis des Download-Aufrufs
+     * @param remotePath    normalisierter Remote-Pfad
+     * @param outFile       lokale Zieldatei
+     * @param result        Ergebnis des Download-Aufrufs
      * @return passender Exit-Code
      */
     int handleDownloadResult(URI routerBaseUrl, String remotePath, Path outFile, DownloadResult result) {
@@ -265,9 +265,9 @@ public final class UserFileCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  user file download -r EU docs/manual.pdf -o ./manual.pdf",
-                "  user file download -r EU docs/manual.pdf -o ./manual.pdf --client-id alice",
-                "  user file download -r EU docs/manual.pdf -o ./manual.pdf --overwrite"
+                "  user file download --region EU docs/manual.pdf --out ./manual.pdf",
+                "  user file download --region EU docs/manual.pdf --out ./manual.pdf --client-id alice",
+                "  user file download --region EU docs/manual.pdf --out ./manual.pdf --overwrite"
             })
     public static final class FileDownloadCommand implements Callable<Integer> {
 
@@ -277,7 +277,11 @@ public final class UserFileCommand implements Runnable {
         /**
          * Relativer Remote-Pfad der herunterzuladenden Datei.
          */
-        @Parameters(index = "0", paramLabel = "REMOTE_PATH", description = "Remote file path, e.g. docs/manual.pdf")
+        @Option(
+                names = {"-p", "--path"},
+                required = true,
+                paramLabel = "REMOTE_PATH",
+                description = "Remote file path, e.g. docs/manual.pdf")
         private String remotePath;
 
         /**
@@ -370,20 +374,27 @@ public final class UserFileCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  user file download-segmented -r EU docs/manual.pdf -o ./manual.pdf --segments 4",
-                "  user file download-segmented -r EU docs/manual.pdf -o ./manual.pdf --segments 6 --retries 3",
-                "  user file download-segmented -r EU docs/manual.pdf -o ./manual.pdf --edge http://localhost:8083 --edge http://localhost:8084"
+                "  user file download-segmented --region EU --path docs/manual.pdf --out ./manual.pdf --segments 4",
+                "  user file download-segmented --region EU --path docs/manual.pdf --out ./manual.pdf --segments 6 --retries 3",
+                "  user file download-segmented --region EU --path docs/manual.pdf --out ./manual.pdf --edge http://localhost:8083 --edge http://localhost:8084"
             })
     public static final class FileSegmentedDownloadCommand implements Callable<Integer> {
 
         @ParentCommand
         private UserFileCommand parent;
 
-        /** Relativer Remote-Pfad der herunterzuladenden Datei. */
-        @Parameters(index = "0", paramLabel = "REMOTE_PATH", description = "Remote file path, e.g. docs/manual.pdf")
+        /**
+         * Relativer Remote-Pfad der herunterzuladenden Datei.
+         */
+        @Option(
+                names = {"-p", "--path"},
+                required = true,
+                paramLabel = "REMOTE_PATH",
+                description = "Remote file path, e.g. docs/manual.pdf")
         private String remotePath;
-
-        /** Lokale Zieldatei. */
+        /**
+         * Lokale Zieldatei.
+         */
         @Option(
                 names = {"-o", "--out"},
                 required = true,
@@ -391,7 +402,9 @@ public final class UserFileCommand implements Runnable {
                 description = "Local output file path")
         private Path out;
 
-        /** Router-Basis-URL. */
+        /**
+         * Router-Basis-URL.
+         */
         @Option(
                 names = {"-H", "--host"},
                 defaultValue = ROUTER_URL,
@@ -399,7 +412,9 @@ public final class UserFileCommand implements Runnable {
                 description = "Router base URL (scheme://host:port)")
         private URI host;
 
-        /** Client-Region für das Routing. */
+        /**
+         * Client-Region für das Routing.
+         */
         @Option(
                 names = {"-r", "--region"},
                 required = true,
@@ -407,14 +422,18 @@ public final class UserFileCommand implements Runnable {
                 description = "Client region for routing, e.g. EU")
         private String region;
 
-        /** Optionale Client-ID. */
+        /**
+         * Optionale Client-ID.
+         */
         @Option(
                 names = {"--client-id"},
                 paramLabel = "CLIENT_ID",
                 description = "Optional client id, e.g. alice")
         private String clientId;
 
-        /** Anzahl der Segmente/Parallel-Downloads. */
+        /**
+         * Anzahl der Segmente/Parallel-Downloads.
+         */
         @Option(
                 names = {"--segments"},
                 defaultValue = "4",
@@ -422,7 +441,9 @@ public final class UserFileCommand implements Runnable {
                 description = "Number of segments / parallel downloads")
         private int segments;
 
-        /** Wiederholversuche pro Segment. */
+        /**
+         * Wiederholversuche pro Segment.
+         */
         @Option(
                 names = {"--retries"},
                 defaultValue = "2",
@@ -430,14 +451,18 @@ public final class UserFileCommand implements Runnable {
                 description = "Retry count for failed or invalid segments")
         private int retries;
 
-        /** Optionale feste Edge-Knoten für Segment-Downloads. */
+        /**
+         * Optionale feste Edge-Knoten für Segment-Downloads.
+         */
         @Option(
                 names = {"--edge"},
                 paramLabel = "EDGE_URL",
                 description = "Optional edge base URL (can be repeated)")
         private List<URI> edges;
 
-        /** Steuert, ob eine bestehende Datei überschrieben werden darf. */
+        /**
+         * Steuert, ob eine bestehende Datei überschrieben werden darf.
+         */
         @Option(
                 names = {"--overwrite"},
                 defaultValue = "false",
