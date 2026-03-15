@@ -12,6 +12,8 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CdnRoutingService {
+
+    private static final Logger log = LoggerFactory.getLogger(CdnRoutingService.class);
 
     private final EdgeRegistry edgeRegistry;
     private final RouterStatsService routerStatsService;
@@ -87,8 +91,15 @@ public class CdnRoutingService {
      */
     public RouteFileResult route(String path, String region, String clientId, Long userId) {
         String cleanRegion = normalize(region);
+        log.info("START routing file={} region={}", path, cleanRegion);
         if (cleanRegion == null) {
             routerStatsService.recordError();
+            log.info(
+                    "END routing file={} region={} status={} attempts={}",
+                    path,
+                    cleanRegion,
+                    RouteStatus.BAD_REQUEST,
+                    0);
             return new RouteFileResult(
                     RouteStatus.BAD_REQUEST,
                     null,
@@ -108,6 +119,13 @@ public class CdnRoutingService {
             if (responsive) {
                 URI location = fileRouteLocationResolver.resolveEdgeFileLocation(candidate, path);
                 routerStatsService.recordDownload(path, candidate.url(), userId);
+                log.info(
+                        "END routing file={} region={} status={} attempts={} target={}",
+                        path,
+                        cleanRegion,
+                        RouteStatus.REDIRECT,
+                        attempts,
+                        candidate.url());
                 return new RouteFileResult(
                         RouteStatus.REDIRECT, location, UUID.randomUUID().toString(), attempts, null);
             }
@@ -137,6 +155,13 @@ public class CdnRoutingService {
                 throw new IllegalStateException("No active origin configured");
             }
             URI originLocation = fileRouteLocationResolver.resolveOriginFileLocation(activeOrigin, path);
+            log.info(
+                    "END routing file={} region={} status={} attempts={} target={}",
+                    path,
+                    "origin-fallback",
+                    RouteStatus.REDIRECT,
+                    attempts,
+                    activeOrigin);
             return new RouteFileResult(
                     RouteStatus.REDIRECT,
                     originLocation,
@@ -145,6 +170,12 @@ public class CdnRoutingService {
                     "Origin-Fallback aktiv, weil keine erreichbare Edge verfügbar war.");
         } catch (Exception ex) {
             routerStatsService.recordError();
+            log.info(
+                    "END routing file={} region={} status={} attempts={}",
+                    path,
+                    "origin-fallback",
+                    RouteStatus.UNAVAILABLE,
+                    attempts);
             return new RouteFileResult(
                     RouteStatus.UNAVAILABLE,
                     null,

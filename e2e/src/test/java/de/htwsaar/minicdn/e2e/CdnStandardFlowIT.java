@@ -249,8 +249,8 @@ class CdnStandardFlowIT extends AbstractE2E {
     void failover_removes_dead_replica_within_ten_seconds() throws Exception {
         String region = "failover-e2e";
         String deadEdgeUrl = "http://localhost:65534";
-        String deadEdgeUrlNormalized = deadEdgeUrl + "/";
-        String healthyEdgeUrlNormalized = EDGE_BASE + "/";
+        String deadEdgeUrlNormalized = deadEdgeUrl + "/"; // toter Edge
+        String healthyEdgeUrlNormalized = EDGE_BASE + "/"; // laufender Edge
 
         TestFile tf = createOriginFile("Failover E2E Test");
 
@@ -263,13 +263,16 @@ class CdnStandardFlowIT extends AbstractE2E {
             registerEdgeInRouter(region, deadEdgeUrl);
             registerEdgeInRouter(region, EDGE_BASE);
 
+            // Zeitmessung starten
             long start = System.currentTimeMillis();
+            // warten bis toter Edge im Routing-Index verschwindet (max 10 sek)
             boolean removedInTime = waitUntilEdgeRemoved(region, deadEdgeUrlNormalized, 10_000);
             long durationMs = System.currentTimeMillis() - start;
 
             assertTrue(removedInTime, "Die tote Edge sollte innerhalb von 10 Sekunden entfernt werden.");
             assertTrue(durationMs <= 10_000, "Die Erkennung dauerte zu lange: " + durationMs + "ms");
 
+            // aktuelle Routing.Index wird nochmal geladen
             List<String> urlsAfterCleanup = fetchRoutingUrls(region);
 
             // Nach dem Health-Check darf nur noch die lebende Edge im Routing-Index stehen.
@@ -277,7 +280,8 @@ class CdnStandardFlowIT extends AbstractE2E {
             assertTrue(urlsAfterCleanup.contains(healthyEdgeUrlNormalized));
             assertEquals(1, urlsAfterCleanup.size());
 
-            // Ein echter Request sollte jetzt direkt zur verbleibenden Edge weitergeleitet werden.
+            // Zum Schluss wird ein echter Routing Request ausgeführt
+            // Router muss zur gesunden Edge weiterleiten
             HttpResponse<Void> response = requestRouting(tf.fileName(), region);
             assertEquals(307, response.statusCode());
 
