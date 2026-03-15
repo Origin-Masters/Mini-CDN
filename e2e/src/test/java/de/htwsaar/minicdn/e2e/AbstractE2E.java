@@ -61,6 +61,7 @@ public abstract class AbstractE2E {
                 .run(
                         "--server.port=0",
                         "--minicdn.admin.token=" + ADMIN_TOKEN,
+                        "--cdn.origin.base-url=" + ORIGIN_BASE,
                         "--cdn.routing.state-file=" + routerStateDir + "/routing-state.properties",
                         "--cdn.origin.cluster.state-file=" + routerStateDir + "/origin-cluster-state.properties");
 

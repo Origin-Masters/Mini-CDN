@@ -119,48 +119,37 @@ class CdnStandardFlowIT extends AbstractE2E {
         TestFile tf = createOriginFile("Retry Test Content");
 
         try {
-
             String testUrl = ROUTER_BASE + "/api/cdn/files/" + tf.fileName + "?region=" + REGION;
-
             HttpRequest request =
                     HttpRequest.newBuilder().uri(URI.create(testUrl)).build();
 
             registerEdgeInRouter();
 
-            long startTime = System.nanoTime(); // nanoTime ist für Benchmarks präziser
+            long startTime = System.nanoTime();
 
-            // 1. Alle Anfragen asynchron abfeuern
             List<CompletableFuture<HttpResponse<String>>> futures = IntStream.range(0, numberOfParallelRequests)
                     .mapToObj(i -> CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
                     .collect(Collectors.toList());
 
-            // 2. Warten, bis ALLE fertig sind
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
             long endTime = System.nanoTime();
-
-            // Berechnung der Statistiken
             long totalDurationMs = (endTime - startTime) / 1_000_000;
             long avgDurationMs = totalDurationMs / numberOfParallelRequests;
 
-            // Statistische Ausgabe (immer sichtbar im Log)
             System.out.println("--------------------------------------------------");
             System.out.println("BENCHMARK ERGEBNIS:");
             System.out.println("Gesamtdauer: " + totalDurationMs + "ms");
             System.out.println("Durchschnitt pro Request: " + avgDurationMs + "ms");
             System.out.println("--------------------------------------------------");
 
-            // 3. Validierung der Ergebnisse
             String errorMsg = String.format(
                     "Benchmark fehlgeschlagen! Gesamt: %dms, Schnitt: %dms", totalDurationMs, avgDurationMs);
 
             for (CompletableFuture<HttpResponse<String>> future : futures) {
                 int status = future.join().statusCode();
-                // Wir prüfen auf 200 OK.
-                // Hinweis: Falls die Datei im Test-Setup fehlt, käme 404 zurück.
                 assertEquals(200, status, errorMsg + " | Einer der Statuscodes war: " + status);
             }
-            //
             System.out.println("NFA-S1 erfüllt: Alle Anfragen erfolgreich verarbeitet.");
         } finally {
             cleanupOriginFile(tf.originAdminFileUri());
@@ -190,10 +179,10 @@ class CdnStandardFlowIT extends AbstractE2E {
 
             String location = response.headers().firstValue("location").orElse("");
 
-            // Check 2: Die Location muss zum ORIGIN zeigen (Port 8080)
-            // Das beweist, dass die Zustellgarantie gegriffen hat
+            // Check 2: Die Location muss zur aktuell gestarteten Origin zeigen.
+            // Das beweist, dass die Zustellgarantie gegriffen hat.
             assertTrue(
-                    location.contains(":8080/api/origin/files/"),
+                    location.startsWith(ORIGIN_BASE + "/api/origin/files/"),
                     "Location sollte zum Origin-Server führen. Pfad war: " + location);
 
             System.out.println("[NFA-S3 Test] Erfolg: Router leitet zum Origin weiter, wenn Edges nicht antworten.");
