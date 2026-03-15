@@ -21,6 +21,10 @@ class CdnStandardFlowIT extends AbstractE2E {
     private static final String REGION = "eu-west";
     private static final String CACHE_HEADER = "X-Cache";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final int PARALLEL_REQUESTS = 10;
+    private static final long MAX_AVG_LATENCY_MS = 150;
+    private static final long MAX_SLOWEST_REQUEST_MS = 300;
+    private static final long MAX_LATENCY_SPREAD_MS = 200;
 
     private static final HttpClient CLIENT =
             HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
@@ -115,7 +119,6 @@ class CdnStandardFlowIT extends AbstractE2E {
      */
     @Test
     void testParallelRequestStability() throws Exception {
-        int numberOfParallelRequests = 10;
         TestFile tf = createOriginFile("Retry Test Content");
 
         try {
@@ -125,32 +128,79 @@ class CdnStandardFlowIT extends AbstractE2E {
 
             registerEdgeInRouter();
 
-            long startTime = System.nanoTime();
+            // Vor dem eigentlichen Benchmark wird einmal normal angefragt, das verhindert, dass erste Initialisierung
+            // den Test verfaelscht
+            HttpResponse<String> warmupResponse = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, warmupResponse.statusCode(), "Warm-up-Request sollte erfolgreich sein.");
 
-            List<CompletableFuture<HttpResponse<String>>> futures = IntStream.range(0, numberOfParallelRequests)
-                    .mapToObj(i -> CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString()))
+            // Hier beginnt der eigentliche Lasttest: Ab jetzt messen wir nur die parallelen Requests.
+            long blockStartNanos = System.nanoTime();
+
+            // 10 Requests parallel abschicken
+            List<CompletableFuture<RequestMeasurement>> futures = IntStream.range(0, PARALLEL_REQUESTS)
+                    .mapToObj(i -> sendMeasuredAsync(request))
                     .collect(Collectors.toList());
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-            long endTime = System.nanoTime();
-            long totalDurationMs = (endTime - startTime) / 1_000_000;
-            long avgDurationMs = totalDurationMs / numberOfParallelRequests;
+            // Gesamtdauer berechnen
+            long blockDurationMs = nanosToMillis(System.nanoTime() - blockStartNanos);
+
+            // Alle Einzel-Ergebnisse einsammeln (Dauer einzelner Anfragen)
+            List<RequestMeasurement> measurements =
+                    futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+
+            // Pruefen, dass alle Requests erfolgreich waren
+            for (RequestMeasurement measurement : measurements) {
+                assertEquals(200, measurement.statusCode(), "Jeder parallele Request muss erfolgreich sein.");
+            }
+
+            // Aus den Einzelwerten Latenzwerte berechnen
+
+            // schnellste Anfrage
+            long minLatencyMs = measurements.stream()
+                    .mapToLong(RequestMeasurement::durationMs)
+                    .min()
+                    .orElseThrow();
+            // langsamste Anfrage
+            long maxLatencyMs = measurements.stream()
+                    .mapToLong(RequestMeasurement::durationMs)
+                    .max()
+                    .orElseThrow();
+            // Durschnitt aller 10 Anfragen
+            double avgLatencyMs = measurements.stream()
+                    .mapToLong(RequestMeasurement::durationMs)
+                    .average()
+                    .orElseThrow();
+            // Unterschied zwischen schnellster und langsamster Anfrage
+            long latencySpreadMs = maxLatencyMs - minLatencyMs;
 
             System.out.println("--------------------------------------------------");
             System.out.println("BENCHMARK ERGEBNIS:");
-            System.out.println("Gesamtdauer: " + totalDurationMs + "ms");
-            System.out.println("Durchschnitt pro Request: " + avgDurationMs + "ms");
+            System.out.println("Parallele Requests: " + PARALLEL_REQUESTS);
+            System.out.println("Gesamtdauer des Blocks: " + blockDurationMs + "ms");
+            System.out.println("Durchschnittliche Latenz: " + Math.round(avgLatencyMs) + "ms");
+            System.out.println("Schnellster Request: " + minLatencyMs + "ms");
+            System.out.println("Langsamster Request: " + maxLatencyMs + "ms");
+            System.out.println("Latenz-Spanne: " + latencySpreadMs + "ms");
+            System.out.println("Grenzwerte: avg<="
+                    + MAX_AVG_LATENCY_MS
+                    + "ms, max<="
+                    + MAX_SLOWEST_REQUEST_MS
+                    + "ms, spread<="
+                    + MAX_LATENCY_SPREAD_MS
+                    + "ms");
             System.out.println("--------------------------------------------------");
 
-            String errorMsg = String.format(
-                    "Benchmark fehlgeschlagen! Gesamt: %dms, Schnitt: %dms", totalDurationMs, avgDurationMs);
+            // Akzeptanzkriterien per Assertion pruefen
+            assertTrue(PARALLEL_REQUESTS >= 5, "Der Lasttest muss mindestens 5 parallele Clients verwenden.");
+            assertTrue(
+                    avgLatencyMs <= MAX_AVG_LATENCY_MS,
+                    "Durchschnittliche Latenz zu hoch: " + Math.round(avgLatencyMs) + "ms");
+            assertTrue(maxLatencyMs <= MAX_SLOWEST_REQUEST_MS, "Langsamster Request zu hoch: " + maxLatencyMs + "ms");
+            assertTrue(latencySpreadMs <= MAX_LATENCY_SPREAD_MS, "Latenz schwankt zu stark: " + latencySpreadMs + "ms");
 
-            for (CompletableFuture<HttpResponse<String>> future : futures) {
-                int status = future.join().statusCode();
-                assertEquals(200, status, errorMsg + " | Einer der Statuscodes war: " + status);
-            }
-            System.out.println("NFA-S1 erfüllt: Alle Anfragen erfolgreich verarbeitet.");
+            System.out.println("NFA-S1 erfüllt: Mindestens 5 parallele Requests mit stabiler Latenz verarbeitet.");
         } finally {
             cleanupOriginFile(tf.originAdminFileUri());
             unregisterEdge(REGION, EDGE_BASE);
@@ -243,10 +293,25 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     // ---------- Hilfsmethoden ----------
 
+    private record RequestMeasurement(int statusCode, long durationMs) {}
+
     private record TestFile(String fileName, URI originAdminFileUri) {}
 
+    private static CompletableFuture<RequestMeasurement> sendMeasuredAsync(HttpRequest request) {
+        // Anfrage parallel abschicken, Startzeit merken
+        // wenn Antwort kommt: Statuscode speichern, Dauer dieser einen Anfrage speichern
+        long startNanos = System.nanoTime();
+        return CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response ->
+                        new RequestMeasurement(response.statusCode(), nanosToMillis(System.nanoTime() - startNanos)));
+    }
+
+    private static long nanosToMillis(long nanos) {
+        return nanos / 1_000_000;
+    }
+
     private static TestFile createOriginFile(String content) throws Exception {
-        String fileName = "test-" + System.currentTimeMillis() + ".txt";
+        String fileName = "test-" + System.nanoTime() + ".txt";
         URI adminUri = uri(ORIGIN_BASE + "/api/origin/admin/files/" + fileName);
 
         HttpRequest putReq = HttpRequest.newBuilder(adminUri)
