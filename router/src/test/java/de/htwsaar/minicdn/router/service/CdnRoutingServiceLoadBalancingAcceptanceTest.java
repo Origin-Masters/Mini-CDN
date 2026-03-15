@@ -3,14 +3,21 @@ package de.htwsaar.minicdn.router.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.htwsaar.minicdn.router.adapter.RouterRoutingStateStore;
-import de.htwsaar.minicdn.router.domain.EdgeGateway;
-import de.htwsaar.minicdn.router.domain.EdgeNodeStats;
-import de.htwsaar.minicdn.router.domain.FileRouteLocationResolver;
-import de.htwsaar.minicdn.router.domain.OriginAdminGateway;
-import de.htwsaar.minicdn.router.domain.RouteFileResult;
-import de.htwsaar.minicdn.router.domain.RouteStatus;
-import de.htwsaar.minicdn.router.dto.EdgeNode;
+import de.htwsaar.minicdn.router.adapter.out.persistence.RouterOriginClusterStateStore;
+import de.htwsaar.minicdn.router.adapter.out.persistence.RouterRoutingStateStore;
+import de.htwsaar.minicdn.router.application.admin.RouterAdminService;
+import de.htwsaar.minicdn.router.application.admin.model.AdminFileResult;
+import de.htwsaar.minicdn.router.application.metrics.RouterStatsService;
+import de.htwsaar.minicdn.router.application.origin.OriginClusterService;
+import de.htwsaar.minicdn.router.application.routing.CdnRoutingService;
+import de.htwsaar.minicdn.router.application.routing.RoutingIndex;
+import de.htwsaar.minicdn.router.domain.model.EdgeNode;
+import de.htwsaar.minicdn.router.domain.model.EdgeNodeStats;
+import de.htwsaar.minicdn.router.domain.model.RouteFileResult;
+import de.htwsaar.minicdn.router.domain.model.RouteStatus;
+import de.htwsaar.minicdn.router.domain.port.EdgeGateway;
+import de.htwsaar.minicdn.router.domain.port.FileRouteLocationResolver;
+import de.htwsaar.minicdn.router.domain.port.OriginAdminGateway;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +54,7 @@ class CdnRoutingServiceLoadBalancingAcceptanceTest {
         EdgeGateway edgeGateway = new AlwaysHealthyEdgeGateway();
         FileRouteLocationResolver resolver = new TestFileRouteLocationResolver();
         OriginClusterService originClusterService = new OriginClusterService(
-                new de.htwsaar.minicdn.router.adapter.RouterOriginClusterStateStore(tmp.toString() + ".origin"),
+                new RouterOriginClusterStateStore(tmp.toString() + ".origin"),
                 new AlwaysHealthyOriginGateway(),
                 routingIndex,
                 edgeGateway,
@@ -191,24 +198,23 @@ class CdnRoutingServiceLoadBalancingAcceptanceTest {
     private static final class AlwaysHealthyOriginGateway implements OriginAdminGateway {
 
         @Override
-        public de.htwsaar.minicdn.router.dto.AdminFileResult uploadFile(
-                String originBaseUrl, String path, byte[] body) {
-            return de.htwsaar.minicdn.router.dto.AdminFileResult.success(201, null);
+        public AdminFileResult uploadFile(String originBaseUrl, String path, byte[] body) {
+            return AdminFileResult.success(201, null);
         }
 
         @Override
-        public de.htwsaar.minicdn.router.dto.AdminFileResult deleteFile(String originBaseUrl, String path) {
-            return de.htwsaar.minicdn.router.dto.AdminFileResult.success(204, null);
+        public AdminFileResult deleteFile(String originBaseUrl, String path) {
+            return AdminFileResult.success(204, null);
         }
 
         @Override
-        public de.htwsaar.minicdn.router.dto.AdminFileResult listFiles(String originBaseUrl, int page, int size) {
-            return de.htwsaar.minicdn.router.dto.AdminFileResult.success(200, "[]");
+        public AdminFileResult listFiles(String originBaseUrl, int page, int size) {
+            return AdminFileResult.success(200, "[]");
         }
 
         @Override
-        public de.htwsaar.minicdn.router.dto.AdminFileResult getFileMetadata(String originBaseUrl, String path) {
-            return de.htwsaar.minicdn.router.dto.AdminFileResult.success(200, "{}");
+        public AdminFileResult getFileMetadata(String originBaseUrl, String path) {
+            return AdminFileResult.success(200, "{}");
         }
 
         @Override

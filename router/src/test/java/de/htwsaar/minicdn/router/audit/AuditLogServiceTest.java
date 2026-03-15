@@ -3,6 +3,10 @@ package de.htwsaar.minicdn.router.audit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.htwsaar.minicdn.router.application.audit.AuditLogService;
+import de.htwsaar.minicdn.router.domain.model.AuditLogEntry;
+import de.htwsaar.minicdn.router.domain.model.AuditQueryFilter;
+import de.htwsaar.minicdn.router.domain.model.AuditResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;

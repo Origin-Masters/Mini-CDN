@@ -30,6 +30,13 @@ public final class UriUtils {
         return value.endsWith("/") ? uri : URI.create(value + "/");
     }
 
+    public static String ensureTrailingSlash(String value) {
+        Objects.requireNonNull(value, "value");
+
+        String trimmed = value.trim();
+        return trimmed.endsWith("/") ? trimmed : trimmed + "/";
+    }
+
     /**
      * Kodiert einen String fuer die Verwendung in URL-Parametern.
      *

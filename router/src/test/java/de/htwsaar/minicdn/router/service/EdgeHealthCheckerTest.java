@@ -2,10 +2,12 @@ package de.htwsaar.minicdn.router.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import de.htwsaar.minicdn.router.adapter.RouterRoutingStateStore;
-import de.htwsaar.minicdn.router.domain.EdgeGateway;
-import de.htwsaar.minicdn.router.domain.EdgeNodeStats;
-import de.htwsaar.minicdn.router.dto.EdgeNode;
+import de.htwsaar.minicdn.router.adapter.out.persistence.RouterRoutingStateStore;
+import de.htwsaar.minicdn.router.application.health.EdgeHealthChecker;
+import de.htwsaar.minicdn.router.application.routing.RoutingIndex;
+import de.htwsaar.minicdn.router.domain.model.EdgeNode;
+import de.htwsaar.minicdn.router.domain.model.EdgeNodeStats;
+import de.htwsaar.minicdn.router.domain.port.EdgeGateway;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
