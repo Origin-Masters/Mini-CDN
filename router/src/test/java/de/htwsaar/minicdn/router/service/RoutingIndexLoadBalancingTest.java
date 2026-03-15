@@ -2,8 +2,9 @@ package de.htwsaar.minicdn.router.service;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.htwsaar.minicdn.router.adapter.RouterRoutingStateStore;
-import de.htwsaar.minicdn.router.dto.EdgeNode;
+import de.htwsaar.minicdn.router.adapter.out.persistence.RouterRoutingStateStore;
+import de.htwsaar.minicdn.router.application.routing.RoutingIndex;
+import de.htwsaar.minicdn.router.domain.model.EdgeNode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
