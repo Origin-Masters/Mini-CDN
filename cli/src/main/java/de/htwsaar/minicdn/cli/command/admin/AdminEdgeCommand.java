@@ -757,7 +757,7 @@ public final class AdminEdgeCommand implements Runnable {
          */
         @Option(
                 names = "--wait-ready",
-                defaultValue = "false",
+                defaultValue = "true",
                 paramLabel = "true|false",
                 description =
                         "If true, router waits until each edge is ready before returning (default: ${DEFAULT-VALUE}).")
@@ -789,6 +789,20 @@ public final class AdminEdgeCommand implements Runnable {
             }
 
             try {
+                if (waitReady) {
+                    ConsoleUtils.info(
+                            parent.ctx.out(),
+                            "[EDGE] auto-start starting %d edge(s) in region=%s and waiting until ready...",
+                            count,
+                            region);
+                } else {
+                    ConsoleUtils.info(
+                            parent.ctx.out(),
+                            "[EDGE] auto-start starting %d edge(s) in region=%s without readiness wait...",
+                            count,
+                            region);
+                }
+
                 CallOutcome outcome = parent.evaluate(
                         "auto-start",
                         parent.service().startEdgesAuto(host, region, count, originBaseUrl, autoRegister, waitReady));

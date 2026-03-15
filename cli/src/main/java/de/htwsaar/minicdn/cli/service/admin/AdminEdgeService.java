@@ -21,6 +21,8 @@ import java.util.Objects;
  * und keine Kenntnis über Picocli-Kommandos.</p>
  */
 public final class AdminEdgeService {
+    private static final Duration READY_WAIT_BUDGET_PER_EDGE = Duration.ofSeconds(8);
+    private static final Duration READY_WAIT_REQUEST_BUFFER = Duration.ofSeconds(5);
 
     private final TransportClient transportClient;
     private final Duration requestTimeout;
@@ -68,7 +70,11 @@ public final class AdminEdgeService {
         payload.put("autoRegister", autoRegister);
         payload.put("waitUntilReady", waitUntilReady);
 
-        return sendPostJson(routerBaseUrl, "api/cdn/admin/edges/start", toJson(payload));
+        return sendPostJson(
+                routerBaseUrl,
+                "api/cdn/admin/edges/start",
+                toJson(payload),
+                managedEdgeStartTimeout(1, waitUntilReady));
     }
 
     /**
@@ -142,7 +148,11 @@ public final class AdminEdgeService {
         payload.put("autoRegister", autoRegister);
         payload.put("waitUntilReady", waitUntilReady);
 
-        return sendPostJson(routerBaseUrl, "api/cdn/admin/edges/start/auto", toJson(payload));
+        return sendPostJson(
+                routerBaseUrl,
+                "api/cdn/admin/edges/start/auto",
+                toJson(payload),
+                managedEdgeStartTimeout(count, waitUntilReady));
     }
 
     /**
@@ -154,8 +164,39 @@ public final class AdminEdgeService {
      * @return normiertes HTTP-Ergebnis
      */
     private CallResult sendPostJson(URI routerBaseUrl, String path, String jsonBody) {
+        return sendPostJson(routerBaseUrl, path, jsonBody, requestTimeout);
+    }
+
+    /**
+     * Führt einen POST-JSON-Request gegen einen Router-Admin-Endpunkt mit explizitem Timeout aus.
+     *
+     * @param routerBaseUrl Basis-URL des Routers
+     * @param path relativer Endpunktpfad
+     * @param jsonBody JSON-Payload
+     * @param timeout Request-Timeout
+     * @return normiertes HTTP-Ergebnis
+     */
+    private CallResult sendPostJson(URI routerBaseUrl, String path, String jsonBody, Duration timeout) {
         URI url = base(routerBaseUrl).resolve(path);
-        return send(TransportRequest.postJson(url, requestTimeout, adminJsonHeaders(), jsonBody));
+        return send(TransportRequest.postJson(url, timeout, adminJsonHeaders(), jsonBody));
+    }
+
+    /**
+     * Berechnet ein Request-Timeout für Edge-Starts, das zum Readiness-Wait des Routers passt.
+     *
+     * <p>Der Router wartet pro Edge bis zu 8 Sekunden auf {@code /api/edge/ready}. Für
+     * synchrone Start-Requests muss der CLI-Request also bei aktivem {@code waitUntilReady}
+     * länger offen bleiben als das generische Default-Timeout.</p>
+     */
+    private Duration managedEdgeStartTimeout(int edgeCount, boolean waitUntilReady) {
+        if (!waitUntilReady) {
+            return requestTimeout;
+        }
+
+        long perEdgeMillis = READY_WAIT_BUDGET_PER_EDGE.toMillis();
+        long totalReadyWaitMillis = perEdgeMillis * Math.max(1, edgeCount);
+        Duration requiredTimeout = Duration.ofMillis(totalReadyWaitMillis).plus(READY_WAIT_REQUEST_BUFFER);
+        return requestTimeout.compareTo(requiredTimeout) >= 0 ? requestTimeout : requiredTimeout;
     }
 
     /**
