@@ -8,16 +8,15 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * Admin-API zur Cache-Invalidierung.
- * Bestehende API {@code /api/edge/cache} bleibt vollständig kompatibel.
  *
  * <ul>
- *   <li>DELETE /api/edge/cache/files/{path} – einzelne Datei</li>
- *   <li>DELETE /api/edge/cache/prefix?value=… – Pfad-Prefix</li>
- *   <li>DELETE /api/edge/cache/all – gesamter Cache</li>
+ *   <li>DELETE /api/edge/admin/cache/files/{path} – einzelne Datei</li>
+ *   <li>DELETE /api/edge/admin/cache/prefix?value=… – Pfad-Prefix</li>
+ *   <li>DELETE /api/edge/admin/cache/all – gesamter Cache</li>
  * </ul>
  */
 @RestController
-@RequestMapping("/api/edge/cache")
+@RequestMapping("/api/edge/admin/cache")
 @Profile("edge")
 public class EdgeCacheAdminController {
 
