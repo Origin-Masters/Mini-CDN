@@ -20,7 +20,7 @@ public final class UriUtils {
      * {@code http://localhost:8080/api/}.</p>
      *
      * @param uri die Eingabe-URI
-     * @return eine URI mit abschliessendem Slash
+     * @return eine URI mit abschließendem Slash
      * @throws NullPointerException wenn {@code uri} null ist
      */
     public static URI ensureTrailingSlash(URI uri) {
@@ -38,7 +38,7 @@ public final class UriUtils {
     }
 
     /**
-     * Kodiert einen String fuer die Verwendung in URL-Parametern.
+     * Kodiert einen String für die Verwendung in URL-Parametern.
      *
      * @param value der zu kodierende Wert
      * @return der URL-kodierte Wert
