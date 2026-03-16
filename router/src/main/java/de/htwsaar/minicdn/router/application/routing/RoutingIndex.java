@@ -1,9 +1,9 @@
 package de.htwsaar.minicdn.router.application.routing;
 
 import de.htwsaar.minicdn.common.util.UriUtils;
-import de.htwsaar.minicdn.router.adapter.out.persistence.RouterRoutingStateStore;
 import de.htwsaar.minicdn.router.domain.model.EdgeNode;
 import de.htwsaar.minicdn.router.domain.port.EdgeRegistry;
+import de.htwsaar.minicdn.router.domain.port.RoutingStateStore;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +24,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class RoutingIndex implements EdgeRegistry {
 
-    private final RouterRoutingStateStore stateStore;
+    private final RoutingStateStore stateStore;
     private final Map<String, CopyOnWriteArrayList<RegisteredEdge>> regionToNodes = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> regionCounters = new ConcurrentHashMap<>();
 
-    public RoutingIndex(RouterRoutingStateStore stateStore) {
+    public RoutingIndex(RoutingStateStore stateStore) {
         this.stateStore = Objects.requireNonNull(stateStore, "stateStore must not be null");
     }
 

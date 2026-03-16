@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import de.htwsaar.minicdn.router.adapter.out.persistence.RouterRoutingStateStore;
 import de.htwsaar.minicdn.router.application.routing.RoutingIndex;
 import de.htwsaar.minicdn.router.domain.model.EdgeNode;
+import de.htwsaar.minicdn.router.domain.port.RoutingStateStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -22,7 +23,7 @@ class RoutingIndexRecoveryTest {
     @Test
     void shouldPersistAndRecoverRoutingState() throws Exception {
         Path tmp = Files.createTempFile("routing-state", ".properties");
-        RouterRoutingStateStore store = new RouterRoutingStateStore(tmp.toString());
+        RoutingStateStore store = new RouterRoutingStateStore(tmp.toString());
 
         RoutingIndex first = new RoutingIndex(store);
         first.addEdge("eu-west", new EdgeNode("http://localhost:8081"));

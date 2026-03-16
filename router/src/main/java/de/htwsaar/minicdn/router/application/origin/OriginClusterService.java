@@ -1,11 +1,12 @@
 package de.htwsaar.minicdn.router.application.origin;
 
 import de.htwsaar.minicdn.common.util.UriUtils;
-import de.htwsaar.minicdn.router.adapter.out.persistence.RouterOriginClusterStateStore;
 import de.htwsaar.minicdn.router.application.routing.RoutingIndex;
 import de.htwsaar.minicdn.router.domain.model.EdgeNode;
+import de.htwsaar.minicdn.router.domain.port.ActiveOriginResolver;
 import de.htwsaar.minicdn.router.domain.port.EdgeGateway;
 import de.htwsaar.minicdn.router.domain.port.OriginAdminGateway;
+import de.htwsaar.minicdn.router.domain.port.OriginClusterStateStore;
 import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -28,11 +29,11 @@ import org.springframework.stereotype.Service;
  * Komponenten erfolgt ausschließlich über {@link OriginAdminGateway} und {@link EdgeGateway}.
  */
 @Service
-public class OriginClusterService {
+public class OriginClusterService implements ActiveOriginResolver {
 
     private static final Logger log = LoggerFactory.getLogger(OriginClusterService.class);
 
-    private final RouterOriginClusterStateStore stateStore;
+    private final OriginClusterStateStore stateStore;
     private final OriginAdminGateway originAdminGateway;
     private final RoutingIndex routingIndex;
     private final EdgeGateway edgeGateway;
@@ -45,7 +46,7 @@ public class OriginClusterService {
     private final CopyOnWriteArrayList<String> spareOrigins = new CopyOnWriteArrayList<>();
 
     public OriginClusterService(
-            RouterOriginClusterStateStore stateStore,
+            OriginClusterStateStore stateStore,
             OriginAdminGateway originAdminGateway,
             RoutingIndex routingIndex,
             EdgeGateway edgeGateway,
@@ -70,7 +71,7 @@ public class OriginClusterService {
      */
     @PostConstruct
     public void recoverOnStartup() {
-        RouterOriginClusterStateStore.OriginClusterState restored = stateStore.load();
+        OriginClusterStateStore.OriginClusterState restored = stateStore.load();
 
         String restoredActive = normalizeUrl(restored.activeOrigin());
         if (restoredActive != null) {
@@ -103,6 +104,7 @@ public class OriginClusterService {
      *
      * @return Basis-URL des aktiven Origins
      */
+    @Override
     public String resolveActiveOrigin() {
         failoverIfActiveIsUnhealthy();
         return activeOrigin.get();
