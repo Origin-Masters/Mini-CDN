@@ -16,6 +16,7 @@
     - Author name normalization / alias mapping
     - CSV and JSON export
     - Commit count, peak-day, and streaks in the summary
+    - Fun achievements per contributor
 
 .EXAMPLE  .\git-stats.ps1
 .EXAMPLE  .\git-stats.ps1 -Since "2026-01-01" -Until "2026-02-19" -Top 10
@@ -304,6 +305,7 @@ $authorAdded    = @{}
 $authorDeleted  = @{}
 $authorCommits  = @{}
 $authorDates    = @{}   # list of commit dates
+$authorFiles    = @{}   # list of files touched per author
 
 foreach ($line in $rawLines) {
     if ([string]::IsNullOrWhiteSpace($line)) { continue }
@@ -319,6 +321,7 @@ foreach ($line in $rawLines) {
             $authorDeleted[$currentAuthor] = [long]0
             $authorCommits[$currentAuthor] = [int]0
             $authorDates[$currentAuthor]   = [System.Collections.Generic.List[string]]::new()
+            $authorFiles[$currentAuthor]   = [System.Collections.Generic.List[string]]::new()
         }
         $authorCommits[$currentAuthor]++
         if ($currentDate) { $authorDates[$currentAuthor].Add($currentDate) }
@@ -329,10 +332,11 @@ foreach ($line in $rawLines) {
     if ($lineStr -match '^-\s+-\s+') { continue }
 
     # Numstat line: "added<TAB>deleted<TAB>file"
-    if ($lineStr -match '^(\d+)\t(\d+)\t') {
+    if ($lineStr -match '^(\d+)\t(\d+)\t(.+)$') {
         if ($currentAuthor -eq "") { continue }
         $authorAdded[$currentAuthor]   += [long]$Matches[1]
         $authorDeleted[$currentAuthor] += [long]$Matches[2]
+        $authorFiles[$currentAuthor].Add($Matches[3])
         continue
     }
 }
@@ -356,6 +360,7 @@ $results = foreach ($author in $authorAdded.Keys) {
         Net         = $add - $del
         Commits     = $authorCommits[$author]
         Dates       = $authorDates[$author]
+        Files       = $authorFiles[$author]
     }
 }
 
@@ -555,15 +560,6 @@ if ($JsonOut) {
 if ($CsvOut -or $JsonOut) { Write-Host "" }
 
 # ─────────────────────────────────────────────
-#  FOOTER
-# ─────────────────────────────────────────────
-Write-HR 72 ([string][char]0x2550)
-cWL "  git-stats.ps1  |  All stats sourced from: git log --numstat" DarkGray
-cWL "  Tip: run with -NoBars or -NoColor if your terminal has issues." DarkGray
-Write-HR 72 ([string][char]0x2550)
-Write-Host ""
-
-# ─────────────────────────────────────────────
 #  MODULE CONTRIBUTION
 # ─────────────────────────────────────────────
 
@@ -761,3 +757,286 @@ ForEach-Object {
     cW  $bar Cyan
     cWL " +$($_.Value)" Yellow
 }
+
+# ─────────────────────────────────────────────
+#  ACHIEVEMENTS
+# ─────────────────────────────────────────────
+
+Write-Section "Achievements"
+
+function Write-Achievement([string]$icon, [string]$title, [string]$who, [string]$detail) {
+    cW  "  $icon " Yellow
+    cW  $title   White
+    cW  " → "    DarkGray
+    cW  $who     Cyan
+    cW  "  "     DarkGray
+    cWL $detail  DarkGray
+}
+
+# ─── Pre-compute per-author stats for achievements ───
+
+# Streak data (recompute to have per-author)
+$authorStreaks = @{}
+foreach ($r in $results) {
+    $dates = @($r.Dates | Sort-Object -Unique)
+    $maxStrk = 0; $cur = 1
+    for ($i = 1; $i -lt $dates.Count; $i++) {
+        $diff = (Get-Date $dates[$i]) - (Get-Date $dates[$i-1])
+        if ($diff.Days -eq 1) { $cur++; if ($cur -gt $maxStrk) { $maxStrk = $cur } }
+        else { $cur = 1 }
+    }
+    $authorStreaks[$r.Contributor] = $maxStrk
+}
+
+# Unique files per author
+$authorUniqueFiles = @{}
+foreach ($r in $results) {
+    $authorUniqueFiles[$r.Contributor] = @($r.Files | Sort-Object -Unique).Count
+}
+
+# Weekend commits per author
+$authorWeekendCommits = @{}
+foreach ($r in $results) {
+    $wknd = 0
+    foreach ($d in $r.Dates) {
+        try {
+            $dow = (Get-Date $d).DayOfWeek
+            if ($dow -eq 'Saturday' -or $dow -eq 'Sunday') { $wknd++ }
+        } catch {}
+    }
+    $authorWeekendCommits[$r.Contributor] = $wknd
+}
+
+# Delete ratio per author (deleted / (added + deleted))
+$authorDeleteRatio = @{}
+foreach ($r in $results) {
+    $total = $r.Added + $r.Deleted
+    if ($total -gt 0) { $authorDeleteRatio[$r.Contributor] = [Math]::Round($r.Deleted / $total * 100, 1) }
+    else              { $authorDeleteRatio[$r.Contributor] = 0 }
+}
+
+# Average lines per commit
+$authorAvgLinesPerCommit = @{}
+foreach ($r in $results) {
+    if ($r.Commits -gt 0) { $authorAvgLinesPerCommit[$r.Contributor] = [Math]::Round($r.Added / $r.Commits, 1) }
+    else                  { $authorAvgLinesPerCommit[$r.Contributor] = 0 }
+}
+
+# Unique active days per author
+$authorActiveDays = @{}
+foreach ($r in $results) {
+    $authorActiveDays[$r.Contributor] = @($r.Dates | Sort-Object -Unique).Count
+}
+
+# Commits per active day
+$authorCommitsPerDay = @{}
+foreach ($r in $results) {
+    $days = @($r.Dates | Sort-Object -Unique).Count
+    if ($days -gt 0) { $authorCommitsPerDay[$r.Contributor] = [Math]::Round($r.Commits / $days, 1) }
+    else             { $authorCommitsPerDay[$r.Contributor] = 0 }
+}
+
+# File extensions per author (for polyglot detection)
+$authorExtensions = @{}
+foreach ($r in $results) {
+    $exts = @($r.Files | ForEach-Object {
+        # Clean git rename syntax like "{old => new}/file.txt" and illegal path chars
+        $clean = ($_ -replace '\{[^}]*=> *', '' -replace '\}', '').Trim()
+        try {
+            $ext = [System.IO.Path]::GetExtension($clean)
+            if ($ext) { $ext.ToLower() }
+        } catch { $null }
+    } | Where-Object { $_ } | Sort-Object -Unique)
+    $authorExtensions[$r.Contributor] = $exts
+}
+
+Write-Host ""
+
+# ── 1. The Machine ── most commits
+$theMachine = $results | Sort-Object Commits -Descending | Select-Object -First 1
+if ($theMachine) {
+    Write-Achievement ">>>" "The Machine" $theMachine.Contributor `
+        ("Most commits: {0} — Does this person even sleep?" -f $theMachine.Commits)
+}
+
+# ── 2. The Novelist ── most lines added
+$theNovelist = $results | Sort-Object Added -Descending | Select-Object -First 1
+if ($theNovelist) {
+    Write-Achievement "+++" "The Novelist" $theNovelist.Contributor `
+        ("+" + (fmt $theNovelist.Added) + " lines — Writing code like it's NaNoWriMo")
+}
+
+# ── 3. The Janitor ── most lines deleted
+$theJanitor = $results | Sort-Object Deleted -Descending | Select-Object -First 1
+if ($theJanitor) {
+    Write-Achievement "---" "The Janitor" $theJanitor.Contributor `
+        ("-" + (fmt $theJanitor.Deleted) + " lines deleted — Cleaning up everyone's mess since day 1")
+}
+
+# ── 4. The Surgeon ── highest delete ratio (min 100 lines touched)
+$surgeonCandidates = $results | Where-Object { ($_.Added + $_.Deleted) -ge 100 }
+if ($surgeonCandidates) {
+    $theSurgeon = $surgeonCandidates | Sort-Object { $authorDeleteRatio[$_.Contributor] } -Descending | Select-Object -First 1
+    if ($theSurgeon) {
+        Write-Achievement "/%\" "The Surgeon" $theSurgeon.Contributor `
+            ("{0}% delete ratio — Cuts code with surgical precision" -f $authorDeleteRatio[$theSurgeon.Contributor])
+    }
+}
+
+# ── 5. The Architect ── most net lines (biggest codebase grower)
+$theArchitect = $results | Sort-Object Net -Descending | Select-Object -First 1
+if ($theArchitect -and $theArchitect.Net -gt 0) {
+    Write-Achievement "^^^" "The Architect" $theArchitect.Contributor `
+        ("Net +" + (fmt $theArchitect.Net) + " lines — Building empires, one function at a time")
+}
+
+# ── 6. The Black Hole ── most negative net lines
+$theBlackHole = $results | Sort-Object Net | Select-Object -First 1
+if ($theBlackHole -and $theBlackHole.Net -lt 0) {
+    Write-Achievement "(o)" "The Black Hole" $theBlackHole.Contributor `
+        ("Net " + (fmt $theBlackHole.Net) + " lines — Code goes in, nothing comes out")
+}
+
+# ── 7. The Marathon Runner ── longest streak
+$marathonRunner = $results | Sort-Object { $authorStreaks[$_.Contributor] } -Descending | Select-Object -First 1
+if ($marathonRunner -and $authorStreaks[$marathonRunner.Contributor] -gt 1) {
+    Write-Achievement "~~~" "Marathon Runner" $marathonRunner.Contributor `
+        ("{0}-day streak — Commits every single day like it's a religion" -f $authorStreaks[$marathonRunner.Contributor])
+}
+
+# ── 8. The Explorer ── most unique files touched
+$theExplorer = $results | Sort-Object { $authorUniqueFiles[$_.Contributor] } -Descending | Select-Object -First 1
+if ($theExplorer) {
+    Write-Achievement "***" "The Explorer" $theExplorer.Contributor `
+        ("{0} unique files — Knows where all the bodies are buried" -f $authorUniqueFiles[$theExplorer.Contributor])
+}
+
+# ── 9. Weekend Warrior ── most weekend commits
+$weekendWarrior = $results | Sort-Object { $authorWeekendCommits[$_.Contributor] } -Descending | Select-Object -First 1
+if ($weekendWarrior -and $authorWeekendCommits[$weekendWarrior.Contributor] -gt 0) {
+    Write-Achievement "!!!" "Weekend Warrior" $weekendWarrior.Contributor `
+        ("{0} weekend commits — What is work-life balance?" -f $authorWeekendCommits[$weekendWarrior.Contributor])
+}
+
+# ── 10. The Sniper ── lowest avg lines per commit (min 5 commits)
+$sniperCandidates = $results | Where-Object { $_.Commits -ge 5 -and $_.Added -gt 0 }
+if ($sniperCandidates) {
+    $theSniper = $sniperCandidates | Sort-Object { $authorAvgLinesPerCommit[$_.Contributor] } | Select-Object -First 1
+    if ($theSniper) {
+        Write-Achievement "..." "The Sniper" $theSniper.Contributor `
+            ("{0} avg lines/commit — Small, precise, deadly accurate" -f $authorAvgLinesPerCommit[$theSniper.Contributor])
+    }
+}
+
+# ── 11. The Bulldozer ── highest avg lines per commit
+$bulldozerCandidates = $results | Where-Object { $_.Commits -ge 3 }
+if ($bulldozerCandidates) {
+    $theBulldozer = $bulldozerCandidates | Sort-Object { $authorAvgLinesPerCommit[$_.Contributor] } -Descending | Select-Object -First 1
+    if ($theBulldozer -and $authorAvgLinesPerCommit[$theBulldozer.Contributor] -gt 50) {
+        Write-Achievement "###" "The Bulldozer" $theBulldozer.Contributor `
+            ("{0} avg lines/commit — Why make 10 commits when 1 YOLO push works?" -f $authorAvgLinesPerCommit[$theBulldozer.Contributor])
+    }
+}
+
+# ── 12. The Caffeine Addict ── most commits per active day
+$caffeineCandidates = $results | Where-Object { $authorActiveDays[$_.Contributor] -ge 3 }
+if ($caffeineCandidates) {
+    $theCaffeine = $caffeineCandidates | Sort-Object { $authorCommitsPerDay[$_.Contributor] } -Descending | Select-Object -First 1
+    if ($theCaffeine -and $authorCommitsPerDay[$theCaffeine.Contributor] -gt 2) {
+        Write-Achievement "@@@" "Caffeine Addict" $theCaffeine.Contributor `
+            ("{0} commits/active day — Probably has an IV drip of espresso" -f $authorCommitsPerDay[$theCaffeine.Contributor])
+    }
+}
+
+# ── 13. One-Hit Wonder ── only 1 commit total
+$oneHitWonders = @($results | Where-Object { $_.Commits -eq 1 })
+if ($oneHitWonders.Count -gt 0) {
+    $names = ($oneHitWonders | ForEach-Object { $_.Contributor }) -join ", "
+    Write-Achievement "[1]" "One-Hit Wonder" $names `
+        "1 commit and gone — Came, saw, committed, vanished"
+}
+
+# ── 14. The Balanced One ── closest added/deleted ratio to 1:1 (min 100 lines)
+$balancedCandidates = $results | Where-Object { $_.Added -ge 100 -and $_.Deleted -ge 100 }
+if ($balancedCandidates) {
+    $theBalanced = $balancedCandidates | Sort-Object { [Math]::Abs($_.Added - $_.Deleted) / [Math]::Max(1, $_.Added + $_.Deleted) } | Select-Object -First 1
+    if ($theBalanced) {
+        $ratio = [Math]::Round($theBalanced.Added / [Math]::Max(1, $theBalanced.Deleted), 2)
+        Write-Achievement "<=>" "The Balanced One" $theBalanced.Contributor `
+            ("Add/Del ratio {0}:1 — Perfectly balanced, as all things should be" -f $ratio)
+    }
+}
+
+# ── 15. The Lone Wolf ── fewest active days but still significant output
+$loneWolfCandidates = $results | Where-Object { $_.Added -ge 500 }
+if ($loneWolfCandidates -and @($loneWolfCandidates).Count -gt 1) {
+    $theLoneWolf = $loneWolfCandidates | Sort-Object { $authorActiveDays[$_.Contributor] } | Select-Object -First 1
+    if ($theLoneWolf -and $authorActiveDays[$theLoneWolf.Contributor] -le 3) {
+        Write-Achievement ">|<" "The Lone Wolf" $theLoneWolf.Contributor `
+            ("{0} active day(s), {1}+ lines — Shows up rarely but drops nukes" -f $authorActiveDays[$theLoneWolf.Contributor], (fmt $theLoneWolf.Added))
+    }
+}
+
+# ── 16. The Polyglot ── most different file extensions
+$polyglotWinner = $results | Sort-Object { $authorExtensions[$_.Contributor].Count } -Descending | Select-Object -First 1
+if ($polyglotWinner -and $authorExtensions[$polyglotWinner.Contributor].Count -ge 4) {
+    Write-Achievement "<*>" "The Polyglot" $polyglotWinner.Contributor `
+        ("{0} file types — Speaks more languages than a UN interpreter" -f $authorExtensions[$polyglotWinner.Contributor].Count)
+}
+
+# ── 17. Copy-Paste Suspect ── single commit with huge added lines and zero deletes
+$copypasteSuspect = $results | Where-Object { $_.Commits -le 3 -and $_.Added -gt 1000 -and $_.Deleted -lt 50 }
+if ($copypasteSuspect) {
+    $cpWinner = $copypasteSuspect | Sort-Object Added -Descending | Select-Object -First 1
+    if ($cpWinner) {
+        Write-Achievement "^C^" "Copy-Paste Suspect" $cpWinner.Contributor `
+            ("+" + (fmt $cpWinner.Added) + " added, -" + (fmt $cpWinner.Deleted) + " deleted in {0} commit(s) — Ctrl+C, Ctrl+V, Ctrl+Profit" -f $cpWinner.Commits)
+    }
+}
+
+# ── 18. The Phantom ── many commits but barely any lines changed
+$phantomCandidates = $results | Where-Object { $_.Commits -ge 5 -and ($_.Added + $_.Deleted) -lt 50 }
+if ($phantomCandidates) {
+    $thePhantom = $phantomCandidates | Sort-Object Commits -Descending | Select-Object -First 1
+    if ($thePhantom) {
+        Write-Achievement "<?>" "The Phantom" $thePhantom.Contributor `
+            ("{0} commits but only {1} lines touched — Commits whitespace for fun?" -f $thePhantom.Commits, ($thePhantom.Added + $thePhantom.Deleted))
+    }
+}
+
+# ── 19. The Night Owl / Early Bird ── based on most active day being weekend
+# (This one is a fun fallback if weekend commits are high)
+$totalWeekendAll = ($authorWeekendCommits.Values | Measure-Object -Sum).Sum
+$totalWeekdayAll = $totalCommits - $totalWeekendAll
+if ($totalWeekendAll -gt 0 -and $totalCommits -gt 0) {
+    $weekendPct = [Math]::Round($totalWeekendAll / $totalCommits * 100, 1)
+    if ($weekendPct -gt 30) {
+        Write-Achievement "zzZ" "Team: No Chill" "Everyone" `
+            ("{0}% of all commits on weekends — HR would like a word" -f $weekendPct)
+    }
+}
+
+# ── 20. The Refactorer ── high churn (added + deleted) but low net
+$refactorCandidates = $results | Where-Object { ($_.Added + $_.Deleted) -ge 500 -and [Math]::Abs($_.Net) -lt ($_.Added * 0.2) }
+if ($refactorCandidates) {
+    $theRefactorer = $refactorCandidates | Sort-Object { $_.Added + $_.Deleted } -Descending | Select-Object -First 1
+    if ($theRefactorer) {
+        $churn = $theRefactorer.Added + $theRefactorer.Deleted
+        Write-Achievement "<~>" "The Refactorer" $theRefactorer.Contributor `
+            ("{0} lines churned, net {1} — Moves code around like furniture on a Saturday" -f (fmt $churn), (fmt $theRefactorer.Net))
+    }
+}
+
+Write-Host ""
+Write-HR
+cWL "  Achievements are auto-detected from git history. No feelings were harmed." DarkGray
+Write-Host ""
+
+# ─────────────────────────────────────────────
+#  FOOTER
+# ─────────────────────────────────────────────
+Write-HR 72 ([string][char]0x2550)
+cWL "  git-stats.ps1  |  All stats sourced from: git log --numstat" DarkGray
+cWL "  Tip: run with -NoBars or -NoColor if your terminal has issues." DarkGray
+Write-HR 72 ([string][char]0x2550)
+Write-Host ""
