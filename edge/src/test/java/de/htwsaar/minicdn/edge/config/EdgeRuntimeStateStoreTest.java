@@ -3,7 +3,9 @@ package de.htwsaar.minicdn.edge.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import de.htwsaar.minicdn.edge.cache.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.application.config.EdgeRuntimeConfig;
+import de.htwsaar.minicdn.edge.domain.model.ReplacementStrategy;
+import de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeRuntimeStateStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -42,7 +44,8 @@ class EdgeRuntimeStateStoreTest {
         Path file = dir.resolve("state.properties");
 
         EdgeRuntimeStateStore store = new EdgeRuntimeStateStore(file.toString());
-        EdgeRuntimeConfig config = new EdgeRuntimeConfig("eu-west", 120_000, 150, ReplacementStrategy.LFU);
+        EdgeRuntimeConfig config =
+                new EdgeRuntimeConfig("eu-west", 120_000, 150, ReplacementStrategy.LFU, "http://localhost:8080");
 
         store.save(config, Map.of("images/", 90_000L));
 

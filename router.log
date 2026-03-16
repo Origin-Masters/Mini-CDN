@@ -1,34 +1,3 @@
-[[1;34mINFO[m] Scanning for projects...
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m---------------------< [0;36mde.htwsaar.minicdn:router[0;1m >----------------------[m
-[[1;34mINFO[m] [1mBuilding mini-cdn-router 1.0-SNAPSHOT[m
-[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m>>> [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[0;1m > [0;1mtest-compile[m @ [36mrouter[0;1m >>>[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mrouter[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] Copying 3 resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.1:compile[m [1m(default-compile)[m @ [36mrouter[0;1m ---[m
-[[1;34mINFO[m] Recompiling the module because of [1mchanged source code[m.
-[[1;34mINFO[m] Compiling 32 source files with javac [forked debug parameters target 21] to target/classes
-[[1;33mWARNING[m] Unable to autodetect 'javac' path, using 'javac' from the environment.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mrouter[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] skip non existing resourceDirectory /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router/src/test/resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.14.1:testCompile[m [1m(default-testCompile)[m @ [36mrouter[0;1m ---[m
-[[1;34mINFO[m] Recompiling the module because of [1mchanged dependency[m.
-[[1;34mINFO[m] Compiling 3 source files with javac [forked debug parameters target 21] to target/test-classes
-[[1;33mWARNING[m] Unable to autodetect 'javac' path, using 'javac' from the environment.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m<<< [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36mrouter[0;1m <<<[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mspring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[m @ [36mrouter[0;1m ---[m
-[[1;34mINFO[m] Attaching agents: []
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -38,34 +7,59 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-03-02 21:30:55,879","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.10 with PID 170634 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router/target/classes started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:30:55,880","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Running with Spring Boot v3.2.5, Spring v6.1.6"}
-{"timestamp":"2026-03-02 21:30:55,880","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
-{"timestamp":"2026-03-02 21:30:56,183","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
-{"timestamp":"2026-03-02 21:30:56,187","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
-{"timestamp":"2026-03-02 21:30:56,188","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:30:56,188","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:30:56,204","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:30:56,205","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 309 ms"}
-{"timestamp":"2026-03-02 21:30:56,225","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.logging.TraceIdFilter","message":"Filter 'traceIdFilter' configured for use"}
-{"timestamp":"2026-03-02 21:30:56,225","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.auth.AdminAuthFilter","message":"Filter 'adminAuthFilter' configured for use"}
-{"timestamp":"2026-03-02 21:30:56,454","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
-{"timestamp":"2026-03-02 21:30:56,459","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:30:56,462","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 0.763 seconds (process running for 0.89)"}
-{"timestamp":"2026-03-02 21:30:58,013","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:30:58,013","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:30:58,013","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected StandardServletMultipartResolver"}
-{"timestamp":"2026-03-02 21:30:58,013","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected AcceptHeaderLocaleResolver"}
-{"timestamp":"2026-03-02 21:30:58,013","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected FixedThemeResolver"}
-{"timestamp":"2026-03-02 21:30:58,014","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@6774f665"}
-{"timestamp":"2026-03-02 21:30:58,014","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.support.SessionFlashMapManager@1a37265"}
-{"timestamp":"2026-03-02 21:30:58,015","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data"}
-{"timestamp":"2026-03-02 21:30:58,015","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 2 ms"}
-{"timestamp":"2026-03-02 21:30:58,018","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"a9db1941-21d6-414f-aa54-02ef211948ea","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/health", parameters={}"}
-{"timestamp":"2026-03-02 21:30:58,036","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"a9db1941-21d6-414f-aa54-02ef211948ea","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
-{"timestamp":"2026-03-02 21:30:58,043","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"eb7fbc88-bd0a-4e29-84e3-cc3a32449c7e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/routing?region=EU&url=http://localhost:8081", parameters={masked}"}
-{"timestamp":"2026-03-02 21:30:58,054","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"eb7fbc88-bd0a-4e29-84e3-cc3a32449c7e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
-{"timestamp":"2026-03-02 21:32:11,135","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"71fdc5ad-7a42-436a-aacc-9f061361baea","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start/auto", parameters={}"}
+{"timestamp":"2026-03-14 18:12:11,119","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.9 with PID 16304 (C:\Users\Christian\Desktop\gruppe-08-mini-cdn\router\target\router-1.0-SNAPSHOT-exec.jar started by Christian in C:\Users\Christian\Desktop\gruppe-08-mini-cdn\router)"}
+{"timestamp":"2026-03-14 18:12:11,119","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Running with Spring Boot v3.2.5, Spring v6.1.6"}
+{"timestamp":"2026-03-14 18:12:11,119","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
+{"timestamp":"2026-03-14 18:12:11,971","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
+{"timestamp":"2026-03-14 18:12:11,982","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-03-14 18:12:11,982","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-14 18:12:11,982","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-14 18:12:12,025","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-14 18:12:12,025","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 859 ms"}
+{"timestamp":"2026-03-14 18:12:12,072","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.logging.TraceIdFilter","message":"Filter 'traceIdFilter' configured for use"}
+{"timestamp":"2026-03-14 18:12:12,072","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.auth.AdminAuthFilter","message":"Filter 'adminAuthFilter' configured for use"}
+{"timestamp":"2026-03-14 18:12:12,422","level":"INFO","thread":"main","traceId":"","logger":"org.jooq.Constants","message":"
+                                      
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@  @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@  @@  @@    @@@@@@@@@@
+@@@@@@@@@@  @@@@  @@  @@    @@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@    @@  @@  @@@@  @@@@@@@@@@
+@@@@@@@@@@    @@  @@  @@@@  @@@@@@@@@@
+@@@@@@@@@@        @@  @  @  @@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  Thank you for using jOOQ 3.20.10 (Build date: 2025-12-05T08:57:46Z)
+                                      "}
+{"timestamp":"2026-03-14 18:12:12,422","level":"INFO","thread":"main","traceId":"","logger":"org.jooq.Constants","message":"
+
+jOOQ tip of the day: To version control jOOQ generated code or not? There are pros and cons to both approaches: https://www.jooq.org/doc/latest/manual/code-generation/codegen-version-control/
+"}
+{"timestamp":"2026-03-14 18:12:12,493","level":"INFO","thread":"main","traceId":"","logger":"org.jooq.impl.DefaultExecuteContext.logVersionSupport","message":"Version                  : Database version is supported by dialect SQLITE: 3.45.1"}
+{"timestamp":"2026-03-14 18:12:12,587","level":"WARN","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.service.OriginClusterService","message":"[ORIGIN-FAILOVER] Konnte Origin http://localhost:8080/ nicht an Edge http://localhost:8081/ in Region EU propagieren."}
+{"timestamp":"2026-03-14 18:12:12,986","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-03-14 18:12:12,995","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
+{"timestamp":"2026-03-14 18:12:13,021","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 2.24 seconds (process running for 2.604)"}
+{"timestamp":"2026-03-14 18:12:13,028","level":"WARN","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist nicht erreichbar und wurde aus dem Routing entfernt."}
+{"timestamp":"2026-03-14 18:12:13,482","level":"INFO","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"INFO","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected StandardServletMultipartResolver"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected AcceptHeaderLocaleResolver"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected FixedThemeResolver"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@6aea99e7"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.support.SessionFlashMapManager@57151b3a"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"INFO","thread":"http-nio-8082-exec-2","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+{"timestamp":"2026-03-14 18:12:13,482","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"5d4e54bb-0af8-4785-b099-a4457bfde534","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/health", parameters={}"}
+{"timestamp":"2026-03-14 18:12:13,502","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"5d4e54bb-0af8-4785-b099-a4457bfde534","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:12:13,512","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"e72bf62a-1566-4503-9bbb-0a2fe0151439","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start", parameters={}"}
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -75,20 +69,41 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-03-02 21:32:11,736","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171189 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:11,737","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:12,267","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10000 (http)"}
-{"timestamp":"2026-03-02 21:32:12,272","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10000"]"}
-{"timestamp":"2026-03-02 21:32:12,274","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:12,274","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:12,295","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:12,296","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 502 ms"}
-{"timestamp":"2026-03-02 21:32:12,478","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10000"]"}
-{"timestamp":"2026-03-02 21:32:12,487","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10000 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:12,495","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.054 seconds (process running for 1.329)"}
-{"timestamp":"2026-03-02 21:32:12,583","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:12,583","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:12,584","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-14 18:12:14,263","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.9 with PID 20788 (C:\Users\Christian\Desktop\gruppe-08-mini-cdn\edge\target\edge-1.0-SNAPSHOT-exec.jar started by Christian in C:\Users\Christian\Desktop\gruppe-08-mini-cdn\router)"}
+{"timestamp":"2026-03-14 18:12:14,263","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-14 18:12:15,009","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8081 (http)"}
+{"timestamp":"2026-03-14 18:12:15,016","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8081"]"}
+{"timestamp":"2026-03-14 18:12:15,016","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-14 18:12:15,016","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-14 18:12:15,040","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-14 18:12:15,040","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 729 ms"}
+{"timestamp":"2026-03-14 18:12:15,272","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8081"]"}
+{"timestamp":"2026-03-14 18:12:15,302","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8081 (http) with context path ''"}
+{"timestamp":"2026-03-14 18:12:15,318","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.391 seconds (process running for 1.752)"}
+{"timestamp":"2026-03-14 18:12:15,468","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:12:15,468","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:12:15,468","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+{"timestamp":"2026-03-14 18:12:15,562","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"e72bf62a-1566-4503-9bbb-0a2fe0151439","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
+{"timestamp":"2026-03-14 18:12:18,043","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:12:23,049","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:12:28,062","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:12:33,078","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:12:38,086","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:12:43,097","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:12:48,104","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:12:48,576","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"3ee3500b-717e-45ea-a4c7-e3966c558aaf","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/auth/login", parameters={}"}
+{"timestamp":"2026-03-14 18:12:48,729","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"3ee3500b-717e-45ea-a4c7-e3966c558aaf","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:12:50,616","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"a023389a-7b5f-46c0-83ec-21ca4a302d20","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/stats?windowSec=60&aggregateEdge=true", parameters={masked}"}
+{"timestamp":"2026-03-14 18:12:50,639","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"a023389a-7b5f-46c0-83ec-21ca4a302d20","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:12:53,115","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:12:58,119","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:03,119","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:08,128","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:13,138","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:18,150","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:23,162","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:28,169","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:32,089","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"3e55603a-56dc-4f36-8e77-3c66baf5cb1d","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start/auto", parameters={}"}
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -98,20 +113,22 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-03-02 21:32:13,077","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171251 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:13,079","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:13,551","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10001 (http)"}
-{"timestamp":"2026-03-02 21:32:13,557","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10001"]"}
-{"timestamp":"2026-03-02 21:32:13,558","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:13,558","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:13,573","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:13,574","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 463 ms"}
-{"timestamp":"2026-03-02 21:32:13,768","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10001"]"}
-{"timestamp":"2026-03-02 21:32:13,781","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10001 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:13,794","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.952 seconds (process running for 1.183)"}
-{"timestamp":"2026-03-02 21:32:13,850","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:13,850","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:13,851","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-14 18:13:32,803","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.9 with PID 22168 (C:\Users\Christian\Desktop\gruppe-08-mini-cdn\edge\target\edge-1.0-SNAPSHOT-exec.jar started by Christian in C:\Users\Christian\Desktop\gruppe-08-mini-cdn\router)"}
+{"timestamp":"2026-03-14 18:13:32,804","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-14 18:13:33,174","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:33,451","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10000 (http)"}
+{"timestamp":"2026-03-14 18:13:33,457","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10000"]"}
+{"timestamp":"2026-03-14 18:13:33,457","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-14 18:13:33,457","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-14 18:13:33,478","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-14 18:13:33,478","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 629 ms"}
+{"timestamp":"2026-03-14 18:13:33,539","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.bootstrap.EdgeRecoveryBootstrap","message":"Recovered edge runtime config and 0 TTL policies"}
+{"timestamp":"2026-03-14 18:13:33,717","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10000"]"}
+{"timestamp":"2026-03-14 18:13:33,746","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10000 (http) with context path ''"}
+{"timestamp":"2026-03-14 18:13:33,761","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.289 seconds (process running for 1.651)"}
+{"timestamp":"2026-03-14 18:13:33,877","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:13:33,878","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:13:33,878","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -121,20 +138,21 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-03-02 21:32:14,348","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171312 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:14,350","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:14,870","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10002 (http)"}
-{"timestamp":"2026-03-02 21:32:14,876","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10002"]"}
-{"timestamp":"2026-03-02 21:32:14,877","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:14,878","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:14,893","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:14,894","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 498 ms"}
-{"timestamp":"2026-03-02 21:32:15,096","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10002"]"}
-{"timestamp":"2026-03-02 21:32:15,106","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10002 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:15,116","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.034 seconds (process running for 1.241)"}
-{"timestamp":"2026-03-02 21:32:15,266","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:15,266","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:15,267","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-14 18:13:34,651","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.9 with PID 21864 (C:\Users\Christian\Desktop\gruppe-08-mini-cdn\edge\target\edge-1.0-SNAPSHOT-exec.jar started by Christian in C:\Users\Christian\Desktop\gruppe-08-mini-cdn\router)"}
+{"timestamp":"2026-03-14 18:13:34,653","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-14 18:13:35,317","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10001 (http)"}
+{"timestamp":"2026-03-14 18:13:35,322","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10001"]"}
+{"timestamp":"2026-03-14 18:13:35,323","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-14 18:13:35,323","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-14 18:13:35,342","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-14 18:13:35,342","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 648 ms"}
+{"timestamp":"2026-03-14 18:13:35,395","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.bootstrap.EdgeRecoveryBootstrap","message":"Recovered edge runtime config and 0 TTL policies"}
+{"timestamp":"2026-03-14 18:13:35,558","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10001"]"}
+{"timestamp":"2026-03-14 18:13:35,588","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10001 (http) with context path ''"}
+{"timestamp":"2026-03-14 18:13:35,604","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.287 seconds (process running for 1.629)"}
+{"timestamp":"2026-03-14 18:13:35,745","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:13:35,745","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:13:35,746","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -144,20 +162,25 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-03-02 21:32:15,747","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171372 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:15,749","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:16,226","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10003 (http)"}
-{"timestamp":"2026-03-02 21:32:16,231","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10003"]"}
-{"timestamp":"2026-03-02 21:32:16,232","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:16,232","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:16,247","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:16,248","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 451 ms"}
-{"timestamp":"2026-03-02 21:32:16,473","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10003"]"}
-{"timestamp":"2026-03-02 21:32:16,482","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10003 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:16,490","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.966 seconds (process running for 1.2)"}
-{"timestamp":"2026-03-02 21:32:16,526","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:16,526","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:16,527","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-14 18:13:36,505","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.9 with PID 19288 (C:\Users\Christian\Desktop\gruppe-08-mini-cdn\edge\target\edge-1.0-SNAPSHOT-exec.jar started by Christian in C:\Users\Christian\Desktop\gruppe-08-mini-cdn\router)"}
+{"timestamp":"2026-03-14 18:13:36,507","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-14 18:13:37,152","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10002 (http)"}
+{"timestamp":"2026-03-14 18:13:37,162","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10002"]"}
+{"timestamp":"2026-03-14 18:13:37,163","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-14 18:13:37,163","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-14 18:13:37,181","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-14 18:13:37,182","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 632 ms"}
+{"timestamp":"2026-03-14 18:13:37,237","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.bootstrap.EdgeRecoveryBootstrap","message":"Recovered edge runtime config and 0 TTL policies"}
+{"timestamp":"2026-03-14 18:13:37,411","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10002"]"}
+{"timestamp":"2026-03-14 18:13:37,442","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10002 (http) with context path ''"}
+{"timestamp":"2026-03-14 18:13:37,457","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.279 seconds (process running for 1.625)"}
+{"timestamp":"2026-03-14 18:13:37,574","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:13:37,574","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:13:37,575","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
+{"timestamp":"2026-03-14 18:13:38,178","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:38,179","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:38,179","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:38,179","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -167,386 +190,455 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.5)
 
-{"timestamp":"2026-03-02 21:32:17,026","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171432 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:17,028","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:17,551","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10004 (http)"}
-{"timestamp":"2026-03-02 21:32:17,556","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10004"]"}
-{"timestamp":"2026-03-02 21:32:17,557","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:17,557","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:17,571","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:17,572","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 505 ms"}
-{"timestamp":"2026-03-02 21:32:17,790","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10004"]"}
-{"timestamp":"2026-03-02 21:32:17,803","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10004 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:17,815","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.031 seconds (process running for 1.259)"}
-{"timestamp":"2026-03-02 21:32:17,944","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:17,944","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:17,945","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:32:18,421","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171493 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:18,422","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:18,925","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10005 (http)"}
-{"timestamp":"2026-03-02 21:32:18,931","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10005"]"}
-{"timestamp":"2026-03-02 21:32:18,932","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:18,932","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:18,946","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:18,946","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 479 ms"}
-{"timestamp":"2026-03-02 21:32:19,146","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10005"]"}
-{"timestamp":"2026-03-02 21:32:19,156","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10005 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:19,164","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.978 seconds (process running for 1.195)"}
-{"timestamp":"2026-03-02 21:32:19,214","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:19,214","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:19,214","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:32:19,699","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171552 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:19,700","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:20,239","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10006 (http)"}
-{"timestamp":"2026-03-02 21:32:20,245","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10006"]"}
-{"timestamp":"2026-03-02 21:32:20,246","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:20,246","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:20,262","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:20,263","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 516 ms"}
-{"timestamp":"2026-03-02 21:32:20,452","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10006"]"}
-{"timestamp":"2026-03-02 21:32:20,461","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10006 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:20,468","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.013 seconds (process running for 1.23)"}
-{"timestamp":"2026-03-02 21:32:20,627","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:20,628","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:20,628","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:32:21,088","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171613 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:21,089","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:21,625","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10007 (http)"}
-{"timestamp":"2026-03-02 21:32:21,632","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10007"]"}
-{"timestamp":"2026-03-02 21:32:21,633","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:21,633","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:21,649","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:21,649","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 514 ms"}
-{"timestamp":"2026-03-02 21:32:21,850","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10007"]"}
-{"timestamp":"2026-03-02 21:32:21,858","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10007 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:21,867","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.017 seconds (process running for 1.214)"}
-{"timestamp":"2026-03-02 21:32:21,890","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:21,890","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:21,891","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:32:22,417","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171673 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:22,418","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:22,937","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10008 (http)"}
-{"timestamp":"2026-03-02 21:32:22,942","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10008"]"}
-{"timestamp":"2026-03-02 21:32:22,943","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:22,943","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:22,957","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:22,958","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 504 ms"}
-{"timestamp":"2026-03-02 21:32:23,135","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10008"]"}
-{"timestamp":"2026-03-02 21:32:23,144","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10008 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:23,156","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.983 seconds (process running for 1.237)"}
-{"timestamp":"2026-03-02 21:32:23,309","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:23,310","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:23,310","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:32:23,792","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171732 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:32:23,793","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:32:24,335","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10009 (http)"}
-{"timestamp":"2026-03-02 21:32:24,340","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10009"]"}
-{"timestamp":"2026-03-02 21:32:24,342","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:32:24,342","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:32:24,356","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:32:24,356","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 509 ms"}
-{"timestamp":"2026-03-02 21:32:24,534","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10009"]"}
-{"timestamp":"2026-03-02 21:32:24,543","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10009 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:32:24,552","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.011 seconds (process running for 1.219)"}
-{"timestamp":"2026-03-02 21:32:24,590","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:24,590","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:32:24,591","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-{"timestamp":"2026-03-02 21:32:24,633","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"71fdc5ad-7a42-436a-aacc-9f061361baea","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
-{"timestamp":"2026-03-02 21:32:28,370","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"08dc8762-7e09-4a2d-ae42-8af68f5d3187","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/edges/managed", parameters={}"}
-{"timestamp":"2026-03-02 21:32:28,372","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"08dc8762-7e09-4a2d-ae42-8af68f5d3187","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
-{"timestamp":"2026-03-02 21:33:32,033","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"17e4e532-8cb7-4d72-a57c-cd4da4566e3b","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start/auto", parameters={}"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:32,603","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 171968 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:32,605","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:33,115","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10010 (http)"}
-{"timestamp":"2026-03-02 21:33:33,121","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10010"]"}
-{"timestamp":"2026-03-02 21:33:33,122","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:33,122","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:33,138","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:33,139","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 480 ms"}
-{"timestamp":"2026-03-02 21:33:33,309","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10010"]"}
-{"timestamp":"2026-03-02 21:33:33,317","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10010 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:33,324","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.019 seconds (process running for 1.285)"}
-{"timestamp":"2026-03-02 21:33:33,430","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:33,431","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:33,431","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:33,911","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172031 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:33,913","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:34,404","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10011 (http)"}
-{"timestamp":"2026-03-02 21:33:34,410","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10011"]"}
-{"timestamp":"2026-03-02 21:33:34,411","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:34,411","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:34,427","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:34,427","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 476 ms"}
-{"timestamp":"2026-03-02 21:33:34,611","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10011"]"}
-{"timestamp":"2026-03-02 21:33:34,621","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10011 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:34,629","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.949 seconds (process running for 1.175)"}
-{"timestamp":"2026-03-02 21:33:34,692","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:34,692","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:34,692","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:35,252","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172090 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:35,254","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:35,748","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10012 (http)"}
-{"timestamp":"2026-03-02 21:33:35,753","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10012"]"}
-{"timestamp":"2026-03-02 21:33:35,754","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:35,754","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:35,768","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:35,768","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 471 ms"}
-{"timestamp":"2026-03-02 21:33:35,951","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10012"]"}
-{"timestamp":"2026-03-02 21:33:35,960","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10012 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:35,968","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.991 seconds (process running for 1.248)"}
-{"timestamp":"2026-03-02 21:33:36,105","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:36,105","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:36,105","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:36,592","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172151 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:36,593","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:37,104","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10013 (http)"}
-{"timestamp":"2026-03-02 21:33:37,110","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10013"]"}
-{"timestamp":"2026-03-02 21:33:37,111","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:37,111","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:37,126","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:37,127","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 488 ms"}
-{"timestamp":"2026-03-02 21:33:37,309","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10013"]"}
-{"timestamp":"2026-03-02 21:33:37,318","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10013 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:37,326","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.981 seconds (process running for 1.194)"}
-{"timestamp":"2026-03-02 21:33:37,372","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:37,372","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:37,372","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:37,844","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172214 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:37,845","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:38,329","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10014 (http)"}
-{"timestamp":"2026-03-02 21:33:38,335","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10014"]"}
-{"timestamp":"2026-03-02 21:33:38,336","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:38,336","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:38,351","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:38,352","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 470 ms"}
-{"timestamp":"2026-03-02 21:33:38,528","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10014"]"}
-{"timestamp":"2026-03-02 21:33:38,535","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10014 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:38,542","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.937 seconds (process running for 1.144)"}
-{"timestamp":"2026-03-02 21:33:38,632","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:38,632","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:38,633","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:39,140","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172275 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:39,141","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:39,645","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10015 (http)"}
-{"timestamp":"2026-03-02 21:33:39,651","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10015"]"}
-{"timestamp":"2026-03-02 21:33:39,652","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:39,652","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:39,667","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:39,668","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 477 ms"}
-{"timestamp":"2026-03-02 21:33:39,857","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10015"]"}
-{"timestamp":"2026-03-02 21:33:39,866","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10015 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:39,874","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.988 seconds (process running for 1.22)"}
-{"timestamp":"2026-03-02 21:33:39,896","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:39,896","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:39,897","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:40,392","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172335 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:40,393","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:40,915","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10016 (http)"}
-{"timestamp":"2026-03-02 21:33:40,921","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10016"]"}
-{"timestamp":"2026-03-02 21:33:40,923","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:40,923","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:40,939","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:40,939","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 510 ms"}
-{"timestamp":"2026-03-02 21:33:41,143","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10016"]"}
-{"timestamp":"2026-03-02 21:33:41,151","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10016 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:41,160","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.009 seconds (process running for 1.231)"}
-{"timestamp":"2026-03-02 21:33:41,312","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:41,312","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:41,313","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:41,803","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172394 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:41,805","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:42,308","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10017 (http)"}
-{"timestamp":"2026-03-02 21:33:42,313","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10017"]"}
-{"timestamp":"2026-03-02 21:33:42,314","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:42,314","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:42,327","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:42,328","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 480 ms"}
-{"timestamp":"2026-03-02 21:33:42,510","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10017"]"}
-{"timestamp":"2026-03-02 21:33:42,520","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10017 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:42,528","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 0.948 seconds (process running for 1.192)"}
-{"timestamp":"2026-03-02 21:33:42,574","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:42,574","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:42,575","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:43,054","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172454 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:43,056","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:43,572","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10018 (http)"}
-{"timestamp":"2026-03-02 21:33:43,578","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10018"]"}
-{"timestamp":"2026-03-02 21:33:43,579","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:43,579","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:43,594","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:43,594","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 502 ms"}
-{"timestamp":"2026-03-02 21:33:43,813","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10018"]"}
-{"timestamp":"2026-03-02 21:33:43,826","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10018 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:43,838","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.014 seconds (process running for 1.233)"}
-{"timestamp":"2026-03-02 21:33:43,989","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:43,989","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:43,989","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 0 ms"}
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.2.5)
-
-{"timestamp":"2026-03-02 21:33:44,484","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.10 with PID 172512 (/home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by valle in /home/valle/Desktop/mini cdnd/gruppe-08-mini-cdn/router)"}
-{"timestamp":"2026-03-02 21:33:44,486","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
-{"timestamp":"2026-03-02 21:33:45,049","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10019 (http)"}
-{"timestamp":"2026-03-02 21:33:45,056","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10019"]"}
-{"timestamp":"2026-03-02 21:33:45,058","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
-{"timestamp":"2026-03-02 21:33:45,058","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
-{"timestamp":"2026-03-02 21:33:45,076","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
-{"timestamp":"2026-03-02 21:33:45,077","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 544 ms"}
-{"timestamp":"2026-03-02 21:33:45,266","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10019"]"}
-{"timestamp":"2026-03-02 21:33:45,275","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10019 (http) with context path ''"}
-{"timestamp":"2026-03-02 21:33:45,284","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.055 seconds (process running for 1.272)"}
-{"timestamp":"2026-03-02 21:33:45,396","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:45,396","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
-{"timestamp":"2026-03-02 21:33:45,397","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
-{"timestamp":"2026-03-02 21:33:45,418","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"17e4e532-8cb7-4d72-a57c-cd4da4566e3b","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
-{"timestamp":"2026-03-02 21:33:55,050","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"acdcd15f-b949-4d6c-b2d4-6ce19635b4bb","logger":"org.springframework.web.servlet.DispatcherServlet","message":"DELETE "/api/cdn/admin/edges/region/EU?deregister=true", parameters={masked}"}
-{"timestamp":"2026-03-02 21:33:55,739","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"acdcd15f-b949-4d6c-b2d4-6ce19635b4bb","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
-{"timestamp":"2026-03-02 21:34:09,362","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"169807eb-0c64-42ad-979a-dc158b5e811e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/edges/managed", parameters={}"}
-{"timestamp":"2026-03-02 21:34:09,364","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"169807eb-0c64-42ad-979a-dc158b5e811e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
-{"timestamp":"2026-03-02 21:34:23,425","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"e000e065-e27a-43a8-a0be-7609e6db31e8","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/stats?windowSec=60&aggregateEdge=true", parameters={masked}"}
-{"timestamp":"2026-03-02 21:34:23,517","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"e000e065-e27a-43a8-a0be-7609e6db31e8","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] [1;31mBUILD FAILURE[m
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  03:46 min
-[[1;34mINFO[m] Finished at: 2026-03-02T21:34:39+01:00
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;31mERROR[m] Failed to execute goal [32morg.springframework.boot:spring-boot-maven-plugin:3.2.5:run[m [1m(default-cli)[m on project [36mrouter[m: [1;31mProcess terminated with exit code: 143[m -> [1m[Help 1][m
-[[1;31mERROR[m] 
-[[1;31mERROR[m] To see the full stack trace of the errors, re-run Maven with the [1m-e[m switch.
-[[1;31mERROR[m] Re-run Maven using the [1m-X[m switch to enable full debug logging.
-[[1;31mERROR[m] 
-[[1;31mERROR[m] For more information about the errors and possible solutions, please read the following articles:
-[[1;31mERROR[m] [1m[Help 1][m http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+{"timestamp":"2026-03-14 18:13:38,372","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.9 with PID 5476 (C:\Users\Christian\Desktop\gruppe-08-mini-cdn\edge\target\edge-1.0-SNAPSHOT-exec.jar started by Christian in C:\Users\Christian\Desktop\gruppe-08-mini-cdn\router)"}
+{"timestamp":"2026-03-14 18:13:38,374","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-14 18:13:39,044","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 10003 (http)"}
+{"timestamp":"2026-03-14 18:13:39,052","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-10003"]"}
+{"timestamp":"2026-03-14 18:13:39,053","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-14 18:13:39,053","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-14 18:13:39,072","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-14 18:13:39,072","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 654 ms"}
+{"timestamp":"2026-03-14 18:13:39,126","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.bootstrap.EdgeRecoveryBootstrap","message":"Recovered edge runtime config and 0 TTL policies"}
+{"timestamp":"2026-03-14 18:13:39,314","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-10003"]"}
+{"timestamp":"2026-03-14 18:13:39,346","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 10003 (http) with context path ''"}
+{"timestamp":"2026-03-14 18:13:39,361","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.364 seconds (process running for 1.703)"}
+{"timestamp":"2026-03-14 18:13:39,466","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:13:39,466","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-14 18:13:39,468","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 2 ms"}
+{"timestamp":"2026-03-14 18:13:39,548","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"3e55603a-56dc-4f36-8e77-3c66baf5cb1d","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
+{"timestamp":"2026-03-14 18:13:42,488","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"f086299e-fc56-4fdb-a806-c6f7763d8fae","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/edges/managed", parameters={}"}
+{"timestamp":"2026-03-14 18:13:42,490","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"f086299e-fc56-4fdb-a806-c6f7763d8fae","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:13:43,192","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:43,192","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:43,192","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:43,192","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:43,193","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:48,204","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:48,204","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:48,204","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:48,204","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:48,204","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:53,212","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:53,212","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:53,212","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:53,212","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:53,212","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:58,213","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:58,213","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:58,213","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:58,213","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:13:58,213","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:03,221","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:03,221","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:03,221","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:03,221","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:03,221","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:08,231","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:08,231","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:08,231","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:08,231","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:08,231","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:13,241","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:13,241","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:13,241","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:13,241","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:13,241","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:18,252","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:18,252","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:18,252","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:18,252","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:18,252","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:23,262","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:23,262","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:23,262","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:23,262","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:23,262","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:28,273","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:28,273","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:28,273","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:28,273","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:28,273","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:33,286","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:33,291","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:33,291","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:33,291","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:33,291","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:38,298","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:38,298","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:38,298","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:38,298","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:38,298","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:43,304","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:43,304","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:43,304","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:43,304","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:43,304","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:48,306","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:48,306","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:48,306","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:48,306","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:48,306","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:53,311","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:53,311","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:53,311","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:53,311","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:53,311","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:58,318","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:58,318","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:58,318","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:58,318","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:14:58,318","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:03,331","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:03,331","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:03,331","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:03,336","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:03,336","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:08,346","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:08,346","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:08,346","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:08,346","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:08,346","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:13,349","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:13,349","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:13,349","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:13,349","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:13,349","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:18,362","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:18,362","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:18,362","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:18,362","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:18,367","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:23,378","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:23,378","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:23,378","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:23,378","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:23,378","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:28,388","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:28,388","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:28,388","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:28,388","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:28,388","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:33,389","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:33,389","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:33,389","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:33,389","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:33,389","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:38,408","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:38,408","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:38,408","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:38,408","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:38,408","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:43,410","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:43,410","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:43,410","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:43,410","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:43,410","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:48,412","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:48,412","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:48,412","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:48,412","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:48,412","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:53,430","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:53,430","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:53,430","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:53,430","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:53,430","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:58,444","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:58,444","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:58,444","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:58,444","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:15:58,444","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:03,450","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:03,450","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:03,450","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:03,450","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:03,450","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:08,452","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:08,452","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:08,452","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:08,452","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:08,452","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:13,462","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:13,462","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:13,462","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:13,462","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:13,462","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:18,477","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:18,477","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:18,477","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:18,477","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:18,477","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:23,495","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:23,495","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:23,495","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:23,495","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:23,495","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:28,508","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:28,508","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:28,508","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:28,508","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:28,508","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:33,520","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:33,521","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:33,521","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:33,521","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:33,521","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:37,068","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"fd68b896-0404-4199-aaef-2fda31a33b5d","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:16:37,088","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"fd68b896-0404-4199-aaef-2fda31a33b5d","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:16:38,534","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:38,534","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:38,534","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:38,534","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:38,534","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:43,544","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:43,544","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:43,544","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:43,544","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:43,544","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:48,559","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:48,559","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:48,559","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:48,559","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:48,559","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:48,982","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"67852c48-2697-4df8-80e8-d00c0073a915","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:16:49,000","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"67852c48-2697-4df8-80e8-d00c0073a915","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:16:49,053","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"806531ad-d58f-4d0a-b473-f6273cb5d637","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:16:49,063","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"806531ad-d58f-4d0a-b473-f6273cb5d637","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:16:49,064","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"d01f14d5-b087-42e0-9cc7-e7ccae359c3a","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:16:49,074","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"d01f14d5-b087-42e0-9cc7-e7ccae359c3a","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:16:49,075","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"d716cdcf-2a9c-4cdc-870e-691a7f85a2a3","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:16:49,084","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"d716cdcf-2a9c-4cdc-870e-691a7f85a2a3","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:16:49,086","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"0305c682-7573-48bc-9a24-7c631b01e6bf","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:16:49,095","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"0305c682-7573-48bc-9a24-7c631b01e6bf","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:16:49,096","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"61a429df-114d-4bcc-838a-5d636f3908c9","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:16:49,105","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"61a429df-114d-4bcc-838a-5d636f3908c9","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:16:49,106","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"352cd1a0-e5c9-48e7-b118-9156bc5127f1","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:16:49,115","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"352cd1a0-e5c9-48e7-b118-9156bc5127f1","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:16:49,175","level":"WARN","traceId":"e6b5e2ab-451a-45e9-91cf-52cc6c6c98f1","logger":"de.htwsaar.minicdn.edge.application.file.EdgeFileService","message":"Failed to persist cache state"}
+java.lang.IllegalStateException: Failed to persist cache state
+	at de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeCacheStateStore.save(EdgeCacheStateStore.java:82)
+	at de.htwsaar.minicdn.edge.application.file.EdgeFileService.persistCacheSnapshot(EdgeFileService.java:183)
+	at de.htwsaar.minicdn.edge.application.file.EdgeFileService.getFile(EdgeFileService.java:94)
+	at de.htwsaar.minicdn.edge.adapter.in.web.EdgeFileController.getFile(EdgeFileController.java:57)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at de.htwsaar.minicdn.common.auth.AdminAuthFilter.doFilterInternal(AdminAuthFilter.java:59)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at de.htwsaar.minicdn.common.logging.TraceIdFilter.doFilterInternal(TraceIdFilter.java:44)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.nio.file.NoSuchFileException: data\edge-cache-state.properties.tmp -> data\edge-cache-state.properties
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsFileCopy.move(WindowsFileCopy.java:328)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.move(WindowsFileSystemProvider.java:291)
+	at java.base/java.nio.file.Files.move(Files.java:1431)
+	at de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeCacheStateStore.save(EdgeCacheStateStore.java:80)
+	... 59 common frames omitted
+{"timestamp":"2026-03-14 18:16:49,184","level":"WARN","traceId":"1651bf2d-ff97-4676-9eff-09a7924d3070","logger":"de.htwsaar.minicdn.edge.application.file.EdgeFileService","message":"Failed to persist cache state"}
+java.lang.IllegalStateException: Failed to persist cache state
+	at de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeCacheStateStore.save(EdgeCacheStateStore.java:82)
+	at de.htwsaar.minicdn.edge.application.file.EdgeFileService.persistCacheSnapshot(EdgeFileService.java:183)
+	at de.htwsaar.minicdn.edge.application.file.EdgeFileService.getFile(EdgeFileService.java:94)
+	at de.htwsaar.minicdn.edge.adapter.in.web.EdgeFileController.getFile(EdgeFileController.java:57)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at de.htwsaar.minicdn.common.auth.AdminAuthFilter.doFilterInternal(AdminAuthFilter.java:59)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at de.htwsaar.minicdn.common.logging.TraceIdFilter.doFilterInternal(TraceIdFilter.java:44)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.nio.file.NoSuchFileException: data\edge-cache-state.properties.tmp -> data\edge-cache-state.properties
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85)
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+	at java.base/sun.nio.fs.WindowsFileCopy.move(WindowsFileCopy.java:328)
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.move(WindowsFileSystemProvider.java:291)
+	at java.base/java.nio.file.Files.move(Files.java:1431)
+	at de.htwsaar.minicdn.edge.infrastructure.persistence.EdgeCacheStateStore.save(EdgeCacheStateStore.java:80)
+	... 59 common frames omitted
+{"timestamp":"2026-03-14 18:16:52,966","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"6fae655b-7e89-477a-8f69-2fea33fb3192","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/stats?windowSec=60&aggregateEdge=true", parameters={masked}"}
+{"timestamp":"2026-03-14 18:16:53,007","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"6fae655b-7e89-477a-8f69-2fea33fb3192","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:16:53,577","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:53,577","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:53,577","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:53,577","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:53,577","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:58,590","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:58,590","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:58,590","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:58,590","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:16:58,590","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:03,601","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:03,601","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:03,601","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:03,601","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:03,601","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:08,617","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:08,617","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:08,617","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:08,617","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:08,617","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:13,633","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:13,633","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:13,633","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:13,633","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:13,633","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:18,636","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:18,636","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:18,636","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:18,636","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:18,636","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:23,647","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:23,647","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:23,647","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:23,647","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:23,647","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:24,428","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"adc22c29-ed16-4801-8348-875878150e12","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/files/Lebenslauf.pdf", parameters={}"}
+{"timestamp":"2026-03-14 18:17:24,447","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"adc22c29-ed16-4801-8348-875878150e12","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 307 TEMPORARY_REDIRECT"}
+{"timestamp":"2026-03-14 18:17:28,650","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:28,650","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:28,650","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:28,650","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:28,650","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:28,922","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"a7745a62-c9f2-4783-ab07-d5ae3a7675b8","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/stats?windowSec=60&aggregateEdge=true", parameters={masked}"}
+{"timestamp":"2026-03-14 18:17:28,929","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"a7745a62-c9f2-4783-ab07-d5ae3a7675b8","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:17:33,656","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:33,656","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:33,656","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:33,656","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:33,657","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:38,658","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:38,658","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:38,658","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:38,658","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:38,658","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:43,675","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:43,675","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:43,675","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:43,675","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:43,675","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:48,681","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:48,681","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:48,681","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:48,681","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:48,681","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:53,692","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:53,692","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:53,692","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:53,692","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:53,692","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:58,702","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-3","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10003/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:58,702","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-5","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:58,702","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-2","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10000/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:58,702","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10002/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:58,702","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-4","traceId":"","logger":"de.htwsaar.minicdn.router.service.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:10001/ in Region EU ist gesund."}
+{"timestamp":"2026-03-14 18:17:59,406","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"2372313c-f08e-4a90-a9e8-84ed477b8b3a","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/edges/managed", parameters={}"}
+{"timestamp":"2026-03-14 18:17:59,407","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"2372313c-f08e-4a90-a9e8-84ed477b8b3a","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:17:59,408","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"2f477d3d-4d40-4725-8045-e33f526fa489","logger":"org.springframework.web.servlet.DispatcherServlet","message":"DELETE "/api/cdn/admin/edges/edge-19288?deregister=true", parameters={masked}"}
+{"timestamp":"2026-03-14 18:17:59,411","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"2f477d3d-4d40-4725-8045-e33f526fa489","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:17:59,412","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"7d4de46b-9caf-485a-b6f9-72ad95b2bcfc","logger":"org.springframework.web.servlet.DispatcherServlet","message":"DELETE "/api/cdn/admin/edges/edge-21864?deregister=true", parameters={masked}"}
+{"timestamp":"2026-03-14 18:17:59,413","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"7d4de46b-9caf-485a-b6f9-72ad95b2bcfc","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:17:59,414","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"46473bf4-3079-4bb6-abef-01105b2f338b","logger":"org.springframework.web.servlet.DispatcherServlet","message":"DELETE "/api/cdn/admin/edges/edge-22168?deregister=true", parameters={masked}"}
+{"timestamp":"2026-03-14 18:17:59,415","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"46473bf4-3079-4bb6-abef-01105b2f338b","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:17:59,416","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"5de12b73-76cb-4a16-bfc6-e39730a59fd9","logger":"org.springframework.web.servlet.DispatcherServlet","message":"DELETE "/api/cdn/admin/edges/edge-20788?deregister=true", parameters={masked}"}
+{"timestamp":"2026-03-14 18:17:59,418","level":"DEBUG","thread":"http-nio-8082-exec-5","traceId":"5de12b73-76cb-4a16-bfc6-e39730a59fd9","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-14 18:17:59,420","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"b3f73508-784a-4bb2-a3dc-b868d466997a","logger":"org.springframework.web.servlet.DispatcherServlet","message":"DELETE "/api/cdn/admin/edges/edge-5476?deregister=true", parameters={masked}"}
+{"timestamp":"2026-03-14 18:17:59,421","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"b3f73508-784a-4bb2-a3dc-b868d466997a","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
