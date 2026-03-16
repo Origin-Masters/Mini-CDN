@@ -2,6 +2,7 @@ package de.htwsaar.minicdn.edge;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import de.htwsaar.minicdn.edge.application.metrics.EdgeMetricsService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
