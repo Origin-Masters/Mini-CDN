@@ -1027,6 +1027,454 @@ if ($refactorCandidates) {
     }
 }
 
+# ── 21. The Hermit ── only touches 1 module/folder
+$authorModules = @{}
+foreach ($r in $results) {
+    $mods = @($r.Files | ForEach-Object {
+        $clean = ($_ -replace '\{[^}]*=> *', '' -replace '\}', '').Trim()
+        $parts = $clean -split '[\\/]'
+        if ($parts.Count -gt 1 -and $parts[0] -notmatch '\.') { $parts[0] }
+    } | Where-Object { $_ } | Sort-Object -Unique)
+    $authorModules[$r.Contributor] = $mods
+}
+$hermitCandidates = $results | Where-Object { $authorModules[$_.Contributor].Count -eq 1 -and $_.Commits -ge 3 }
+if ($hermitCandidates) {
+    $theHermit = $hermitCandidates | Sort-Object Commits -Descending | Select-Object -First 1
+    if ($theHermit) {
+        Write-Achievement "[H]" "The Hermit" $theHermit.Contributor `
+            ("Only touches '$($authorModules[$theHermit.Contributor][0])' — This is my house, nobody else comes in")
+    }
+}
+
+# ── 22. The Globetrotter ── touches the most different modules
+$globetrotter = $results | Where-Object { $authorModules[$_.Contributor].Count -ge 1 } |
+    Sort-Object { $authorModules[$_.Contributor].Count } -Descending | Select-Object -First 1
+if ($globetrotter -and $authorModules[$globetrotter.Contributor].Count -ge 5) {
+    Write-Achievement "{G}" "The Globetrotter" $globetrotter.Contributor `
+        ("{0} modules — Has a commit in every folder like a tourist leaving selfies" -f $authorModules[$globetrotter.Contributor].Count)
+}
+
+# ── 23. The Closer ── most deletions with positive net (cleans AND ships)
+$closerCandidates = $results | Where-Object { $_.Deleted -ge 200 -and $_.Net -gt 0 }
+if ($closerCandidates) {
+    $theCloser = $closerCandidates | Sort-Object Deleted -Descending | Select-Object -First 1
+    if ($theCloser) {
+        Write-Achievement "[X]" "The Closer" $theCloser.Contributor `
+            ("-" + (fmt $theCloser.Deleted) + " deleted but still net positive — Cleans up AND ships features")
+    }
+}
+
+# ── 24. The Sprinter ── all commits within a very short date range (max 3 days) but lots of output
+foreach ($r in $results) {
+    if ($r.Commits -ge 5) {
+        $sortedDates = @($r.Dates | Sort-Object -Unique)
+        if ($sortedDates.Count -ge 2) {
+            $span = ((Get-Date $sortedDates[-1]) - (Get-Date $sortedDates[0])).Days
+            if ($span -le 3 -and $r.Added -ge 300) {
+                Write-Achievement "/!\" "The Sprinter" $r.Contributor `
+                    ("{0} commits, {1}+ lines in just {2} day(s) — Hackathon energy detected" -f $r.Commits, (fmt $r.Added), $span)
+                break
+            }
+        }
+    }
+}
+
+# ── 25. Mr./Ms. Monday ── most commits on Mondays
+$authorMondayCommits = @{}
+foreach ($r in $results) {
+    $mondays = 0
+    foreach ($d in $r.Dates) {
+        try { if ((Get-Date $d).DayOfWeek -eq 'Monday') { $mondays++ } } catch {}
+    }
+    $authorMondayCommits[$r.Contributor] = $mondays
+}
+$mondayKing = $results | Sort-Object { $authorMondayCommits[$_.Contributor] } -Descending | Select-Object -First 1
+if ($mondayKing -and $authorMondayCommits[$mondayKing.Contributor] -ge 3) {
+    Write-Achievement "[M]" "Monday Motivator" $mondayKing.Contributor `
+        ("{0} Monday commits — Actually likes Mondays. Psychopath confirmed." -f $authorMondayCommits[$mondayKing.Contributor])
+}
+
+# ── 26. TGIF Coder ── most commits on Fridays
+$authorFridayCommits = @{}
+foreach ($r in $results) {
+    $fridays = 0
+    foreach ($d in $r.Dates) {
+        try { if ((Get-Date $d).DayOfWeek -eq 'Friday') { $fridays++ } } catch {}
+    }
+    $authorFridayCommits[$r.Contributor] = $fridays
+}
+$fridayKing = $results | Sort-Object { $authorFridayCommits[$_.Contributor] } -Descending | Select-Object -First 1
+if ($fridayKing -and $authorFridayCommits[$fridayKing.Contributor] -ge 3) {
+    Write-Achievement "[F]" "TGIF Deployer" $fridayKing.Contributor `
+        ("{0} Friday commits — Deploying on Friday? Living dangerously." -f $authorFridayCommits[$fridayKing.Contributor])
+}
+
+# ── 27. The Deleter ── deleted more than added (net negative), min 200 deleted
+$pureDeleters = $results | Where-Object { $_.Net -lt 0 -and $_.Deleted -ge 200 } | Sort-Object Net | Select-Object -First 1
+if ($pureDeleters) {
+    $delPct = [Math]::Round($pureDeleters.Deleted / [Math]::Max(1, $pureDeleters.Added + $pureDeleters.Deleted) * 100, 0)
+    Write-Achievement "DEL" "The Demolisher" $pureDeleters.Contributor `
+        ("{0}% of touches are deletions — Professional codebase weight loss coach" -f $delPct)
+}
+
+# ── 28. The Steady Eddie ── most consistent (lowest variance in commits/day across active days)
+$steadyCandidates = $results | Where-Object { $authorActiveDays[$_.Contributor] -ge 5 }
+if ($steadyCandidates -and @($steadyCandidates).Count -ge 2) {
+    $steadyStats = @{}
+    foreach ($r in $steadyCandidates) {
+        $dayCommitCounts = @($r.Dates | Group-Object | ForEach-Object { $_.Count })
+        if ($dayCommitCounts.Count -ge 2) {
+            $avg = ($dayCommitCounts | Measure-Object -Average).Average
+            $variance = ($dayCommitCounts | ForEach-Object { [Math]::Pow($_ - $avg, 2) } | Measure-Object -Average).Average
+            $steadyStats[$r.Contributor] = [Math]::Round([Math]::Sqrt($variance), 2)
+        }
+    }
+    if ($steadyStats.Count -gt 0) {
+        $steadyWinner = $steadyStats.GetEnumerator() | Sort-Object Value | Select-Object -First 1
+        Write-Achievement "=.=" "Steady Eddie" $steadyWinner.Key `
+            ("StdDev {0} commits/day — Consistent like a metronome" -f $steadyWinner.Value)
+    }
+}
+
+# ── 29. The Bus Factor ── contributor with highest % of total added lines
+$busFactor = $results | Sort-Object Added -Descending | Select-Object -First 1
+if ($busFactor -and $totalAdded -gt 0) {
+    $busPct = [Math]::Round(100 * $busFactor.Added / $totalAdded, 1)
+    if ($busPct -ge 40) {
+        Write-Achievement "BUS" "Bus Factor Risk" $busFactor.Contributor `
+            ("{0}% of all code — If this person leaves, we're all doomed" -f $busPct)
+    }
+}
+
+# ── 30. The Duo ── two contributors who have both touched the most same files
+if ($results.Count -ge 2) {
+    $bestOverlap = 0; $bestPair = @("","")
+    $authorFilesets = @{}
+    foreach ($r in $results) {
+        $authorFilesets[$r.Contributor] = [System.Collections.Generic.HashSet[string]]::new(
+            [string[]]@($r.Files | Sort-Object -Unique)
+        )
+    }
+    $contribList = @($results | ForEach-Object { $_.Contributor })
+    for ($i = 0; $i -lt $contribList.Count; $i++) {
+        for ($j = $i + 1; $j -lt $contribList.Count; $j++) {
+            $a = $contribList[$i]; $b = $contribList[$j]
+            $setA = $authorFilesets[$a]; $setB = $authorFilesets[$b]
+            $overlap = 0
+            foreach ($f in $setA) { if ($setB.Contains($f)) { $overlap++ } }
+            if ($overlap -gt $bestOverlap) {
+                $bestOverlap = $overlap; $bestPair = @($a, $b)
+            }
+        }
+    }
+    if ($bestOverlap -ge 5) {
+        Write-Achievement "<3>" "The Dynamic Duo" ($bestPair -join " & ") `
+            ("{0} shared files — Either pair-programming or stepping on each other's toes" -f $bestOverlap)
+    }
+}
+
+# ── 31. The Hoarder ── added way more than deleted, ratio >= 5:1 (min 500 added)
+$hoarderCandidates = $results | Where-Object { $_.Added -ge 500 -and $_.Deleted -gt 0 }
+if ($hoarderCandidates) {
+    $theHoarder = $hoarderCandidates | Sort-Object { $_.Added / [Math]::Max(1, $_.Deleted) } -Descending | Select-Object -First 1
+    if ($theHoarder) {
+        $hoardRatio = [Math]::Round($theHoarder.Added / [Math]::Max(1, $theHoarder.Deleted), 1)
+        if ($hoardRatio -ge 5) {
+            Write-Achievement "[+]" "The Hoarder" $theHoarder.Contributor `
+                ("{0}:1 add/del ratio — Never deletes anything. 'I might need that later!'" -f $hoardRatio)
+        }
+    }
+}
+
+# ── 32. README Warrior ── most changes in README/docs files
+$authorReadmeLines = @{}
+foreach ($r in $results) {
+    $readmeLines = 0
+    # re-parse from rawLines to count README touches per author - use Files list
+    foreach ($f in $r.Files) {
+        $fLower = $f.ToLower()
+        if ($fLower -match 'readme' -or $fLower -match '\.md$' -or $fLower -match 'docs[\\/]') {
+            $readmeLines++
+        }
+    }
+    $authorReadmeLines[$r.Contributor] = $readmeLines
+}
+$readmeKing = $results | Sort-Object { $authorReadmeLines[$_.Contributor] } -Descending | Select-Object -First 1
+if ($readmeKing -and $authorReadmeLines[$readmeKing.Contributor] -ge 5) {
+    Write-Achievement "DOC" "README Warrior" $readmeKing.Contributor `
+        ("{0} doc file touches — The hero we don't deserve but desperately need" -f $authorReadmeLines[$readmeKing.Contributor])
+}
+
+# ── 33. The Test Writer ── most changes in test files
+$authorTestLines = @{}
+foreach ($r in $results) {
+    $testTouches = 0
+    foreach ($f in $r.Files) {
+        $fLower = $f.ToLower()
+        if ($fLower -match '\.test\.' -or $fLower -match '\.spec\.' -or $fLower -match 'tests[\\/]' -or $fLower -match '__tests__') {
+            $testTouches++
+        }
+    }
+    $authorTestLines[$r.Contributor] = $testTouches
+}
+$testKing = $results | Sort-Object { $authorTestLines[$_.Contributor] } -Descending | Select-Object -First 1
+if ($testKing -and $authorTestLines[$testKing.Contributor] -ge 5) {
+    Write-Achievement "TST" "Test Enthusiast" $testKing.Contributor `
+        ("{0} test file touches — 'Works on my machine' is not a test strategy" -f $authorTestLines[$testKing.Contributor])
+}
+
+# ── 34. Config Wizard ── most changes in config/dotfiles
+$authorConfigTouches = @{}
+foreach ($r in $results) {
+    $cfgCount = 0
+    foreach ($f in $r.Files) {
+        $fLower = $f.ToLower()
+        if ($fLower -match '\.config' -or $fLower -match '\.env' -or $fLower -match '\.yml$' -or
+            $fLower -match '\.yaml$' -or $fLower -match '\.json$' -or $fLower -match '\.toml$' -or
+            $fLower -match 'dockerfile' -or $fLower -match '\.properties$' -or $fLower -match '\.ini$') {
+            $cfgCount++
+        }
+    }
+    $authorConfigTouches[$r.Contributor] = $cfgCount
+}
+$configWizard = $results | Sort-Object { $authorConfigTouches[$_.Contributor] } -Descending | Select-Object -First 1
+if ($configWizard -and $authorConfigTouches[$configWizard.Contributor] -ge 8) {
+    Write-Achievement "CFG" "Config Wizard" $configWizard.Contributor `
+        ("{0} config file touches — Speaks fluent YAML, JSON, and .env" -f $authorConfigTouches[$configWizard.Contributor])
+}
+
+# ── 35. The Night Owl ── most commits on Sundays specifically
+$authorSundayCommits = @{}
+foreach ($r in $results) {
+    $sundays = 0
+    foreach ($d in $r.Dates) {
+        try { if ((Get-Date $d).DayOfWeek -eq 'Sunday') { $sundays++ } } catch {}
+    }
+    $authorSundayCommits[$r.Contributor] = $sundays
+}
+$sundayKing = $results | Sort-Object { $authorSundayCommits[$_.Contributor] } -Descending | Select-Object -First 1
+if ($sundayKing -and $authorSundayCommits[$sundayKing.Contributor] -ge 3) {
+    Write-Achievement "zzz" "The Night Owl" $sundayKing.Contributor `
+        ("{0} Sunday commits — God rested on Sunday. This person didn't." -f $authorSundayCommits[$sundayKing.Contributor])
+}
+
+# ── 36. The Carry ── one person has more commits than the rest of the team combined
+if ($results.Count -ge 3) {
+    $sorted = @($results | Sort-Object Commits -Descending)
+    $topGuy = $sorted[0]
+    $restSum = ($sorted | Select-Object -Skip 1 | Measure-Object Commits -Sum).Sum
+    if ($topGuy.Commits -gt $restSum) {
+        $factor = [Math]::Round($topGuy.Commits / [Math]::Max(1, $restSum), 1)
+        Write-Achievement "GG!" "The Carry" $topGuy.Contributor `
+            ("{0} commits vs {1} from everyone else — 1v{2}, carrying the whole team" -f $topGuy.Commits, $restSum, ($results.Count - 1))
+    }
+}
+
+# ── 37. The Shadow ── 2nd place by commits, always behind #1
+if ($results.Count -ge 2) {
+    $byCommits = @($results | Sort-Object Commits -Descending)
+    $first = $byCommits[0]; $second = $byCommits[1]
+    if ($second.Commits -ge 10) {
+        $gap = $first.Commits - $second.Commits
+        Write-Achievement "v2v" "The Shadow" $second.Contributor `
+            ("{0} commits, {1} behind #1 — Always the bridesmaid, never the bride" -f $second.Commits, $gap)
+    }
+}
+
+# ── 38. The Specialist ── highest lines-per-file ratio (deep work on few files)
+$authorLinesPerFile = @{}
+foreach ($r in $results) {
+    $uniqueFiles = @($r.Files | Sort-Object -Unique).Count
+    if ($uniqueFiles -gt 0) {
+        $authorLinesPerFile[$r.Contributor] = [Math]::Round($r.Added / $uniqueFiles, 1)
+    } else {
+        $authorLinesPerFile[$r.Contributor] = 0
+    }
+}
+$specialist = $results | Where-Object { $_.Commits -ge 3 } |
+    Sort-Object { $authorLinesPerFile[$_.Contributor] } -Descending | Select-Object -First 1
+if ($specialist -and $authorLinesPerFile[$specialist.Contributor] -ge 30) {
+    Write-Achievement "|=|" "The Specialist" $specialist.Contributor `
+        ("{0} avg lines/file — Goes deep, not wide. Quality over quantity." -f $authorLinesPerFile[$specialist.Contributor])
+}
+
+# ── 39. The Sidekick ── contributor with most shared files with the #1 committer
+if ($results.Count -ge 2) {
+    $topCommitter = ($results | Sort-Object Commits -Descending | Select-Object -First 1).Contributor
+    $topFiles = [System.Collections.Generic.HashSet[string]]::new([string[]]@($authorFiles[$topCommitter] | Sort-Object -Unique))
+    $bestSidekick = ""; $bestShared = 0
+    foreach ($r in $results) {
+        if ($r.Contributor -eq $topCommitter) { continue }
+        $shared = 0
+        foreach ($f in @($r.Files | Sort-Object -Unique)) { if ($topFiles.Contains($f)) { $shared++ } }
+        if ($shared -gt $bestShared) { $bestShared = $shared; $bestSidekick = $r.Contributor }
+    }
+    if ($bestSidekick -and $bestShared -ge 3) {
+        Write-Achievement "<+>" "The Sidekick" $bestSidekick `
+            ("{0} files shared with {1} — Robin to their Batman" -f $bestShared, $topCommitter)
+    }
+}
+
+# ── 40. The Latecomers ── contributors whose first commit date is in the latest 25% of the project timeline
+if ($allDates -and $allDates.Count -gt 0) {
+    $sortedAllDates = @($allDates | Sort-Object -Unique)
+    if ($sortedAllDates.Count -ge 4) {
+        $projectStart = Get-Date $sortedAllDates[0]
+        $projectEnd = Get-Date $sortedAllDates[-1]
+        $totalSpan = ($projectEnd - $projectStart).Days
+        $lateThreshold = $projectStart.AddDays($totalSpan * 0.75)
+
+        $latecomers = @()
+        foreach ($r in $results) {
+            $firstDate = Get-Date (@($r.Dates | Sort-Object)[0])
+            if ($firstDate -ge $lateThreshold -and $r.Added -ge 100) {
+                $latecomers += $r.Contributor
+            }
+        }
+        if ($latecomers.Count -gt 0) {
+            Write-Achievement "NEW" "Late to the Party" ($latecomers -join ", ") `
+                ("Joined in the last 25% of the timeline — Better late than never!")
+        }
+    }
+}
+
+# ── 41. The Veteran ── contributor active on the most different calendar weeks
+$authorWeeks = @{}
+foreach ($r in $results) {
+    $weeks = @($r.Dates | ForEach-Object {
+        try { $d = Get-Date $_; "{0}-W{1:D2}" -f $d.Year, [int][Math]::Ceiling($d.DayOfYear / 7) } catch {}
+    } | Where-Object { $_ } | Sort-Object -Unique)
+    $authorWeeks[$r.Contributor] = $weeks.Count
+}
+$veteran = $results | Sort-Object { $authorWeeks[$_.Contributor] } -Descending | Select-Object -First 1
+if ($veteran -and $authorWeeks[$veteran.Contributor] -ge 4) {
+    Write-Achievement "VET" "The Veteran" $veteran.Contributor `
+        ("{0} different calendar weeks active — The backbone of this project" -f $authorWeeks[$veteran.Contributor])
+}
+
+# ── 42. The Burst Committer ── highest single-day commit count
+$authorMaxDayCommits = @{}
+foreach ($r in $results) {
+    $dayCounts = @($r.Dates | Group-Object | ForEach-Object { $_.Count })
+    if ($dayCounts.Count -gt 0) {
+        $authorMaxDayCommits[$r.Contributor] = ($dayCounts | Measure-Object -Maximum).Maximum
+    } else {
+        $authorMaxDayCommits[$r.Contributor] = 0
+    }
+}
+$burstKing = $results | Sort-Object { $authorMaxDayCommits[$_.Contributor] } -Descending | Select-Object -First 1
+if ($burstKing -and $authorMaxDayCommits[$burstKing.Contributor] -ge 5) {
+    Write-Achievement "!!!" "The Burst Committer" $burstKing.Contributor `
+        ("{0} commits in a single day — 'git commit' is basically a nervous tic" -f $authorMaxDayCommits[$burstKing.Contributor])
+}
+
+# ── 43. Silent Contributor ── fewest commits but still meaningful lines (min 100 added)
+$silentCandidates = $results | Where-Object { $_.Added -ge 100 } | Sort-Object Commits | Select-Object -First 1
+if ($silentCandidates -and $results.Count -ge 3) {
+    $avgCommits = [Math]::Round(($results | Measure-Object Commits -Average).Average, 0)
+    if ($silentCandidates.Commits -lt ($avgCommits * 0.5)) {
+        Write-Achievement "..." "Silent Contributor" $silentCandidates.Contributor `
+            ("{0} commits but {1}+ lines — Speaks softly but carries a big diff" -f $silentCandidates.Commits, (fmt $silentCandidates.Added))
+    }
+}
+
+# ── 44. The Midweek Monster ── most commits Tue-Thu
+$authorMidweekCommits = @{}
+foreach ($r in $results) {
+    $mid = 0
+    foreach ($d in $r.Dates) {
+        try {
+            $dow = (Get-Date $d).DayOfWeek
+            if ($dow -eq 'Tuesday' -or $dow -eq 'Wednesday' -or $dow -eq 'Thursday') { $mid++ }
+        } catch {}
+    }
+    $authorMidweekCommits[$r.Contributor] = $mid
+}
+$midweekKing = $results | Sort-Object { $authorMidweekCommits[$_.Contributor] } -Descending | Select-Object -First 1
+if ($midweekKing -and $authorMidweekCommits[$midweekKing.Contributor] -ge 5) {
+    $midPct = [Math]::Round(100 * $authorMidweekCommits[$midweekKing.Contributor] / [Math]::Max(1, $midweekKing.Commits), 0)
+    Write-Achievement "MID" "Midweek Monster" $midweekKing.Contributor `
+        ("{0}% of commits Tue-Thu — Peak performance in peak hours" -f $midPct)
+}
+
+# ── 45. The Entropy Generator ── touches many files but adds few lines per file (scattered changes)
+$entropyCandidates = $results | Where-Object { $authorUniqueFiles[$_.Contributor] -ge 20 -and $authorLinesPerFile[$_.Contributor] -lt 15 }
+if ($entropyCandidates) {
+    $entropyKing = $entropyCandidates | Sort-Object { $authorUniqueFiles[$_.Contributor] } -Descending | Select-Object -First 1
+    if ($entropyKing) {
+        Write-Achievement "~?~" "Entropy Generator" $entropyKing.Contributor `
+            ("{0} files, only {1} lines/file — Sprinkles changes everywhere like confetti" -f $authorUniqueFiles[$entropyKing.Contributor], $authorLinesPerFile[$entropyKing.Contributor])
+    }
+}
+
+# ── 46. The Iron Man ── active on both weekdays AND weekends (min 3 each)
+$ironManCandidates = $results | Where-Object {
+    $authorWeekendCommits[$_.Contributor] -ge 3 -and
+    ($_.Commits - $authorWeekendCommits[$_.Contributor]) -ge 5
+}
+if ($ironManCandidates) {
+    $ironMan = $ironManCandidates | Sort-Object Commits -Descending | Select-Object -First 1
+    if ($ironMan) {
+        $wkday = $ironMan.Commits - $authorWeekendCommits[$ironMan.Contributor]
+        Write-Achievement "Fe!" "Iron Man" $ironMan.Contributor `
+            ("{0} weekday + {1} weekend commits — Doesn't know the concept of 'days off'" -f $wkday, $authorWeekendCommits[$ironMan.Contributor])
+    }
+}
+
+# ── 47. The Cleanup Crew ── deleted at least 30% of what they added (min 200 added)
+$cleanupCandidates = $results | Where-Object { $_.Added -ge 200 -and $_.Deleted -ge ($_.Added * 0.3) } |
+    Sort-Object { $_.Deleted / [Math]::Max(1, $_.Added) } -Descending
+if ($cleanupCandidates) {
+    $cleanupCrew = @($cleanupCandidates | Select-Object -First 3)
+    if ($cleanupCrew.Count -ge 2) {
+        $names = ($cleanupCrew | ForEach-Object { $_.Contributor }) -join ", "
+        Write-Achievement "[-]" "The Cleanup Crew" $names `
+            "Delete 30%+ of what they add — Keeping the codebase lean and mean"
+    }
+}
+
+# ── 48. The Tenner ── exactly 10 commits (or closest round number, 20, 30, etc.)
+$tenners = @($results | Where-Object { $_.Commits -gt 0 -and $_.Commits % 10 -eq 0 })
+if ($tenners.Count -gt 0) {
+    foreach ($t in $tenners) {
+        Write-Achievement " X " "The Round Number" $t.Contributor `
+            ("Exactly {0} commits — Oddly satisfying. OCD-approved commit history." -f $t.Commits)
+    }
+}
+
+# ── 49. The Underdog ── lowest rank by commits but highest lines/commit ratio
+if ($results.Count -ge 3) {
+    $byCommitsAsc = @($results | Sort-Object Commits)
+    $bottomHalf = @($byCommitsAsc | Select-Object -First ([Math]::Ceiling($results.Count / 2)))
+    $underdog = $bottomHalf | Where-Object { $_.Commits -ge 2 } |
+        Sort-Object { $authorAvgLinesPerCommit[$_.Contributor] } -Descending | Select-Object -First 1
+    if ($underdog -and $authorAvgLinesPerCommit[$underdog.Contributor] -ge 50) {
+        Write-Achievement "<^>" "The Underdog" $underdog.Contributor `
+            ("Bottom half by commits but {0} lines/commit — Few commits, big impact" -f $authorAvgLinesPerCommit[$underdog.Contributor])
+    }
+}
+
+# ── 50. The Locksmith ── most changes in auth/security/login related files
+$authorSecurityTouches = @{}
+foreach ($r in $results) {
+    $secCount = 0
+    foreach ($f in $r.Files) {
+        $fLower = $f.ToLower()
+        if ($fLower -match 'auth' -or $fLower -match 'login' -or $fLower -match 'security' -or
+            $fLower -match 'password' -or $fLower -match 'token' -or $fLower -match 'crypt' -or
+            $fLower -match 'permission' -or $fLower -match 'role' -or $fLower -match 'guard' -or
+            $fLower -match 'session' -or $fLower -match 'jwt' -or $fLower -match 'oauth') {
+            $secCount++
+        }
+    }
+    $authorSecurityTouches[$r.Contributor] = $secCount
+}
+$locksmith = $results | Sort-Object { $authorSecurityTouches[$_.Contributor] } -Descending | Select-Object -First 1
+if ($locksmith -and $authorSecurityTouches[$locksmith.Contributor] -ge 3) {
+    Write-Achievement "KEY" "The Locksmith" $locksmith.Contributor `
+        ("{0} auth/security file touches — Guardian of the gates" -f $authorSecurityTouches[$locksmith.Contributor])
+}
+
 Write-Host ""
 Write-HR
 cWL "  Achievements are auto-detected from git history. No feelings were harmed." DarkGray
