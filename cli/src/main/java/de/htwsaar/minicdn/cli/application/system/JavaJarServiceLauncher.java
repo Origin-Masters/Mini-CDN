@@ -32,16 +32,7 @@ public final class JavaJarServiceLauncher implements ServiceLauncher {
         this.routerBaseUrl = routerBaseUrl == null ? null : UriUtils.ensureTrailingSlash(routerBaseUrl);
     }
 
-    /**
-     * Startet einen lokalen Dienstprozess über {@code java -jar}.
-     *
-     * @param jarPath Pfad zur ausführbaren JAR
-     * @param springProfile aktives Spring-Profil
-     * @param logPath Zieldatei für kombinierte stdout/stderr-Ausgabe
-     * @return gestarteter Prozess
-     * @throws IllegalArgumentException falls Eingaben ungültig sind
-     * @throws UncheckedIOException falls der Prozess nicht gestartet werden kann
-     */
+    /** {@inheritDoc} */
     @Override
     public Process start(Path jarPath, String springProfile, Path logPath) {
         Path executableJar =

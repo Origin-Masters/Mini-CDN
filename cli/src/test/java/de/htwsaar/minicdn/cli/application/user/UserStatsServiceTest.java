@@ -3,11 +3,13 @@ package de.htwsaar.minicdn.cli.application.user;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpUserOperations;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.model.TransportResponse;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
+import de.htwsaar.minicdn.cli.domain.port.UserOperations;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -16,22 +18,21 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 
 /**
- * Contract-Tests fuer die URL-Bildung in {@link UserStatsService}.
+ * Contract-Tests für die URL-Bildung in {@link UserStatsService}.
  */
 class UserStatsServiceTest {
 
     /**
-     * Verifiziert den Datei-Statistik-Endpunkt fuer eine konkrete Datei-ID.
+     * Verifiziert den Datei-Statistik-Endpunkt für eine konkrete Datei-ID.
      */
     @Test
     void fileStatsForCurrentUser_shouldCallUserStatsFileEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        UserStatsService service = new UserStatsService(
-                transportClient, Duration.ofSeconds(2), URI.create("http://localhost:8082"), () -> 17L);
+        HttpUserOperations userOperations = new HttpUserOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.fileStatsForCurrentUser(123);
+        CallResult result = userOperations.fileStats(URI.create("http://localhost:8082"), 17L, 123);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals("17", transportClient.lastRequest.headers().get("X-User-Id"));
@@ -46,12 +47,11 @@ class UserStatsServiceTest {
     @Test
     void listUserFilesStats_shouldCallUserStatsFilesEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        UserStatsService service = new UserStatsService(
-                transportClient, Duration.ofSeconds(2), URI.create("http://localhost:8082/"), () -> 17L);
+        HttpUserOperations userOperations = new HttpUserOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.listUserFilesStats(10);
+        CallResult result = userOperations.listFileStats(URI.create("http://localhost:8082/"), 17L, 10);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals("17", transportClient.lastRequest.headers().get("X-User-Id"));
@@ -66,12 +66,11 @@ class UserStatsServiceTest {
     @Test
     void overallStatsForCurrentUser_shouldCallUserStatsEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        UserStatsService service = new UserStatsService(
-                transportClient, Duration.ofSeconds(2), URI.create("http://localhost:8082"), () -> 17L);
+        HttpUserOperations userOperations = new HttpUserOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.overallStatsForCurrentUser(3600);
+        CallResult result = userOperations.overallStats(URI.create("http://localhost:8082"), 17L, 3600);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals("17", transportClient.lastRequest.headers().get("X-User-Id"));
@@ -85,19 +84,19 @@ class UserStatsServiceTest {
      */
     @Test
     void listUserFilesStats_shouldUseLatestUserIdFromSupplier() {
-        RecordingTransportClient transportClient = new RecordingTransportClient();
         AtomicLong userId = new AtomicLong(2L);
-        UserStatsService service = new UserStatsService(
-                transportClient, Duration.ofSeconds(2), URI.create("http://localhost:8082"), userId::get);
+        RecordingUserOperations userOperations = new RecordingUserOperations();
+        UserStatsService service =
+                new UserStatsService(userOperations, URI.create("http://localhost:8082"), userId::get);
 
         CallResult first = service.listUserFilesStats(5);
-        assertEquals(200, first.statusCode());
-        assertEquals("2", transportClient.lastRequest.headers().get("X-User-Id"));
+        assertEquals(200, first.code());
+        assertEquals(2L, userOperations.lastLoggedInUserId);
 
         userId.set(7L);
         CallResult second = service.listUserFilesStats(5);
-        assertEquals(200, second.statusCode());
-        assertEquals("7", transportClient.lastRequest.headers().get("X-User-Id"));
+        assertEquals(200, second.code());
+        assertEquals(7L, userOperations.lastLoggedInUserId);
     }
 
     /**
@@ -105,9 +104,8 @@ class UserStatsServiceTest {
      */
     @Test
     void overallStatsForCurrentUser_shouldFailWhenUserIdMissing() {
-        RecordingTransportClient transportClient = new RecordingTransportClient();
-        UserStatsService service = new UserStatsService(
-                transportClient, Duration.ofSeconds(2), URI.create("http://localhost:8082"), () -> -1L);
+        UserStatsService service =
+                new UserStatsService(new RecordingUserOperations(), URI.create("http://localhost:8082"), () -> -1L);
 
         CallResult result = service.overallStatsForCurrentUser(60);
 
@@ -129,6 +127,33 @@ class UserStatsServiceTest {
         @Override
         public DownloadResult download(TransportRequest request, Path targetFile, boolean overwrite) {
             throw new UnsupportedOperationException("Not needed for this test");
+        }
+    }
+
+    private static final class RecordingUserOperations implements UserOperations {
+        private long lastLoggedInUserId;
+
+        @Override
+        public de.htwsaar.minicdn.cli.domain.model.LoginResult login(URI routerBaseUrl, String username) {
+            throw new UnsupportedOperationException("Not needed for this test");
+        }
+
+        @Override
+        public CallResult fileStats(URI routerBaseUrl, long loggedInUserId, long fileId) {
+            this.lastLoggedInUserId = loggedInUserId;
+            return CallResult.success(200, "ok");
+        }
+
+        @Override
+        public CallResult listFileStats(URI routerBaseUrl, long loggedInUserId, int limit) {
+            this.lastLoggedInUserId = loggedInUserId;
+            return CallResult.success(200, "ok");
+        }
+
+        @Override
+        public CallResult overallStats(URI routerBaseUrl, long loggedInUserId, int windowSec) {
+            this.lastLoggedInUserId = loggedInUserId;
+            return CallResult.success(200, "ok");
         }
     }
 }

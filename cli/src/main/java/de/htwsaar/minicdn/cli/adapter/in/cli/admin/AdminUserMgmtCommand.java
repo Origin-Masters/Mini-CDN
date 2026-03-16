@@ -72,8 +72,7 @@ public final class AdminUserMgmtCommand implements Runnable {
         this(
                 ctx,
                 new AdminUserService(
-                        Objects.requireNonNull(ctx, "ctx").transportClient(),
-                        ctx.defaultRequestTimeout(),
+                        Objects.requireNonNull(ctx, "ctx").adminOperations(),
                         ctx.routerBaseUrl(),
                         ctx.adminToken(),
                         resolveLoggedInUserId(ctx)));
@@ -170,12 +169,12 @@ public final class AdminUserMgmtCommand implements Runnable {
             return CallOutcome.failure(requestFailed(String.format("%s failed: %s", operation, result.error())));
         }
 
-        Integer statusCode = result.statusCode();
+        Integer statusCode = result.code();
         if (statusCode == null) {
             return CallOutcome.failure(requestFailed(String.format("%s failed: missing HTTP status code", operation)));
         }
 
-        if (!result.is2xx()) {
+        if (!result.isRemoteSuccess()) {
             return CallOutcome.failure(rejected(String.format(
                     "%s failed HTTP %d body=%s", operation, statusCode, Objects.toString(result.body(), ""))));
         }
@@ -364,7 +363,7 @@ public final class AdminUserMgmtCommand implements Runnable {
                 return parent.requestFailed(String.format("User delete failed: %s", result.error()));
             }
 
-            Integer statusCode = result.statusCode();
+            Integer statusCode = result.code();
             if (Integer.valueOf(204).equals(statusCode)) {
                 ConsoleUtils.info(parent.ctx().out(), "[ADMIN] User %d deleted", id);
                 return SUCCESS.code();

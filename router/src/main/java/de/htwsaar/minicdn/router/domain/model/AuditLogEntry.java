@@ -10,7 +10,7 @@ import java.time.Instant;
  * @param action technische Aktionskennung (z. B. "GET /api/cdn/admin/users")
  * @param resource betroffene Ressource (URI inkl. Query)
  * @param result fachliches Ergebnis
- * @param httpStatus HTTP-Statuscode der Aktion
+ * @param httpStatus technischer Statuscode der Aktion
  */
 public record AuditLogEntry(
         Instant timestamp, long userId, String action, String resource, AuditResult result, int httpStatus) {}

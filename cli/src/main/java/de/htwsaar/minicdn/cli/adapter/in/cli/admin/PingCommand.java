@@ -6,15 +6,13 @@ import static de.htwsaar.minicdn.common.util.ExitCodes.REQUEST_FAILED;
 import static de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS;
 
 import de.htwsaar.minicdn.cli.adapter.in.cli.support.ConsoleUtils;
+import de.htwsaar.minicdn.cli.application.admin.AdminPingService;
 import de.htwsaar.minicdn.cli.application.context.CliContext;
-import de.htwsaar.minicdn.cli.application.support.TransportCallAdapter;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
 import de.htwsaar.minicdn.common.util.PathUtils;
 import de.htwsaar.minicdn.common.util.UriUtils;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
@@ -24,8 +22,7 @@ import picocli.CommandLine.Option;
  * Admin-Command für einen einfachen Health-Check gegen einen HTTP-Endpunkt.
  *
  * <p>Die Klasse bildet einen sehr kleinen CLI-Adapter. Sie validiert die Eingaben,
- * baut die Ziel-URI auf, führt einen GET-Request über den gemeinsamen
- * {@link de.htwsaar.minicdn.cli.domain.port.TransportClient} aus und gibt
+ * baut die Ziel-URI auf, delegiert den Check an die Application-Schicht und gibt
  * Statuscode sowie Response-Body auf der Konsole aus.</p>
  */
 @Command(
@@ -81,22 +78,20 @@ public final class PingCommand implements Callable<Integer> {
         try {
             URI base = normalizeHost(host);
             String cleanPath = normalizePath(path);
-            URI url = base.resolve(cleanPath);
 
-            CallResult response = TransportCallAdapter.execute(
-                    ctx.transportClient(), TransportRequest.get(url, ctx.defaultRequestTimeout(), Map.of()));
+            CallResult response = service().ping(base, cleanPath);
 
             if (response.error() != null) {
                 return requestFailed(err, "Ping failed: %s", response.error());
             }
 
-            Integer statusCode = response.statusCode();
+            Integer statusCode = response.code();
             if (statusCode == null) {
-                return requestFailed(err, "Ping failed: missing HTTP status code");
+                return requestFailed(err, "Ping failed: missing response code");
             }
 
             printResponse(out, statusCode, response.body());
-            return response.is2xx() ? SUCCESS.code() : REJECTED.code();
+            return response.isRemoteSuccess() ? SUCCESS.code() : REJECTED.code();
 
         } catch (IllegalArgumentException ex) {
             return rejected(err, ex.getMessage());
@@ -183,5 +178,9 @@ public final class PingCommand implements Callable<Integer> {
     int rejected(PrintWriter err, String message) {
         ConsoleUtils.error(err, "[ADMIN] %s", Objects.toString(message, "request rejected"));
         return REJECTED.code();
+    }
+
+    private AdminPingService service() {
+        return new AdminPingService(ctx.adminOperations());
     }
 }

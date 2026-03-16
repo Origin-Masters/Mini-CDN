@@ -24,8 +24,8 @@ import org.springframework.stereotype.Service;
 /**
  * Fachlicher Use Case zum Starten und Stoppen verwalteter Edge-Prozesse.
  *
- * <p>Die HTTP-Readiness-Prüfung erfolgt über den EdgeGateway-Port. Die konkrete
- * HTTP-Implementierung ist damit aus der Fachlogik entfernt.</p>
+ * <p>Die technische Readiness-Prüfung erfolgt über den EdgeGateway-Port. Die konkrete
+ * Transportimplementierung ist damit aus der Fachlogik entfernt.</p>
  */
 @Service
 public class EdgeLifecycleService {
@@ -86,7 +86,7 @@ public class EdgeLifecycleService {
      * Startet genau eine Edge.
      *
      * @param region Zielregion
-     * @param port Port fuer die neue Instanz
+     * @param port Port für die neue Instanz
      * @param originBaseUrl Basis-URL des Origin
      * @param autoRegister ob die Instanz automatisch registriert wird
      * @param waitUntilReady ob auf Readiness gewartet wird

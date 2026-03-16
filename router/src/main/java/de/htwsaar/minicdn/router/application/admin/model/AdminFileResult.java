@@ -2,13 +2,43 @@ package de.htwsaar.minicdn.router.application.admin.model;
 
 import java.util.Map;
 
-public record AdminFileResult(boolean success, int httpStatus, Object body) {
-    public static AdminFileResult success(int status, Object body) {
-        return new AdminFileResult(true, status, body);
+/**
+ * Normiertes Ergebnis einer Origin-bezogenen Admin-Operation.
+ *
+ * <p>Die fachliche Schicht arbeitet mit einem allgemeinen Ausgang der Operation
+ * und optionalen Nutzdaten. Ein konkreter Adapter kann zusätzlich einen
+ * transportabhängigen Rückgabecode für Diagnose- oder Mapping-Zwecke
+ * mitliefern, ohne dass der Port auf ein konkretes Protokoll festgelegt wird.</p>
+ *
+ * @param outcome normierter Ausgang der Operation
+ * @param remoteCode optionaler transportabhängiger Rückgabecode
+ * @param body fachlicher Nutzdaten-Body oder Fehlerdaten
+ */
+public record AdminFileResult(AdminFileResult.Outcome outcome, Integer remoteCode, Object body) {
+
+    /**
+     * Normierte Ausgabe einer Origin-Operation.
+     */
+    public enum Outcome {
+        SUCCESS,
+        REJECTED,
+        FAILURE
     }
 
-    public static AdminFileResult error(int status, String message) {
-        return new AdminFileResult(false, status, Map.of("error", message));
+    public static AdminFileResult success(int remoteCode, Object body) {
+        return new AdminFileResult(Outcome.SUCCESS, remoteCode, body);
+    }
+
+    public static AdminFileResult rejected(int remoteCode, String message) {
+        return new AdminFileResult(Outcome.REJECTED, remoteCode, Map.of("error", message));
+    }
+
+    public static AdminFileResult failure(String message) {
+        return new AdminFileResult(Outcome.FAILURE, null, Map.of("error", message));
+    }
+
+    public boolean success() {
+        return outcome == Outcome.SUCCESS;
     }
 
     public Map<String, Object> toMap() {

@@ -1,44 +1,30 @@
 package de.htwsaar.minicdn.cli.application.admin;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.htwsaar.minicdn.cli.application.support.TransportCallAdapter;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
-import de.htwsaar.minicdn.common.util.UriUtils;
+import de.htwsaar.minicdn.cli.domain.port.AdminOperations;
 import java.net.URI;
-import java.time.Duration;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /**
  * Fachlicher Service für Remote-Konfiguration von Origin- und Edge-Servern.
  *
- * <p>Die Klasse kapselt ausschließlich die Kommunikation mit den Admin-Endpunkten
- * der Origin- und Edge-Services. Sie kennt keine CLI-Ausgabe und keine Exit-Codes.
- * Authentifizierungsdaten und technische Infrastruktur werden vollständig per
- * Konstruktor injiziert.</p>
+ * <p>Die fachliche Logik validiert nur Eingaben. Technische Aufrufdetails
+ * bleiben vollständig im Adapter. Rückgaben werden als
+ * normierte fachliche Aufrufergebnisse modelliert.</p>
  */
 public final class AdminConfigService {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    private final TransportClient transportClient;
-    private final Duration requestTimeout;
+    private final AdminOperations adminOperations;
     private final String adminToken;
 
     /**
-     * Erzeugt den Service mit allen benötigten technischen Abhängigkeiten.
+     * Erzeugt den Service.
      *
-     * @param transportClient Transport-Abstraktion für HTTP-Aufrufe
-     * @param requestTimeout Standard-Timeout für Requests
-     * @param adminToken Admin-Token für geschützte Endpunkte
+     * @param adminOperations fachlicher Port für administrative Remote-Aufrufe
+     * @param adminToken Admin-Token für geschützte Operationen
      */
-    public AdminConfigService(TransportClient transportClient, Duration requestTimeout, String adminToken) {
-        this.transportClient = Objects.requireNonNull(transportClient, "transportClient");
-        this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
+    public AdminConfigService(AdminOperations adminOperations, String adminToken) {
+        this.adminOperations = Objects.requireNonNull(adminOperations, "adminOperations");
         this.adminToken = requireText(adminToken, "adminToken");
     }
 
@@ -46,10 +32,10 @@ public final class AdminConfigService {
      * Liest die aktuelle Laufzeitkonfiguration des Origin-Servers.
      *
      * @param originBaseUrl Basis-URL des Origin-Servers
-     * @return normiertes HTTP-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult getOriginConfig(URI originBaseUrl) {
-        return sendGet(originBaseUrl, "api/origin/admin/config");
+        return adminOperations.getOriginConfig(originBaseUrl, adminToken);
     }
 
     /**
@@ -58,22 +44,13 @@ public final class AdminConfigService {
      * @param originBaseUrl Basis-URL des Origin-Servers
      * @param maxUploadBytes maximale Upload-Größe in Bytes, optional
      * @param logLevel Root-Log-Level, optional
-     * @return normiertes HTTP-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult patchOriginConfig(URI originBaseUrl, Long maxUploadBytes, String logLevel) {
-        Map<String, Object> payload = new LinkedHashMap<>();
-
-        if (maxUploadBytes != null) {
-            payload.put("maxUploadBytes", maxUploadBytes);
-        }
-        if (hasText(logLevel)) {
-            payload.put("logLevel", logLevel.trim());
-        }
-        if (payload.isEmpty()) {
+        if (maxUploadBytes == null && !hasText(logLevel)) {
             return CallResult.clientError("at least one field must be provided");
         }
-
-        return sendPatch(originBaseUrl, "api/origin/admin/config", toJson(payload));
+        return adminOperations.patchOriginConfig(originBaseUrl, adminToken, maxUploadBytes, logLevel);
     }
 
     /**
@@ -81,56 +58,63 @@ public final class AdminConfigService {
      *
      * @param routerBaseUrl Basis-URL des Routers
      * @param checkHealth wenn true, werden Health-Checks je Origin ausgeführt
-     * @return normiertes HTTP-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult getOriginCluster(URI routerBaseUrl, boolean checkHealth) {
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/origin/cluster?checkHealth=" + checkHealth);
-        return send(TransportRequest.get(url, requestTimeout, adminHeaders()));
+        return adminOperations.getOriginCluster(routerBaseUrl, adminToken, checkHealth);
     }
 
     /**
      * Registriert einen neuen Origin-Hot-Spare über den Router.
+     *
+     * @param routerBaseUrl Basis-URL des Routers
+     * @param spareBaseUrl Basis-URL des Hot-Spares
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult addOriginSpare(URI routerBaseUrl, URI spareBaseUrl) {
-        String url = UriUtils.urlEncode(requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
-        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/spares?url=" + url);
-        return send(TransportRequest.postJson(target, requestTimeout, adminJsonHeaders(), "{}"));
+        return adminOperations.addOriginSpare(routerBaseUrl, adminToken, spareBaseUrl);
     }
 
     /**
      * Entfernt einen Origin-Hot-Spare über den Router.
+     *
+     * @param routerBaseUrl Basis-URL des Routers
+     * @param spareBaseUrl Basis-URL des Hot-Spares
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult removeOriginSpare(URI routerBaseUrl, URI spareBaseUrl) {
-        String url = UriUtils.urlEncode(requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
-        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/spares?url=" + url);
-        return send(TransportRequest.delete(target, requestTimeout, adminHeaders()));
+        return adminOperations.removeOriginSpare(routerBaseUrl, adminToken, spareBaseUrl);
     }
 
     /**
      * Befördert einen registrierten Hot-Spare zum aktiven Origin.
+     *
+     * @param routerBaseUrl Basis-URL des Routers
+     * @param spareBaseUrl Basis-URL des Hot-Spares
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult promoteOriginSpare(URI routerBaseUrl, URI spareBaseUrl) {
-        String url = UriUtils.urlEncode(requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
-        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/promote?url=" + url);
-        return send(TransportRequest.postJson(target, requestTimeout, adminJsonHeaders(), "{}"));
+        return adminOperations.promoteOriginSpare(routerBaseUrl, adminToken, spareBaseUrl);
     }
 
     /**
      * Führt einen sofortigen Failover-Check des aktiven Origins aus.
+     *
+     * @param routerBaseUrl Basis-URL des Routers
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult checkOriginFailover(URI routerBaseUrl) {
-        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/failover/check");
-        return send(TransportRequest.postJson(target, requestTimeout, adminJsonHeaders(), "{}"));
+        return adminOperations.checkOriginFailover(routerBaseUrl, adminToken);
     }
 
     /**
      * Liest die aktuelle Laufzeitkonfiguration des Edge-Servers.
      *
      * @param edgeBaseUrl Basis-URL des Edge-Servers
-     * @return normiertes HTTP-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult getEdgeConfig(URI edgeBaseUrl) {
-        return sendGet(edgeBaseUrl, "api/edge/admin/config");
+        return adminOperations.getEdgeConfig(edgeBaseUrl, adminToken);
     }
 
     /**
@@ -141,40 +125,25 @@ public final class AdminConfigService {
      * @param defaultTtlMs Standard-TTL in Millisekunden, optional
      * @param maxEntries maximale Cache-Einträge, optional
      * @param replacementStrategy Ersetzungsstrategie, optional
-     * @return normiertes HTTP-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult patchEdgeConfig(
             URI edgeBaseUrl, String region, Long defaultTtlMs, Integer maxEntries, String replacementStrategy) {
-
-        Map<String, Object> payload = new LinkedHashMap<>();
-
-        if (hasText(region)) {
-            payload.put("region", region.trim());
-        }
-        if (defaultTtlMs != null) {
-            payload.put("defaultTtlMs", defaultTtlMs);
-        }
-        if (maxEntries != null) {
-            payload.put("maxEntries", maxEntries);
-        }
-        if (hasText(replacementStrategy)) {
-            payload.put("replacementStrategy", replacementStrategy.trim().toUpperCase());
-        }
-        if (payload.isEmpty()) {
+        if (!hasText(region) && defaultTtlMs == null && maxEntries == null && !hasText(replacementStrategy)) {
             return CallResult.clientError("at least one field must be provided");
         }
-
-        return sendPatch(edgeBaseUrl, "api/edge/admin/config", toJson(payload));
+        return adminOperations.patchEdgeConfig(
+                edgeBaseUrl, adminToken, region, defaultTtlMs, maxEntries, replacementStrategy, null);
     }
 
     /**
      * Liest alle TTL-Präfixregeln des Edge-Servers.
      *
      * @param edgeBaseUrl Basis-URL des Edge-Servers
-     * @return normiertes HTTP-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult getEdgeTtlPolicies(URI edgeBaseUrl) {
-        return sendGet(edgeBaseUrl, "api/edge/admin/config/ttl");
+        return adminOperations.getEdgeTtlPolicies(edgeBaseUrl, adminToken);
     }
 
     /**
@@ -183,19 +152,13 @@ public final class AdminConfigService {
      * @param edgeBaseUrl Basis-URL des Edge-Servers
      * @param prefix Pfad-Präfix
      * @param ttlMs TTL in Millisekunden
-     * @return normiertes HTTP-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult setEdgeTtlPolicy(URI edgeBaseUrl, String prefix, Long ttlMs) {
-        String cleanPrefix = requireText(prefix, "prefix");
         if (ttlMs == null) {
             return CallResult.clientError("ttlMs must not be null");
         }
-
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("prefix", cleanPrefix);
-        payload.put("ttlMs", ttlMs);
-
-        return sendPut(edgeBaseUrl, "api/edge/admin/config/ttl", toJson(payload));
+        return adminOperations.setEdgeTtlPolicy(edgeBaseUrl, adminToken, requireText(prefix, "prefix"), ttlMs);
     }
 
     /**
@@ -203,106 +166,10 @@ public final class AdminConfigService {
      *
      * @param edgeBaseUrl Basis-URL des Edge-Servers
      * @param prefix Pfad-Präfix
-     * @return normiertes HTTP-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult removeEdgeTtlPolicy(URI edgeBaseUrl, String prefix) {
-        String cleanPrefix = requireText(prefix, "prefix");
-        URI url = base(edgeBaseUrl).resolve("api/edge/admin/config/ttl?prefix=" + UriUtils.urlEncode(cleanPrefix));
-
-        return send(TransportRequest.delete(url, requestTimeout, adminHeaders()));
-    }
-
-    /**
-     * Führt einen GET-Request gegen einen Admin-Endpunkt aus.
-     *
-     * @param baseUrl Basis-URL des Zielsystems
-     * @param path relativer Endpunktpfad
-     * @return normiertes HTTP-Ergebnis
-     */
-    private CallResult sendGet(URI baseUrl, String path) {
-        URI url = base(baseUrl).resolve(path);
-        return send(TransportRequest.get(url, requestTimeout, adminHeaders()));
-    }
-
-    /**
-     * Führt einen PATCH-JSON-Request gegen einen Admin-Endpunkt aus.
-     *
-     * @param baseUrl Basis-URL des Zielsystems
-     * @param path relativer Endpunktpfad
-     * @param jsonBody JSON-Payload
-     * @return normiertes HTTP-Ergebnis
-     */
-    private CallResult sendPatch(URI baseUrl, String path, String jsonBody) {
-        URI url = base(baseUrl).resolve(path);
-        return send(TransportRequest.patchJson(url, requestTimeout, adminJsonHeaders(), jsonBody));
-    }
-
-    /**
-     * Führt einen PUT-JSON-Request gegen einen Admin-Endpunkt aus.
-     *
-     * @param baseUrl Basis-URL des Zielsystems
-     * @param path relativer Endpunktpfad
-     * @param jsonBody JSON-Payload
-     * @return normiertes HTTP-Ergebnis
-     */
-    private CallResult sendPut(URI baseUrl, String path, String jsonBody) {
-        URI url = base(baseUrl).resolve(path);
-        return send(TransportRequest.putJson(url, requestTimeout, adminJsonHeaders(), jsonBody));
-    }
-
-    /**
-     * Führt einen Transport-Request aus und wandelt das Ergebnis in das
-     * gemeinsame CLI-Ergebnisformat um.
-     *
-     * @param request vorbereiteter Transport-Request
-     * @return normiertes HTTP-Ergebnis
-     */
-    private CallResult send(TransportRequest request) {
-        return TransportCallAdapter.execute(transportClient, request);
-    }
-
-    /**
-     * Liefert die Admin-Header für einfache Requests.
-     *
-     * @return Header-Map mit Admin-Token
-     */
-    private Map<String, String> adminHeaders() {
-        return Map.of("X-Admin-Token", adminToken);
-    }
-
-    /**
-     * Liefert die Admin-Header für JSON-Requests.
-     *
-     * @return Header-Map mit Admin-Token und Content-Type
-     */
-    private Map<String, String> adminJsonHeaders() {
-        Map<String, String> headers = new LinkedHashMap<>(adminHeaders());
-        headers.put("Content-Type", "application/json");
-        return headers;
-    }
-
-    /**
-     * Normalisiert eine Basis-URL auf eine konsistente Form mit Trailing Slash.
-     *
-     * @param baseUrl rohe Basis-URL
-     * @return normalisierte Basis-URL
-     */
-    private static URI base(URI baseUrl) {
-        return UriUtils.ensureTrailingSlash(Objects.requireNonNull(baseUrl, "baseUrl"));
-    }
-
-    /**
-     * Serialisiert ein Objekt in JSON.
-     *
-     * @param payload zu serialisierende Daten
-     * @return JSON-String
-     */
-    private static String toJson(Object payload) {
-        try {
-            return MAPPER.writeValueAsString(payload);
-        } catch (JsonProcessingException ex) {
-            throw new IllegalArgumentException("failed to serialize JSON payload", ex);
-        }
+        return adminOperations.removeEdgeTtlPolicy(edgeBaseUrl, adminToken, requireText(prefix, "prefix"));
     }
 
     /**

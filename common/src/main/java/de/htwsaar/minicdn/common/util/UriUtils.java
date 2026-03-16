@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
- * Allgemeine Hilfsmethoden fuer URI-bezogene Operationen.
+ * Allgemeine Hilfsmethoden für URI-bezogene Operationen.
  */
 public final class UriUtils {
 

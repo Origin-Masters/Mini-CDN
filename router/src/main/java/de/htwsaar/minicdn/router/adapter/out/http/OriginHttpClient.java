@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Der Adapter baut die Ziel-URLs, setzt den Header {@code X-Admin-Token} und nutzt
  * ein festes Request-Timeout von 10 Sekunden. Laufzeitfehler werden nicht geworfen,
- * sondern als {@link AdminFileResult} mit Statuscode {@code 500} zurueckgegeben.</p>
+ * sondern als normierte Fehlerergebnisse zurueckgegeben.</p>
  */
 @Component
 public class OriginHttpClient implements OriginAdminGateway {
@@ -70,9 +70,9 @@ public class OriginHttpClient implements OriginAdminGateway {
                 return AdminFileResult.success(response.statusCode(), null);
             }
 
-            return AdminFileResult.error(response.statusCode(), "Origin upload failed: " + response.body());
+            return AdminFileResult.rejected(response.statusCode(), "Origin upload failed: " + response.body());
         } catch (Exception e) {
-            return AdminFileResult.error(500, "Origin upload failed: " + e.getMessage());
+            return AdminFileResult.failure("Origin upload failed: " + e.getMessage());
         }
     }
 
@@ -99,9 +99,9 @@ public class OriginHttpClient implements OriginAdminGateway {
                 return AdminFileResult.success(response.statusCode(), null);
             }
 
-            return AdminFileResult.error(response.statusCode(), "Origin delete failed: " + response.body());
+            return AdminFileResult.rejected(response.statusCode(), "Origin delete failed: " + response.body());
         } catch (Exception e) {
-            return AdminFileResult.error(500, "Origin delete failed: " + e.getMessage());
+            return AdminFileResult.failure("Origin delete failed: " + e.getMessage());
         }
     }
 
@@ -125,10 +125,12 @@ public class OriginHttpClient implements OriginAdminGateway {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            return AdminFileResult.success(response.statusCode(), response.body());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return AdminFileResult.success(response.statusCode(), response.body());
+            }
+            return AdminFileResult.rejected(response.statusCode(), response.body());
         } catch (Exception e) {
-            return AdminFileResult.error(500, "List failed: " + e.getMessage());
+            return AdminFileResult.failure("List failed: " + e.getMessage());
         }
     }
 
@@ -153,9 +155,9 @@ public class OriginHttpClient implements OriginAdminGateway {
                         "sha256Hex", headers.firstValue("X-Content-SHA256").orElse(""));
                 return AdminFileResult.success(status, meta);
             }
-            return AdminFileResult.error(status, "Origin HEAD failed with status " + status);
+            return AdminFileResult.rejected(status, "Origin HEAD failed with status " + status);
         } catch (Exception e) {
-            return AdminFileResult.error(500, "Origin HEAD failed: " + e.getMessage());
+            return AdminFileResult.failure("Origin HEAD failed: " + e.getMessage());
         }
     }
 

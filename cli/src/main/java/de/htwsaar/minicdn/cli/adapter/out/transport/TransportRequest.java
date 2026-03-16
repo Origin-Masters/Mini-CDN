@@ -1,4 +1,4 @@
-package de.htwsaar.minicdn.cli.domain.model;
+package de.htwsaar.minicdn.cli.adapter.out.transport;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -7,14 +7,20 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Transport-unabhängige Request-Beschreibung.
+ * Adapterinterne Beschreibung eines technischen Remote-Requests.
  *
- * @param method Transport-Methode (z. B. GET, POST, DELETE, HEAD)
+ * <p>Das Modell bleibt absichtlich in der Adapter-Schicht, weil es technische
+ * Konzepte wie Methode, URI und Header transportiert. Fachliche Use-Cases der
+ * CLI arbeiten stattdessen über use-case-orientierte Ports wie
+ * {@code AdminOperations}, {@code UserOperations} und
+ * {@code UserFileTransfers}.</p>
+ *
+ * @param method technische Aufrufart
  * @param uri Ziel-URI
- * @param headers Header/Metadaten; {@code null} wird zu leerer Map normalisiert
+ * @param headers technische Metadaten; {@code null} wird zu leerer Map normalisiert
  * @param timeout Request-Timeout
- * @param body Text-Body (optional, exklusiv zu {@code bodyFile})
- * @param bodyFile Datei-Body für Uploads (optional, exklusiv zu {@code body})
+ * @param body Text-Body, optional und exklusiv zu {@code bodyFile}
+ * @param bodyFile Datei-Body für Uploads, optional und exklusiv zu {@code body}
  */
 public record TransportRequest(
         String method, URI uri, Map<String, String> headers, Duration timeout, String body, Path bodyFile) {
@@ -22,8 +28,9 @@ public record TransportRequest(
     /**
      * Normalisiert und validiert den Request.
      *
-     * <p>Die Methode wird auf Großbuchstaben normalisiert, Header werden kopiert,
-     * und {@code body} sowie {@code bodyFile} dürfen nicht gleichzeitig gesetzt sein.
+     * <p>Die Methode wird auf Großbuchstaben normalisiert, Header werden
+     * unveränderlich kopiert und {@code body} sowie {@code bodyFile} dürfen
+     * nicht gleichzeitig gesetzt sein.</p>
      */
     public TransportRequest {
         method = Objects.requireNonNull(method, "method").trim().toUpperCase();
@@ -41,7 +48,7 @@ public record TransportRequest(
      *
      * @param uri Ziel-URI
      * @param timeout Request-Timeout
-     * @param headers Header/Metadaten
+     * @param headers technische Metadaten
      * @return neuer GET-Request
      */
     public static TransportRequest get(URI uri, Duration timeout, Map<String, String> headers) {
@@ -53,7 +60,7 @@ public record TransportRequest(
      *
      * @param uri Ziel-URI
      * @param timeout Request-Timeout
-     * @param headers Header/Metadaten
+     * @param headers technische Metadaten
      * @return neuer HEAD-Request
      */
     public static TransportRequest head(URI uri, Duration timeout, Map<String, String> headers) {
@@ -65,7 +72,7 @@ public record TransportRequest(
      *
      * @param uri Ziel-URI
      * @param timeout Request-Timeout
-     * @param headers Header/Metadaten
+     * @param headers technische Metadaten
      * @return neuer DELETE-Request
      */
     public static TransportRequest delete(URI uri, Duration timeout, Map<String, String> headers) {
@@ -73,11 +80,11 @@ public record TransportRequest(
     }
 
     /**
-     * Erstellt einen POST-Request mit JSON-Body.
+     * Erstellt einen POST-Request mit Text-Body.
      *
      * @param uri Ziel-URI
      * @param timeout Request-Timeout
-     * @param headers Header/Metadaten
+     * @param headers technische Metadaten
      * @param body Text-Body
      * @return neuer POST-Request
      */
@@ -86,11 +93,11 @@ public record TransportRequest(
     }
 
     /**
-     * Erstellt einen PATCH-Request mit JSON-Body.
+     * Erstellt einen PATCH-Request mit Text-Body.
      *
      * @param uri Ziel-URI
      * @param timeout Request-Timeout
-     * @param headers Header/Metadaten
+     * @param headers technische Metadaten
      * @param body Text-Body
      * @return neuer PATCH-Request
      */
@@ -99,11 +106,11 @@ public record TransportRequest(
     }
 
     /**
-     * Erstellt einen PUT-Request mit JSON-Body.
+     * Erstellt einen PUT-Request mit Text-Body.
      *
      * @param uri Ziel-URI
      * @param timeout Request-Timeout
-     * @param headers Header/Metadaten
+     * @param headers technische Metadaten
      * @param body Text-Body
      * @return neuer PUT-Request
      */
@@ -116,7 +123,7 @@ public record TransportRequest(
      *
      * @param uri Ziel-URI
      * @param timeout Request-Timeout
-     * @param headers Header/Metadaten
+     * @param headers technische Metadaten
      * @param bodyFile Datei für den Request-Body
      * @return neuer PUT-Request
      */

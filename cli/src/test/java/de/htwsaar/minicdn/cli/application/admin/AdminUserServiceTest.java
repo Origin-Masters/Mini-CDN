@@ -7,12 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpAdminOperations;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.model.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.UserResult;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -36,11 +37,13 @@ class AdminUserServiceTest {
 
     private RecordingTransportClient transportClient;
     private AdminUserService service;
+    private HttpAdminOperations adminOperations;
 
     @BeforeEach
     void setUp() {
         transportClient = new RecordingTransportClient();
-        service = new AdminUserService(transportClient, TIMEOUT, ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID);
+        adminOperations = new HttpAdminOperations(transportClient, TIMEOUT);
+        service = new AdminUserService(adminOperations, ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID);
     }
 
     // -------------------------------------------------------------------------
@@ -49,9 +52,9 @@ class AdminUserServiceTest {
 
     @Test
     void addUser_shouldSendPostJsonToUsersEndpointWithHeadersAndTrimmedName() {
-        CallResult result = service.addUser("  alice  ", 1);
+        CallResult result = adminOperations.addUser(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "alice", 1);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
@@ -80,9 +83,9 @@ class AdminUserServiceTest {
 
     @Test
     void listUsersRaw_shouldSendGetToUsersEndpointWithAdminHeaders() {
-        CallResult result = service.listUsersRaw();
+        CallResult result = adminOperations.listUsers(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals(
@@ -139,16 +142,16 @@ class AdminUserServiceTest {
     void deleteUser_shouldRejectNonPositiveIdWithoutTransportCall() {
         CallResult result = service.deleteUser(0);
 
-        assertEquals(400, result.statusCode());
+        assertEquals(400, result.code());
         assertEquals("id must be greater than 0", result.error());
         assertEquals(0, transportClient.sendCalls);
     }
 
     @Test
     void deleteUser_shouldSendDeleteToExpectedEndpointWithAdminHeaders() {
-        CallResult result = service.deleteUser(7L);
+        CallResult result = adminOperations.deleteUser(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, 7L);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(

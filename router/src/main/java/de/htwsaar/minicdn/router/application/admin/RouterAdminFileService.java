@@ -51,7 +51,7 @@ public class RouterAdminFileService {
         try {
             String activeOrigin = originClusterService.resolveActiveOrigin();
             if (activeOrigin == null || activeOrigin.isBlank()) {
-                return AdminFileResult.error(503, "No active origin available");
+                return AdminFileResult.rejected(503, "No active origin available");
             }
 
             AdminFileResult uploadResult = originAdminGateway.uploadFile(activeOrigin, path, body);
@@ -79,7 +79,7 @@ public class RouterAdminFileService {
                             "edgesInvalidated",
                             invalidated));
         } catch (Exception e) {
-            return AdminFileResult.error(500, "Upload failed: " + e.getMessage());
+            return AdminFileResult.failure("Upload failed: " + e.getMessage());
         }
     }
 
@@ -94,7 +94,7 @@ public class RouterAdminFileService {
         try {
             String activeOrigin = originClusterService.resolveActiveOrigin();
             if (activeOrigin == null || activeOrigin.isBlank()) {
-                return AdminFileResult.error(503, "No active origin available");
+                return AdminFileResult.rejected(503, "No active origin available");
             }
 
             AdminFileResult deleteResult = originAdminGateway.deleteFile(activeOrigin, path);
@@ -115,7 +115,7 @@ public class RouterAdminFileService {
                             "spareReplication", replication.toMap(),
                             "edgesInvalidated", invalidated));
         } catch (Exception e) {
-            return AdminFileResult.error(500, "Delete failed: " + e.getMessage());
+            return AdminFileResult.failure("Delete failed: " + e.getMessage());
         }
     }
 
@@ -129,7 +129,7 @@ public class RouterAdminFileService {
     public AdminFileResult listOriginFiles(int page, int size) {
         String activeOrigin = originClusterService.resolveActiveOrigin();
         if (activeOrigin == null || activeOrigin.isBlank()) {
-            return AdminFileResult.error(503, "No active origin available");
+            return AdminFileResult.rejected(503, "No active origin available");
         }
         return originAdminGateway.listFiles(activeOrigin, page, size);
     }
@@ -189,7 +189,7 @@ public class RouterAdminFileService {
     public AdminFileResult showOriginFile(String path) {
         String activeOrigin = originClusterService.resolveActiveOrigin();
         if (activeOrigin == null || activeOrigin.isBlank()) {
-            return AdminFileResult.error(503, "No active origin available");
+            return AdminFileResult.rejected(503, "No active origin available");
         }
         return originAdminGateway.getFileMetadata(activeOrigin, path);
     }

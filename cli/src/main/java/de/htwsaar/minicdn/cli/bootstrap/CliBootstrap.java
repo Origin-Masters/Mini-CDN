@@ -7,10 +7,18 @@ import de.htwsaar.minicdn.cli.adapter.in.cli.root.MiniCdnRootCommand;
 import de.htwsaar.minicdn.cli.adapter.in.cli.shell.MiniCdnInteractiveShell;
 import de.htwsaar.minicdn.cli.adapter.in.cli.system.SystemCommand;
 import de.htwsaar.minicdn.cli.adapter.in.cli.user.UserCommand;
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpAdminOperations;
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpSystemBootstrapGateway;
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpUserFileTransfers;
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpUserOperations;
 import de.htwsaar.minicdn.cli.adapter.out.http.TransportClientFactory;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
 import de.htwsaar.minicdn.cli.application.context.CliContext;
 import de.htwsaar.minicdn.cli.application.context.CliSessionState;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
+import de.htwsaar.minicdn.cli.domain.port.AdminOperations;
+import de.htwsaar.minicdn.cli.domain.port.SystemBootstrapGateway;
+import de.htwsaar.minicdn.cli.domain.port.UserFileTransfers;
+import de.htwsaar.minicdn.cli.domain.port.UserOperations;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -94,9 +102,24 @@ public final class CliBootstrap {
         URI routerBaseUrl = URI.create(routerBaseUrlStr);
         TransportClient transportClient = createTransportClient();
         CliSessionState sessionState = new CliSessionState();
+        AdminOperations adminOperations = new HttpAdminOperations(transportClient, REQUEST_TIMEOUT);
+        UserOperations userOperations = new HttpUserOperations(transportClient, REQUEST_TIMEOUT);
+        UserFileTransfers userFileTransfers = new HttpUserFileTransfers(transportClient, REQUEST_TIMEOUT);
+        SystemBootstrapGateway systemBootstrapGateway = new HttpSystemBootstrapGateway(transportClient);
 
         return new CliContext(
-                terminal, out, err, transportClient, REQUEST_TIMEOUT, adminToken, routerBaseUrl, sessionState);
+                terminal,
+                out,
+                err,
+                transportClient,
+                REQUEST_TIMEOUT,
+                adminToken,
+                routerBaseUrl,
+                sessionState,
+                adminOperations,
+                userOperations,
+                userFileTransfers,
+                systemBootstrapGateway);
     }
 
     /**
@@ -196,11 +219,23 @@ public final class CliBootstrap {
                 .anyMatch(commandLine -> commandLine.getCommand() instanceof AdminCommand);
     }
 
+    /**
+     * Prüft, ob der aktuell geparste Aufruf ein User-Command enthält.
+     *
+     * @param parseResult Picocli-Parsergebnis
+     * @return {@code true}, wenn im Command-Baum ein {@link UserCommand} vorkommt
+     */
     private static boolean isUserCommandRequested(CommandLine.ParseResult parseResult) {
         return parseResult.asCommandLineList().stream()
                 .anyMatch(commandLine -> commandLine.getCommand() instanceof UserCommand);
     }
 
+    /**
+     * Prüft, ob der aktuell geparste Aufruf ein System-Command enthält.
+     *
+     * @param parseResult Picocli-Parsergebnis
+     * @return {@code true}, wenn im Command-Baum ein {@link SystemCommand} vorkommt
+     */
     private static boolean isSystemCommandRequested(CommandLine.ParseResult parseResult) {
         return parseResult.asCommandLineList().stream()
                 .anyMatch(commandLine -> commandLine.getCommand() instanceof SystemCommand);

@@ -1,28 +1,29 @@
 package de.htwsaar.minicdn.cli.application.admin;
 
-import de.htwsaar.minicdn.cli.application.support.TransportCallAdapter;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
-import de.htwsaar.minicdn.common.util.PathUtils;
-import de.htwsaar.minicdn.common.util.UriUtils;
+import de.htwsaar.minicdn.cli.domain.port.AdminOperations;
 import java.net.URI;
-import java.time.Duration;
-import java.util.Map;
 import java.util.Objects;
 
 /**
  * Fachlicher Service für regionenweite Cache-Invalidierung über den Router.
+ *
+ * <p>Die transporttechnische Umsetzung liegt vollständig im Outbound-Adapter. Dieser
+ * Service validiert nur Eingaben und delegiert den fachlichen Use-Case.</p>
  */
 public final class AdminCacheService {
 
-    private final TransportClient transportClient;
-    private final Duration requestTimeout;
+    private final AdminOperations adminOperations;
     private final String adminToken;
 
-    public AdminCacheService(TransportClient transportClient, Duration requestTimeout, String adminToken) {
-        this.transportClient = Objects.requireNonNull(transportClient, "transportClient");
-        this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout");
+    /**
+     * Erzeugt den Service.
+     *
+     * @param adminOperations fachlicher Port für administrative Remote-Aufrufe
+     * @param adminToken Admin-Token für geschützte Operationen
+     */
+    public AdminCacheService(AdminOperations adminOperations, String adminToken) {
+        this.adminOperations = Objects.requireNonNull(adminOperations, "adminOperations");
         this.adminToken = requireText(adminToken, "adminToken");
     }
 
@@ -32,29 +33,22 @@ public final class AdminCacheService {
      * @param routerBaseUrl Basis-URL des Routers
      * @param region Zielregion
      * @param path relativer Dateipfad
-     * @return normiertes Request-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult invalidateFile(URI routerBaseUrl, String region, String path) {
-        String cleanRegion = UriUtils.urlEncode(requireText(region, "region"));
-        String cleanPath = PathUtils.normalizeRelativePath(path);
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/cache/region/" + cleanRegion + "/files/" + cleanPath);
-        return send(TransportRequest.delete(url, requestTimeout, adminHeaders()));
+        return adminOperations.invalidateFile(routerBaseUrl, adminToken, region, path);
     }
 
     /**
-     * Invalidiert alle Cache-Einträge eines Präfix in einer Region.
+     * Invalidiert alle Cache-Einträge eines Präfixes in einer Region.
      *
      * @param routerBaseUrl Basis-URL des Routers
      * @param region Zielregion
-     * @param prefix relatives Dateipraefix
-     * @return normiertes Request-Ergebnis
+     * @param prefix relatives Dateipräfix
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult invalidatePrefix(URI routerBaseUrl, String region, String prefix) {
-        String cleanRegion = UriUtils.urlEncode(requireText(region, "region"));
-        String cleanPrefix = UriUtils.urlEncode(PathUtils.normalizeRelativePath(prefix));
-        URI url = base(routerBaseUrl)
-                .resolve("api/cdn/admin/cache/region/" + cleanRegion + "/prefix?value=" + cleanPrefix);
-        return send(TransportRequest.delete(url, requestTimeout, adminHeaders()));
+        return adminOperations.invalidatePrefix(routerBaseUrl, adminToken, region, prefix);
     }
 
     /**
@@ -62,26 +56,19 @@ public final class AdminCacheService {
      *
      * @param routerBaseUrl Basis-URL des Routers
      * @param region Zielregion
-     * @return normiertes Request-Ergebnis
+     * @return normiertes Ergebnis des Use-Cases
      */
     public CallResult clearRegion(URI routerBaseUrl, String region) {
-        String cleanRegion = UriUtils.urlEncode(requireText(region, "region"));
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/cache/region/" + cleanRegion + "/all");
-        return send(TransportRequest.delete(url, requestTimeout, adminHeaders()));
+        return adminOperations.clearRegion(routerBaseUrl, adminToken, region);
     }
 
-    private CallResult send(TransportRequest request) {
-        return TransportCallAdapter.execute(transportClient, request);
-    }
-
-    private Map<String, String> adminHeaders() {
-        return Map.of("X-Admin-Token", adminToken);
-    }
-
-    private static URI base(URI routerBaseUrl) {
-        return UriUtils.ensureTrailingSlash(Objects.requireNonNull(routerBaseUrl, "routerBaseUrl"));
-    }
-
+    /**
+     * Validiert einen Pflichttext und liefert die getrimmte Form zurück.
+     *
+     * @param value Eingabewert
+     * @param fieldName Feldname für Fehlermeldungen
+     * @return getrimmter Pflichttext
+     */
     private static String requireText(String value, String fieldName) {
         String trimmed = Objects.toString(value, "").trim();
         if (trimmed.isBlank()) {

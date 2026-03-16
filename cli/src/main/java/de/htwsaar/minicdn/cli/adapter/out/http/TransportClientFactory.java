@@ -1,6 +1,6 @@
 package de.htwsaar.minicdn.cli.adapter.out.http;
 
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Objects;

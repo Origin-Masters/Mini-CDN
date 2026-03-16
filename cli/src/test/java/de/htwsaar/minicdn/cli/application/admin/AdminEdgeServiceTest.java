@@ -3,11 +3,12 @@ package de.htwsaar.minicdn.cli.application.admin;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpAdminOperations;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.model.TransportResponse;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -22,12 +23,18 @@ class AdminEdgeServiceTest {
     @Test
     void startEdge_shouldExtendTimeoutWhenWaitingForReadiness() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminEdgeService service = new AdminEdgeService(transportClient, Duration.ofSeconds(5), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(5));
 
-        CallResult result = service.startEdge(
-                URI.create("http://localhost:8082"), "eu-west", 10000, URI.create("http://localhost:8080"), true, true);
+        CallResult result = adminOperations.startEdge(
+                URI.create("http://localhost:8082"),
+                ADMIN_TOKEN,
+                "eu-west",
+                10000,
+                URI.create("http://localhost:8080"),
+                true,
+                true);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
@@ -39,12 +46,18 @@ class AdminEdgeServiceTest {
     @Test
     void startEdgesAuto_shouldScaleTimeoutWithEdgeCountWhenWaitingForReadiness() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminEdgeService service = new AdminEdgeService(transportClient, Duration.ofSeconds(5), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(5));
 
-        CallResult result = service.startEdgesAuto(
-                URI.create("http://localhost:8082"), "us", 10, URI.create("http://localhost:8080"), true, true);
+        CallResult result = adminOperations.startEdgesAuto(
+                URI.create("http://localhost:8082"),
+                ADMIN_TOKEN,
+                "us",
+                10,
+                URI.create("http://localhost:8080"),
+                true,
+                true);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
@@ -56,12 +69,18 @@ class AdminEdgeServiceTest {
     @Test
     void startEdgesAuto_shouldKeepDefaultTimeoutWithoutReadinessWait() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminEdgeService service = new AdminEdgeService(transportClient, Duration.ofSeconds(5), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(5));
 
-        CallResult result = service.startEdgesAuto(
-                URI.create("http://localhost:8082"), "us", 10, URI.create("http://localhost:8080"), true, false);
+        CallResult result = adminOperations.startEdgesAuto(
+                URI.create("http://localhost:8082"),
+                ADMIN_TOKEN,
+                "us",
+                10,
+                URI.create("http://localhost:8080"),
+                true,
+                false);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals(Duration.ofSeconds(5), transportClient.lastRequest.timeout());
     }

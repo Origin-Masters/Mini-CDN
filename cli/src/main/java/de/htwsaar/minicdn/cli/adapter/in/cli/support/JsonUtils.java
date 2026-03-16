@@ -19,7 +19,7 @@ public final class JsonUtils {
      * Escaped einen Text für die sichere Einbettung als JSON-Stringwert.
      *
      * @param json roher Text
-     * @return JSON-sicherer String ohne umgebende Anfuehrungszeichen
+     * @return JSON-sicherer String ohne umgebende Anführungszeichen
      */
     public static String escapeJson(String json) {
         if (json == null) return "";

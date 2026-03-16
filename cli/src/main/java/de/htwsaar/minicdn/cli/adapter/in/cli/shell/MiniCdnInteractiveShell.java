@@ -239,17 +239,16 @@ public final class MiniCdnInteractiveShell {
      */
     private StopManagedEdgesResult stopAllManagedEdgesOnExit() {
         try {
-            AdminEdgeService edgeService =
-                    new AdminEdgeService(ctx.transportClient(), ctx.defaultRequestTimeout(), ctx.adminToken());
+            AdminEdgeService edgeService = new AdminEdgeService(ctx.adminOperations(), ctx.adminToken());
 
             CallResult listResult = edgeService.listManaged(ctx.routerBaseUrl());
             if (listResult.error() != null) {
                 return StopManagedEdgesResult.failed(
                         "Managed-Edges konnten nicht abgefragt werden: " + listResult.error());
             }
-            if (!listResult.is2xx()) {
+            if (!listResult.isRemoteSuccess()) {
                 return StopManagedEdgesResult.failed("Managed-Edges konnten nicht abgefragt werden (HTTP "
-                        + Objects.toString(listResult.statusCode(), "n/a") + ").");
+                        + Objects.toString(listResult.code(), "n/a") + ").");
             }
 
             JsonNode managedEdges = JacksonCodec.fromJson(Objects.toString(listResult.body(), ""), JsonNode.class);
@@ -276,8 +275,8 @@ public final class MiniCdnInteractiveShell {
                     appendError(errors, instanceId + ": " + stopResult.error());
                     continue;
                 }
-                if (!stopResult.is2xx()) {
-                    appendError(errors, instanceId + ": HTTP " + Objects.toString(stopResult.statusCode(), "n/a"));
+                if (!stopResult.isRemoteSuccess()) {
+                    appendError(errors, instanceId + ": HTTP " + Objects.toString(stopResult.code(), "n/a"));
                     continue;
                 }
 

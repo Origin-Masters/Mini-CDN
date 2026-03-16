@@ -4,11 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpAdminOperations;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.model.TransportResponse;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -29,12 +30,12 @@ class AdminFileServiceTest {
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
     private RecordingTransportClient transportClient;
-    private AdminFileService service;
+    private HttpAdminOperations adminOperations;
 
     @BeforeEach
     void setUp() {
         transportClient = new RecordingTransportClient();
-        service = new AdminFileService(transportClient, TIMEOUT, ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID);
+        adminOperations = new HttpAdminOperations(transportClient, TIMEOUT);
     }
 
     // -------------------------------------------------------------------------
@@ -45,9 +46,10 @@ class AdminFileServiceTest {
     void uploadViaRouter_shouldSendPutWithFileBodyToCorrectUrl() {
         Path dummyFile = Path.of("manual.pdf");
 
-        CallResult result = service.uploadViaRouter("docs/manual.pdf", dummyFile, "eu");
+        CallResult result =
+                adminOperations.uploadFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf", dummyFile, "eu");
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("PUT", transportClient.lastRequest.method());
         assertEquals(
@@ -58,7 +60,8 @@ class AdminFileServiceTest {
 
     @Test
     void uploadViaRouter_shouldIncludeAdminTokenAndUserIdAndContentTypeHeaders() {
-        service.uploadViaRouter("docs/manual.pdf", Path.of("manual.pdf"), "eu");
+        adminOperations.uploadFile(
+                ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf", Path.of("manual.pdf"), "eu");
 
         Map<String, String> headers = transportClient.lastRequest.headers();
         assertEquals(ADMIN_TOKEN, headers.get("X-Admin-Token"));
@@ -68,7 +71,8 @@ class AdminFileServiceTest {
 
     @Test
     void uploadViaRouter_shouldStripLeadingSlashFromTargetPath() {
-        service.uploadViaRouter("/docs/manual.pdf", Path.of("manual.pdf"), "eu");
+        adminOperations.uploadFile(
+                ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "/docs/manual.pdf", Path.of("manual.pdf"), "eu");
 
         assertEquals(
                 "http://localhost:8080/api/cdn/admin/files/docs/manual.pdf?region=eu",
@@ -77,13 +81,18 @@ class AdminFileServiceTest {
 
     @Test
     void uploadViaRouter_shouldRejectNullLocalFile() {
-        assertThrows(NullPointerException.class, () -> service.uploadViaRouter("docs/manual.pdf", null, "eu"));
+        assertThrows(
+                NullPointerException.class,
+                () -> adminOperations.uploadFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf", null, "eu"));
         assertEquals(0, transportClient.sendCalls);
     }
 
     @Test
     void uploadViaRouter_shouldRejectBlankTargetPath() {
-        assertThrows(IllegalArgumentException.class, () -> service.uploadViaRouter("   ", Path.of("manual.pdf"), "eu"));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> adminOperations.uploadFile(
+                        ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "   ", Path.of("manual.pdf"), "eu"));
         assertEquals(0, transportClient.sendCalls);
     }
 
@@ -91,7 +100,8 @@ class AdminFileServiceTest {
     void uploadViaRouter_shouldRejectBlankRegion() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> service.uploadViaRouter("docs/manual.pdf", Path.of("manual.pdf"), "   "));
+                () -> adminOperations.uploadFile(
+                        ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf", Path.of("manual.pdf"), "   "));
         assertEquals(0, transportClient.sendCalls);
     }
 
@@ -101,9 +111,9 @@ class AdminFileServiceTest {
 
     @Test
     void deleteViaRouter_shouldSendDeleteToCorrectUrl() {
-        CallResult result = service.deleteViaRouter("docs/manual.pdf", "eu");
+        CallResult result = adminOperations.deleteFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf", "eu");
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
@@ -113,7 +123,7 @@ class AdminFileServiceTest {
 
     @Test
     void deleteViaRouter_shouldIncludeAdminTokenAndUserIdHeaders() {
-        service.deleteViaRouter("docs/manual.pdf", "eu");
+        adminOperations.deleteFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf", "eu");
 
         Map<String, String> headers = transportClient.lastRequest.headers();
         assertEquals(ADMIN_TOKEN, headers.get("X-Admin-Token"));
@@ -122,13 +132,17 @@ class AdminFileServiceTest {
 
     @Test
     void deleteViaRouter_shouldRejectBlankTargetPath() {
-        assertThrows(IllegalArgumentException.class, () -> service.deleteViaRouter("   ", "eu"));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> adminOperations.deleteFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "   ", "eu"));
         assertEquals(0, transportClient.sendCalls);
     }
 
     @Test
     void deleteViaRouter_shouldRejectBlankRegion() {
-        assertThrows(IllegalArgumentException.class, () -> service.deleteViaRouter("docs/manual.pdf", "   "));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> adminOperations.deleteFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf", "   "));
         assertEquals(0, transportClient.sendCalls);
     }
 
@@ -138,9 +152,9 @@ class AdminFileServiceTest {
 
     @Test
     void listFilesRaw_shouldSendGetToFilesEndpoint() {
-        CallResult result = service.listFilesRaw();
+        CallResult result = adminOperations.listFiles(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals(
@@ -150,7 +164,7 @@ class AdminFileServiceTest {
 
     @Test
     void listFilesRaw_shouldIncludeAdminTokenAndUserIdHeaders() {
-        service.listFilesRaw();
+        adminOperations.listFiles(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID);
 
         Map<String, String> headers = transportClient.lastRequest.headers();
         assertEquals(ADMIN_TOKEN, headers.get("X-Admin-Token"));
@@ -163,9 +177,9 @@ class AdminFileServiceTest {
 
     @Test
     void showViaRouter_shouldSendGetToCorrectUrl() {
-        CallResult result = service.showViaRouter("docs/manual.pdf");
+        CallResult result = adminOperations.showFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf");
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals(
@@ -175,7 +189,7 @@ class AdminFileServiceTest {
 
     @Test
     void showViaRouter_shouldIncludeAdminTokenAndUserIdHeaders() {
-        service.showViaRouter("docs/manual.pdf");
+        adminOperations.showFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "docs/manual.pdf");
 
         Map<String, String> headers = transportClient.lastRequest.headers();
         assertEquals(ADMIN_TOKEN, headers.get("X-Admin-Token"));
@@ -184,7 +198,7 @@ class AdminFileServiceTest {
 
     @Test
     void showViaRouter_shouldStripLeadingSlashFromPath() {
-        service.showViaRouter("/docs/manual.pdf");
+        adminOperations.showFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "/docs/manual.pdf");
 
         assertEquals(
                 "http://localhost:8080/api/cdn/admin/files/docs/manual.pdf",
@@ -193,7 +207,9 @@ class AdminFileServiceTest {
 
     @Test
     void showViaRouter_shouldRejectBlankPath() {
-        assertThrows(IllegalArgumentException.class, () -> service.showViaRouter("   "));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> adminOperations.showFile(ROUTER_BASE_URL, ADMIN_TOKEN, USER_ID, "   "));
         assertEquals(0, transportClient.sendCalls);
     }
 

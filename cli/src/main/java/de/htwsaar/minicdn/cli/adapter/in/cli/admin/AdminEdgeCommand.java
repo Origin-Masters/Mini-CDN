@@ -77,7 +77,7 @@ public final class AdminEdgeCommand implements Runnable {
      * @return Service für Edge-Admin-Operationen
      */
     private AdminEdgeService service() {
-        return new AdminEdgeService(ctx.transportClient(), ctx.defaultRequestTimeout(), ctx.adminToken());
+        return new AdminEdgeService(ctx.adminOperations(), ctx.adminToken());
     }
 
     /**
@@ -132,10 +132,10 @@ public final class AdminEdgeCommand implements Runnable {
             return CallOutcome.failure(requestFailed(operation, result.error()));
         }
 
-        int statusCode = Objects.requireNonNull(result.statusCode(), "statusCode");
+        int statusCode = Objects.requireNonNull(result.code(), "code");
         String body = Objects.toString(result.body(), "");
 
-        if (!result.is2xx()) {
+        if (!result.isRemoteSuccess()) {
             return CallOutcome.failure(rejected(operation, statusCode, body));
         }
 
