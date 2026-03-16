@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.edge.application.file;
 
+import de.htwsaar.minicdn.common.util.PathUtils;
 import de.htwsaar.minicdn.common.util.Sha256Util;
 import de.htwsaar.minicdn.edge.application.config.EdgeConfigService;
 import de.htwsaar.minicdn.edge.application.config.TtlPolicyService;
@@ -83,7 +84,7 @@ public class EdgeFileService {
      * @return Datei-Payload mit HIT/MISS-Information
      */
     public FilePayload getFile(String path) {
-        String clean = normalizePath(path);
+        String clean = PathUtils.normalizeRelativePath(path);
         long now = clock.millis();
         ensureStrategy();
 
@@ -118,7 +119,7 @@ public class EdgeFileService {
      * @return Payload mit leerem Body und HIT/MISS-Information
      */
     public FilePayload headFile(String path) {
-        String clean = normalizePath(path);
+        String clean = PathUtils.normalizeRelativePath(path);
         long now = clock.millis();
         ensureStrategy();
 
@@ -140,7 +141,7 @@ public class EdgeFileService {
      * @return {@code true}, wenn ein Eintrag entfernt wurde
      */
     public boolean invalidateFile(String path) {
-        boolean removed = cacheStore.remove(normalizePath(path));
+        boolean removed = cacheStore.remove(PathUtils.normalizeRelativePath(path));
         persistCacheSnapshot(clock.millis());
         return removed;
     }
@@ -152,7 +153,7 @@ public class EdgeFileService {
      * @return Anzahl entfernter Einträge
      */
     public int invalidatePrefix(String prefix) {
-        int removed = cacheStore.removeByPrefix(normalizePath(prefix));
+        int removed = cacheStore.removeByPrefix(PathUtils.normalizeRelativePath(prefix));
         persistCacheSnapshot(clock.millis());
         return removed;
     }
@@ -234,28 +235,5 @@ public class EdgeFileService {
         if (!expected.equalsIgnoreCase(actual)) {
             throw new IntegrityCheckFailedException("Integritätsprüfung fehlgeschlagen: SHA-256 stimmt nicht überein");
         }
-    }
-
-    /**
-     * Normalisiert einen relativen Dateipfad für die fachliche Verarbeitung.
-     *
-     * @param path roher Dateipfad
-     * @return normalisierter relativer Pfad
-     */
-    private static String normalizePath(String path) {
-        if (path == null) {
-            throw new IllegalArgumentException("path must not be null");
-        }
-
-        String p = path.trim();
-        while (p.startsWith("/")) {
-            p = p.substring(1);
-        }
-
-        if (p.isBlank()) {
-            throw new IllegalArgumentException("path must not be blank");
-        }
-
-        return p;
     }
 }

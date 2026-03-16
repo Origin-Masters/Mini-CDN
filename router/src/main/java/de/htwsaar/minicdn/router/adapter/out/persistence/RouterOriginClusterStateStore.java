@@ -1,6 +1,7 @@
 package de.htwsaar.minicdn.router.adapter.out.persistence;
 
 import de.htwsaar.minicdn.common.util.UriUtils;
+import de.htwsaar.minicdn.router.domain.port.OriginClusterStateStore;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Component;
  * Persistiert den Origin-Cluster-Zustand (aktiver Knoten + Hot-Spares) in einer Properties-Datei.
  */
 @Component
-public class RouterOriginClusterStateStore {
+public class RouterOriginClusterStateStore implements OriginClusterStateStore {
 
     private static final String KEY_ACTIVE = "origin.active";
     private static final String KEY_SPARES = "origin.spares";
@@ -29,6 +30,7 @@ public class RouterOriginClusterStateStore {
         this.stateFile = Path.of(stateFile);
     }
 
+    @Override
     public synchronized void save(String activeOrigin, List<String> spareOrigins) {
         Properties props = new Properties();
         if (activeOrigin != null && !activeOrigin.isBlank()) {
@@ -53,6 +55,7 @@ public class RouterOriginClusterStateStore {
         }
     }
 
+    @Override
     public synchronized OriginClusterState load() {
         if (!Files.exists(stateFile)) {
             return new OriginClusterState(null, List.of());
@@ -94,6 +97,4 @@ public class RouterOriginClusterStateStore {
         }
         return UriUtils.ensureTrailingSlash(clean);
     }
-
-    public record OriginClusterState(String activeOrigin, List<String> spareOrigins) {}
 }

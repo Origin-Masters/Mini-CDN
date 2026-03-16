@@ -1,5 +1,6 @@
 package de.htwsaar.minicdn.router.adapter.out.persistence;
 
+import de.htwsaar.minicdn.router.domain.port.RoutingStateStore;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
  *   region.eu-west=http://localhost:8081,http://localhost:8083
  */
 @Component
-public class RouterRoutingStateStore {
+public class RouterRoutingStateStore implements RoutingStateStore {
 
     private final Path stateFile;
 
@@ -34,6 +35,7 @@ public class RouterRoutingStateStore {
      *
      * @param routingState Map von Region zu Liste von Endpoint-URLs
      */
+    @Override
     public synchronized void save(Map<String, List<String>> routingState) {
         Properties props = new Properties();
         if (routingState != null) {
@@ -66,6 +68,7 @@ public class RouterRoutingStateStore {
      *
      * @return Map von Region zu Liste von Endpoint-URLs; leer bei fehlender Datei
      */
+    @Override
     public synchronized Map<String, List<String>> load() {
         Map<String, List<String>> result = new HashMap<>();
         if (!Files.exists(stateFile)) return result;

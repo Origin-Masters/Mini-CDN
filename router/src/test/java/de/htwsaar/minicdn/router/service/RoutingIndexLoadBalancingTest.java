@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import de.htwsaar.minicdn.router.adapter.out.persistence.RouterRoutingStateStore;
 import de.htwsaar.minicdn.router.application.routing.RoutingIndex;
 import de.htwsaar.minicdn.router.domain.model.EdgeNode;
+import de.htwsaar.minicdn.router.domain.port.RoutingStateStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -25,7 +26,8 @@ class RoutingIndexLoadBalancingTest {
     @Test
     void shouldDistributeThousandRequestsWithinTenPercentTolerance() throws Exception {
         Path tmp = Files.createTempFile("routing-state", ".properties");
-        RoutingIndex routingIndex = new RoutingIndex(new RouterRoutingStateStore(tmp.toString()));
+        RoutingStateStore stateStore = new RouterRoutingStateStore(tmp.toString());
+        RoutingIndex routingIndex = new RoutingIndex(stateStore);
 
         String region = "eu-west";
         for (int i = 0; i < 10; i++) {

@@ -3,7 +3,6 @@ package de.htwsaar.minicdn.router.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.htwsaar.minicdn.router.adapter.out.persistence.RouterOriginClusterStateStore;
 import de.htwsaar.minicdn.router.adapter.out.persistence.RouterRoutingStateStore;
 import de.htwsaar.minicdn.router.application.admin.model.AdminFileResult;
 import de.htwsaar.minicdn.router.application.origin.OriginClusterService;
@@ -12,11 +11,13 @@ import de.htwsaar.minicdn.router.domain.model.EdgeNode;
 import de.htwsaar.minicdn.router.domain.model.EdgeNodeStats;
 import de.htwsaar.minicdn.router.domain.port.EdgeGateway;
 import de.htwsaar.minicdn.router.domain.port.OriginAdminGateway;
+import de.htwsaar.minicdn.router.domain.port.OriginClusterStateStore;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class OriginClusterServiceTest {
         EdgeGateway edgeGateway = new FakeEdgeGateway();
 
         OriginClusterService service = new OriginClusterService(
-                new RouterOriginClusterStateStore(stateFile.toString()),
+                new TestOriginClusterStateStore(),
                 gateway,
                 routingIndex,
                 edgeGateway,
@@ -63,7 +64,7 @@ class OriginClusterServiceTest {
         EdgeGateway edgeGateway = new FakeEdgeGateway();
 
         OriginClusterService service = new OriginClusterService(
-                new RouterOriginClusterStateStore(stateFile.toString()),
+                new TestOriginClusterStateStore(),
                 gateway,
                 routingIndex,
                 edgeGateway,
@@ -107,6 +108,21 @@ class OriginClusterServiceTest {
         @Override
         public boolean isHealthy(String originBaseUrl, Duration timeout) {
             return health.getOrDefault(originBaseUrl, false);
+        }
+    }
+
+    private static final class TestOriginClusterStateStore implements OriginClusterStateStore {
+
+        private OriginClusterState state = new OriginClusterState(null, List.of());
+
+        @Override
+        public void save(String activeOrigin, List<String> spareOrigins) {
+            state = new OriginClusterState(activeOrigin, spareOrigins == null ? List.of() : List.copyOf(spareOrigins));
+        }
+
+        @Override
+        public OriginClusterState load() {
+            return state;
         }
     }
 
