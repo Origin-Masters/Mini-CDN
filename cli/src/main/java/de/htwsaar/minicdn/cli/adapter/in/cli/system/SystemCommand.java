@@ -69,7 +69,7 @@ public final class SystemCommand implements Runnable {
      */
     SystemInitService initService() {
         return new SystemInitService(
-                new JavaJarServiceLauncher(ctx.adminToken(), ctx.routerBaseUrl()), ctx.transportClient());
+                new JavaJarServiceLauncher(ctx.adminToken(), ctx.routerBaseUrl()), ctx.systemBootstrapGateway());
     }
 
     /**

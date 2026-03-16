@@ -16,7 +16,7 @@ public interface ServiceLauncher {
      * @param jarPath Pfad zur ausführbaren JAR
      * @param springProfile aktives Spring-Profil
      * @param logPath Ziel-Datei für stdout/stderr
-     * @return gestarteter Prozess
+     * @return gestarteter Betriebssystemprozess
      */
     Process start(Path jarPath, String springProfile, Path logPath);
 }

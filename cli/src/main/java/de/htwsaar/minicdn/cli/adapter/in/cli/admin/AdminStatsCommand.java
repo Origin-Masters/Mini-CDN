@@ -7,6 +7,7 @@ import static de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS;
 import de.htwsaar.minicdn.cli.adapter.in.cli.support.ConsoleUtils;
 import de.htwsaar.minicdn.cli.application.admin.AdminStatsService;
 import de.htwsaar.minicdn.cli.application.context.CliContext;
+import de.htwsaar.minicdn.cli.domain.model.StatsResponse;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.Objects;
@@ -59,10 +60,7 @@ public final class AdminStatsCommand implements Runnable {
      * @param ctx gemeinsamer CLI-Kontext
      */
     public AdminStatsCommand(CliContext ctx) {
-        this(
-                ctx,
-                new AdminStatsService(
-                        Objects.requireNonNull(ctx, "ctx").transportClient(), ctx.defaultRequestTimeout()));
+        this(ctx, new AdminStatsService(Objects.requireNonNull(ctx, "ctx").adminOperations()));
     }
 
     /**
@@ -189,7 +187,7 @@ public final class AdminStatsCommand implements Runnable {
                     hasText(tokenOverride) ? tokenOverride.trim() : parent.ctx().adminToken();
 
             try {
-                AdminStatsService.StatsResponse response =
+                StatsResponse response =
                         parent.service().fetchStats(effectiveHost, windowSec, aggregateEdge, effectiveToken);
 
                 if (!response.isSuccess()) {
@@ -217,26 +215,31 @@ public final class AdminStatsCommand implements Runnable {
          * @param response Service-Antwort
          * @return passender Exit-Code
          */
-        private int handleFailure(PrintWriter err, AdminStatsService.StatsResponse response) {
+        private int handleFailure(PrintWriter err, StatsResponse response) {
             if (response.hasError()) {
                 ConsoleUtils.error(err, "[ADMIN] Stats request failed: %s", response.error());
-                return REQUEST_FAILED.code();
+                return response.exitCode();
             }
 
-            Integer statusCode = response.statusCode();
+            if (response.status() == de.htwsaar.minicdn.common.util.ExitCodes.VALIDATION) {
+                ConsoleUtils.error(err, "[ADMIN] Stats request failed: %s", response.rawBody());
+                return response.exitCode();
+            }
+
+            Integer statusCode = response.code();
             ConsoleUtils.error(err, "[ADMIN] Stats request failed: HTTP %s", statusCode);
 
             if (hasText(response.rawBody())) {
                 ConsoleUtils.error(err, response.rawBody());
             }
 
-            if (response.isAuthError()) {
+            if (Integer.valueOf(401).equals(statusCode) || Integer.valueOf(403).equals(statusCode)) {
                 ConsoleUtils.error(
                         err,
                         "[ADMIN] Hint: pass --token TOKEN or configure MINICDN_ADMIN_TOKEN / -Dminicdn.admin.token.");
             }
 
-            return REJECTED.code();
+            return response.exitCode();
         }
 
         /**

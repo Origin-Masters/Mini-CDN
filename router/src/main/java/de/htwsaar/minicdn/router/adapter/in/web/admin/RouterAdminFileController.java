@@ -2,6 +2,7 @@ package de.htwsaar.minicdn.router.adapter.in.web.admin;
 
 import de.htwsaar.minicdn.common.util.PathUtils;
 import de.htwsaar.minicdn.router.application.admin.RouterAdminFileService;
+import de.htwsaar.minicdn.router.application.admin.model.AdminFileResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class RouterAdminFileController {
         if (result.success()) {
             return ResponseEntity.ok(result.toMap());
         }
-        return ResponseEntity.status(result.httpStatus()).body(result.toMap());
+        return ResponseEntity.status(toHttpStatus(result)).body(result.toMap());
     }
 
     /**
@@ -50,7 +51,7 @@ public class RouterAdminFileController {
         if (result.success()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(result.httpStatus()).body(result.toMap());
+        return ResponseEntity.status(toHttpStatus(result)).body(result.toMap());
     }
 
     /**
@@ -61,7 +62,7 @@ public class RouterAdminFileController {
             @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size) {
 
         var result = adminFileService.listOriginFiles(page, size);
-        return ResponseEntity.status(result.httpStatus()).body(result.body());
+        return ResponseEntity.status(toHttpStatus(result)).body(result.body());
     }
 
     /**
@@ -71,6 +72,16 @@ public class RouterAdminFileController {
     public ResponseEntity<?> showFile(@PathVariable String path) {
         String cleanPath = PathUtils.stripLeadingSlash(path == null ? "" : path);
         var result = adminFileService.showOriginFile(cleanPath);
-        return ResponseEntity.status(result.httpStatus()).body(result.body());
+        return ResponseEntity.status(toHttpStatus(result)).body(result.body());
+    }
+
+    private static int toHttpStatus(AdminFileResult result) {
+        if (result.outcome() == AdminFileResult.Outcome.SUCCESS) {
+            return result.remoteCode() != null ? result.remoteCode() : 200;
+        }
+        if (result.outcome() == AdminFileResult.Outcome.REJECTED) {
+            return result.remoteCode() != null ? result.remoteCode() : 502;
+        }
+        return 500;
     }
 }

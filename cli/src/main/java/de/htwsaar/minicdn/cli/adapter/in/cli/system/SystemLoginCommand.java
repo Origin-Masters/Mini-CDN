@@ -2,11 +2,13 @@ package de.htwsaar.minicdn.cli.adapter.in.cli.system;
 
 import static de.htwsaar.minicdn.common.util.ExitCodes.REJECTED;
 import static de.htwsaar.minicdn.common.util.ExitCodes.REQUEST_FAILED;
+import static de.htwsaar.minicdn.common.util.ExitCodes.SERVER_ERROR;
 import static de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS;
 
 import de.htwsaar.minicdn.cli.adapter.in.cli.support.ConsoleUtils;
 import de.htwsaar.minicdn.cli.application.context.CliContext;
 import de.htwsaar.minicdn.cli.application.user.UserAuthService;
+import de.htwsaar.minicdn.cli.domain.model.LoginResult;
 import de.htwsaar.minicdn.cli.domain.model.UserResult;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -35,12 +37,7 @@ public final class SystemLoginCommand implements Callable<Integer> {
      * @param ctx gemeinsamer CLI-Kontext
      */
     public SystemLoginCommand(CliContext ctx) {
-        this(
-                ctx,
-                new UserAuthService(
-                        Objects.requireNonNull(ctx, "ctx").transportClient(),
-                        ctx.defaultRequestTimeout(),
-                        ctx.routerBaseUrl()));
+        this(ctx, new UserAuthService(Objects.requireNonNull(ctx, "ctx").userOperations(), ctx.routerBaseUrl()));
     }
 
     /**
@@ -63,15 +60,18 @@ public final class SystemLoginCommand implements Callable<Integer> {
     public Integer call() {
         try {
             String normalizedUsername = normalizeUsername(username);
-            UserAuthService.LoginResult result = authService.login(normalizedUsername);
+            LoginResult result = authService.login(normalizedUsername);
 
             if (result.error() != null) {
                 return requestFailed("Login fehlgeschlagen (IO): " + result.error());
             }
 
-            Integer statusCode = result.statusCode();
-            if (!result.hasSuccessfulStatus()) {
+            Integer statusCode = result.code();
+            if (result.isRejected()) {
                 return rejected("Login fehlgeschlagen: HTTP " + statusCode);
+            }
+            if (result.isServerError()) {
+                return serverError("Login fehlgeschlagen: HTTP " + statusCode);
             }
 
             UserResult user = Objects.requireNonNull(result.user(), "user");
@@ -150,5 +150,16 @@ public final class SystemLoginCommand implements Callable<Integer> {
     int rejected(String message) {
         ConsoleUtils.error(ctx.err(), "[AUTH] %s", Objects.toString(message, "Login abgelehnt"));
         return REJECTED.code();
+    }
+
+    /**
+     * Gibt einen Serverfehler einheitlich aus und liefert den passenden Exit-Code.
+     *
+     * @param message Fehlermeldung
+     * @return Exit-Code für Serverfehler
+     */
+    int serverError(String message) {
+        ConsoleUtils.error(ctx.err(), "[AUTH] %s", Objects.toString(message, "Serverfehler"));
+        return SERVER_ERROR.code();
     }
 }

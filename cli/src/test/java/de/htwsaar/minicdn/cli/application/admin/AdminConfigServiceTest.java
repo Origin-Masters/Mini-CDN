@@ -4,11 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpAdminOperations;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.model.TransportResponse;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -29,11 +30,11 @@ class AdminConfigServiceTest {
     @Test
     void getEdgeTtlPolicies_shouldCallExpectedEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.getEdgeTtlPolicies(URI.create("http://localhost:8081"));
+        CallResult result = adminOperations.getEdgeTtlPolicies(URI.create("http://localhost:8081"), ADMIN_TOKEN);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals(
@@ -47,11 +48,12 @@ class AdminConfigServiceTest {
     @Test
     void setEdgeTtlPolicy_shouldSendPutWithJsonPayload() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.setEdgeTtlPolicy(URI.create("http://localhost:8081"), "videos/", 15_000L);
+        CallResult result =
+                adminOperations.setEdgeTtlPolicy(URI.create("http://localhost:8081"), ADMIN_TOKEN, "videos/", 15_000L);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("PUT", transportClient.lastRequest.method());
         assertEquals(
@@ -66,11 +68,12 @@ class AdminConfigServiceTest {
     @Test
     void removeEdgeTtlPolicy_shouldCallDeleteWithEncodedQueryParam() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.removeEdgeTtlPolicy(URI.create("http://localhost:8081"), "videos/2026");
+        CallResult result =
+                adminOperations.removeEdgeTtlPolicy(URI.create("http://localhost:8081"), ADMIN_TOKEN, "videos/2026");
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
@@ -84,11 +87,12 @@ class AdminConfigServiceTest {
     @Test
     void setEdgeTtlPolicy_shouldRejectBlankPrefixBeforeSend() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> service.setEdgeTtlPolicy(URI.create("http://localhost:8081"), "   ", 5_000L));
+                () -> adminOperations.setEdgeTtlPolicy(
+                        URI.create("http://localhost:8081"), ADMIN_TOKEN, "   ", 5_000L));
 
         assertEquals("prefix must not be blank", ex.getMessage());
         assertEquals(0, transportClient.sendCalls);
@@ -97,11 +101,11 @@ class AdminConfigServiceTest {
     @Test
     void getOriginCluster_shouldCallRouterEndpointWithHealthFlag() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.getOriginCluster(URI.create("http://localhost:8082"), true);
+        CallResult result = adminOperations.getOriginCluster(URI.create("http://localhost:8082"), ADMIN_TOKEN, true);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals(
@@ -112,12 +116,12 @@ class AdminConfigServiceTest {
     @Test
     void addOriginSpare_shouldCallExpectedEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result =
-                service.addOriginSpare(URI.create("http://localhost:8082"), URI.create("http://localhost:8084"));
+        CallResult result = adminOperations.addOriginSpare(
+                URI.create("http://localhost:8082"), ADMIN_TOKEN, URI.create("http://localhost:8084"));
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
@@ -128,12 +132,12 @@ class AdminConfigServiceTest {
     @Test
     void promoteOriginSpare_shouldCallExpectedEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result =
-                service.promoteOriginSpare(URI.create("http://localhost:8082"), URI.create("http://localhost:8084"));
+        CallResult result = adminOperations.promoteOriginSpare(
+                URI.create("http://localhost:8082"), ADMIN_TOKEN, URI.create("http://localhost:8084"));
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
@@ -144,11 +148,11 @@ class AdminConfigServiceTest {
     @Test
     void checkOriginFailover_shouldCallExpectedEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminConfigService service = new AdminConfigService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.checkOriginFailover(URI.create("http://localhost:8082"));
+        CallResult result = adminOperations.checkOriginFailover(URI.create("http://localhost:8082"), ADMIN_TOKEN);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(

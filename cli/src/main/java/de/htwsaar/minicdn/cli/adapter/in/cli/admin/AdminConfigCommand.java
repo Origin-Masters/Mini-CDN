@@ -63,12 +63,7 @@ public final class AdminConfigCommand implements Runnable {
      * @param ctx gemeinsamer CLI-Kontext
      */
     public AdminConfigCommand(CliContext ctx) {
-        this(
-                ctx,
-                new AdminConfigService(
-                        Objects.requireNonNull(ctx, "ctx").transportClient(),
-                        ctx.defaultRequestTimeout(),
-                        ctx.adminToken()));
+        this(ctx, new AdminConfigService(Objects.requireNonNull(ctx, "ctx").adminOperations(), ctx.adminToken()));
     }
 
     /**
@@ -122,10 +117,10 @@ public final class AdminConfigCommand implements Runnable {
             return REQUEST_FAILED.code();
         }
 
-        int status = Objects.requireNonNull(result.statusCode(), "statusCode");
+        int status = Objects.requireNonNull(result.code(), "code");
         String body = Objects.toString(result.body(), "");
 
-        if (result.is2xx()) {
+        if (result.isRemoteSuccess()) {
             ConsoleUtils.info(ctx.out(), "[CONFIG] success (HTTP %d)", status);
             if (!body.isBlank()) {
                 ctx.out().println(body);

@@ -3,11 +3,12 @@ package de.htwsaar.minicdn.cli.application.admin;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpAdminOperations;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.model.TransportResponse;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -22,11 +23,12 @@ class AdminCacheServiceTest {
     @Test
     void invalidateFile_shouldCallExpectedEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminCacheService service = new AdminCacheService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.invalidateFile(URI.create("http://localhost:8082"), "eu-west", "videos/intro.mp4");
+        CallResult result = adminOperations.invalidateFile(
+                URI.create("http://localhost:8082"), ADMIN_TOKEN, "eu-west", "videos/intro.mp4");
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
@@ -37,11 +39,12 @@ class AdminCacheServiceTest {
     @Test
     void invalidatePrefix_shouldCallExpectedEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminCacheService service = new AdminCacheService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.invalidatePrefix(URI.create("http://localhost:8082"), "eu-west", "videos/2026");
+        CallResult result = adminOperations.invalidatePrefix(
+                URI.create("http://localhost:8082"), ADMIN_TOKEN, "eu-west", "videos/2026");
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
@@ -52,11 +55,11 @@ class AdminCacheServiceTest {
     @Test
     void clearRegion_shouldCallExpectedEndpoint() {
         RecordingTransportClient transportClient = new RecordingTransportClient();
-        AdminCacheService service = new AdminCacheService(transportClient, Duration.ofSeconds(2), ADMIN_TOKEN);
+        HttpAdminOperations adminOperations = new HttpAdminOperations(transportClient, Duration.ofSeconds(2));
 
-        CallResult result = service.clearRegion(URI.create("http://localhost:8082"), "eu-west");
+        CallResult result = adminOperations.clearRegion(URI.create("http://localhost:8082"), ADMIN_TOKEN, "eu-west");
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(

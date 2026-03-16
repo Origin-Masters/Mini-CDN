@@ -22,7 +22,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
- * Verwaltet den aktiven Origin und registrierte Hot-Spares inkl. Failover.
+ * Orchestriert den aktiven Origin und registrierte Hot-Spares inklusive Failover.
+ *
+ * <p>Die fachliche Logik bleibt in diesem Service. Technische Kommunikation mit externen
+ * Komponenten erfolgt ausschließlich über {@link OriginAdminGateway} und {@link EdgeGateway}.
  */
 @Service
 public class OriginClusterService {
@@ -61,6 +64,10 @@ public class OriginClusterService {
         this.edgeOriginSyncTimeout = Duration.ofMillis(Math.max(100, edgeOriginSyncTimeoutMs));
     }
 
+    /**
+     * Stellt den Clusterzustand beim Start wieder her und synchronisiert anschließend Edges auf den
+     * aktiven Origin.
+     */
     @PostConstruct
     public void recoverOnStartup() {
         RouterOriginClusterStateStore.OriginClusterState restored = stateStore.load();
@@ -91,11 +98,22 @@ public class OriginClusterService {
         syncEdgesToActiveOrigin(activeOrigin.get());
     }
 
+    /**
+     * Liefert den aktuell aktiven Origin und führt bei Bedarf ein Failover durch.
+     *
+     * @return Basis-URL des aktiven Origins
+     */
     public String resolveActiveOrigin() {
         failoverIfActiveIsUnhealthy();
         return activeOrigin.get();
     }
 
+    /**
+     * Erstellt eine Momentaufnahme des Origin-Clusters.
+     *
+     * @param includeHealth {@code true}, um zusätzlich Gesundheitsinformationen zu ermitteln
+     * @return Snapshot mit aktivem Origin, Spares und optionalen Health-Daten
+     */
     public synchronized OriginClusterSnapshot snapshot(boolean includeHealth) {
         String active = activeOrigin.get();
         List<String> spares = List.copyOf(spareOrigins);
@@ -113,6 +131,11 @@ public class OriginClusterService {
         return new OriginClusterSnapshot(active, spares, List.copyOf(health));
     }
 
+    /**
+     * Registriert einen neuen Spare-Origin, sofern dieser noch nicht bekannt ist.
+     *
+     * @param originBaseUrl Basis-URL des Spare-Origins
+     */
     public synchronized void addSpare(String originBaseUrl) {
         String normalized = requireUrl(originBaseUrl);
         if (normalized.equals(activeOrigin.get()) || spareOrigins.contains(normalized)) {
@@ -122,6 +145,12 @@ public class OriginClusterService {
         persist();
     }
 
+    /**
+     * Entfernt einen Spare-Origin aus der Registrierung.
+     *
+     * @param originBaseUrl Basis-URL des zu entfernenden Spare-Origins
+     * @return {@code true}, wenn ein Eintrag entfernt wurde
+     */
     public synchronized boolean removeSpare(String originBaseUrl) {
         String normalized = requireUrl(originBaseUrl);
         boolean removed = spareOrigins.remove(normalized);
@@ -131,6 +160,13 @@ public class OriginClusterService {
         return removed;
     }
 
+    /**
+     * Setzt einen registrierten Spare-Origin als aktiv und verschiebt den bisherigen aktiven Origin
+     * in die Spare-Liste.
+     *
+     * @param originBaseUrl Basis-URL des zu aktivierenden Origins
+     * @return {@code true}, wenn die Umschaltung durchgeführt wurde
+     */
     public synchronized boolean promoteToActive(String originBaseUrl) {
         String normalized = requireUrl(originBaseUrl);
         String currentActive = activeOrigin.get();
@@ -152,6 +188,11 @@ public class OriginClusterService {
         return true;
     }
 
+    /**
+     * Prüft den aktiven Origin und schaltet bei Ungesundheit auf einen gesunden Spare-Origin um.
+     *
+     * @return {@code true}, wenn ein Failover erfolgt ist
+     */
     public synchronized boolean failoverIfActiveIsUnhealthy() {
         String current = activeOrigin.get();
         if (current == null) {
@@ -175,6 +216,15 @@ public class OriginClusterService {
         return false;
     }
 
+    /**
+     * Synchronisiert den aktuell aktiven Origin für eine einzelne Edge.
+     *
+     * <p>Die Methode trifft nur fachliche Entscheidungen; der Transport liegt im Gateway.
+     *
+     * @param node Ziel-Edge
+     * @param region Region der Edge
+     * @return {@code true}, wenn keine Aktion nötig war oder die Aktualisierung erfolgreich war
+     */
     public boolean syncEdgeToActiveOrigin(EdgeNode node, String region) {
         if (node == null) {
             return false;
@@ -205,10 +255,18 @@ public class OriginClusterService {
         return updated;
     }
 
+    /**
+     * Liefert eine unveränderliche Sicht auf die aktuell registrierten Spare-Origins.
+     *
+     * @return Liste der Spare-Origins
+     */
     public List<String> spareOriginsSnapshot() {
         return List.copyOf(spareOrigins);
     }
 
+    /**
+     * Führt in festen Intervallen eine Gesundheitsprüfung des aktiven Origins aus.
+     */
     @Scheduled(fixedDelayString = "${cdn.origin.health.interval-ms:5000}")
     public void periodicActiveOriginHealthCheck() {
         failoverIfActiveIsUnhealthy();
@@ -282,8 +340,22 @@ public class OriginClusterService {
         return List.copyOf(uniques);
     }
 
+    /**
+     * Fachliche Sicht auf den Zustand des Origin-Clusters zu einem Zeitpunkt.
+     *
+     * @param activeOrigin aktuell aktiver Origin
+     * @param spareOrigins registrierte Spare-Origins
+     * @param health optionale Gesundheitsinformationen je Origin
+     */
     public record OriginClusterSnapshot(
             String activeOrigin, List<String> spareOrigins, List<OriginNodeHealth> health) {}
 
+    /**
+     * Gesundheitsstatus eines einzelnen Origin-Knotens.
+     *
+     * @param url Basis-URL des Knotens
+     * @param active {@code true}, wenn der Knoten aktuell aktiv ist
+     * @param healthy {@code true}, wenn der Knoten als gesund bewertet wurde
+     */
     public record OriginNodeHealth(String url, boolean active, boolean healthy) {}
 }

@@ -7,7 +7,7 @@ import java.time.Duration;
  * Port für die Kommunikation mit dem Origin (Admin-File-Operationen).
  *
  * <p>Die Fachlogik im Router hängt nur von diesem Interface ab und kennt keine konkreten
- * HTTP-Details (URLs, Header, JSON, HttpClient).</p>
+ * Transportdetails wie Adapter-Endpunkte, Headerformate oder Serialisierungsdetails.</p>
  */
 public interface OriginAdminGateway {
 
@@ -16,7 +16,7 @@ public interface OriginAdminGateway {
      *
      * @param path Dateipfad (relativ, ohne führenden Slash)
      * @param body Dateiinhalt
-     * @return Ergebnis inkl. HTTP-Statuscode (vom Origin) und ggf. Fehlermeldung
+     * @return normiertes Ergebnis der Remote-Operation
      */
     AdminFileResult uploadFile(String originBaseUrl, String path, byte[] body);
 
@@ -24,7 +24,7 @@ public interface OriginAdminGateway {
      * Löscht eine Datei über die Origin-Admin-API.
      *
      * @param path Dateipfad (relativ, ohne führenden Slash)
-     * @return Ergebnis inkl. HTTP-Statuscode (vom Origin) und ggf. Fehlermeldung
+     * @return normiertes Ergebnis der Remote-Operation
      */
     AdminFileResult deleteFile(String originBaseUrl, String path);
 
@@ -33,14 +33,14 @@ public interface OriginAdminGateway {
      *
      * @param page Seite (Paging)
      * @param size Page-Size
-     * @return Ergebnis inkl. HTTP-Statuscode und Response-Body (String)
+     * @return normiertes Ergebnis der Remote-Operation
      */
     AdminFileResult listFiles(String originBaseUrl, int page, int size);
 
     /**
      * Liefert Metadaten zu einer Datei.
-     * @param path
-     * @return
+     * @param path Dateipfad (relativ, ohne führenden Slash)
+     * @return normiertes Ergebnis der Remote-Operation mit Metadaten oder Fehlerdetails
      */
     AdminFileResult getFileMetadata(String originBaseUrl, String path);
 

@@ -74,7 +74,7 @@ public final class AdminCacheCommand implements Runnable {
      * @return konfigurierte Service-Instanz auf Basis des aktuellen CLI-Kontexts
      */
     private AdminCacheService service() {
-        return new AdminCacheService(ctx.transportClient(), ctx.defaultRequestTimeout(), ctx.adminToken());
+        return new AdminCacheService(ctx.adminOperations(), ctx.adminToken());
     }
 
     /**
@@ -89,11 +89,11 @@ public final class AdminCacheCommand implements Runnable {
             ConsoleUtils.error(ctx.err(), "[CACHE] request failed: %s", result.error());
             return REQUEST_FAILED.code();
         }
-        if (!result.is2xx()) {
+        if (!result.isRemoteSuccess()) {
             ConsoleUtils.error(
                     ctx.err(),
                     "[CACHE] request rejected: HTTP %s%s",
-                    result.statusCode(),
+                    result.code(),
                     result.body() == null || result.body().isBlank() ? "" : ", body=" + result.body());
             return REJECTED.code();
         }

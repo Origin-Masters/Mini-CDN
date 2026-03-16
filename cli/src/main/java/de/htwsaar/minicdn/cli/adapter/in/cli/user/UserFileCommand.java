@@ -1,10 +1,7 @@
 package de.htwsaar.minicdn.cli.adapter.in.cli.user;
 
 import static de.htwsaar.minicdn.common.util.DefaultsURL.ROUTER_URL;
-import static de.htwsaar.minicdn.common.util.ExitCodes.REJECTED;
 import static de.htwsaar.minicdn.common.util.ExitCodes.REQUEST_FAILED;
-import static de.htwsaar.minicdn.common.util.ExitCodes.SERVER_ERROR;
-import static de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS;
 import static de.htwsaar.minicdn.common.util.ExitCodes.VALIDATION;
 
 import de.htwsaar.minicdn.cli.adapter.in.cli.support.ConsoleUtils;
@@ -57,9 +54,7 @@ public final class UserFileCommand implements Runnable {
      * @param ctx gemeinsamer CLI-Kontext
      */
     public UserFileCommand(CliContext ctx) {
-        this(
-                ctx,
-                new UserFileService(Objects.requireNonNull(ctx, "ctx").transportClient(), ctx.defaultRequestTimeout()));
+        this(ctx, new UserFileService(Objects.requireNonNull(ctx, "ctx").userFileTransfers()));
     }
 
     /**
@@ -229,8 +224,8 @@ public final class UserFileCommand implements Runnable {
             return requestFailed("Download failed: " + result.error());
         }
 
-        Integer statusCode = Objects.requireNonNull(result.statusCode(), "statusCode");
-        if (result.is2xx()) {
+        Integer statusCode = Objects.requireNonNull(result.code(), "code");
+        if (result.isSuccess()) {
             ConsoleUtils.info(
                     ctx.out(),
                     "[USER] Download via router successful HTTP %d router=%s path=%s out=%s bytes=%d",
@@ -239,16 +234,16 @@ public final class UserFileCommand implements Runnable {
                     remotePath,
                     outFile,
                     result.bytesWritten());
-            return SUCCESS.code();
+            return result.exitCode();
         }
 
-        if (result.is4xx()) {
+        if (result.isRejected()) {
             ConsoleUtils.error(ctx.err(), "[USER] Request rejected (HTTP %d) for '%s'", statusCode, remotePath);
-            return REJECTED.code();
+            return result.exitCode();
         }
 
         ConsoleUtils.error(ctx.err(), "[USER] Server error (HTTP %d) for '%s'", statusCode, remotePath);
-        return SERVER_ERROR.code();
+        return result.exitCode();
     }
 
     /**

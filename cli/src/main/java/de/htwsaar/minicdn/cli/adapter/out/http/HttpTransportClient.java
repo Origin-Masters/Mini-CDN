@@ -1,9 +1,9 @@
 package de.htwsaar.minicdn.cli.adapter.out.http;
 
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.model.TransportResponse;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpClient;
@@ -37,12 +37,7 @@ public final class HttpTransportClient implements TransportClient {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
     }
 
-    /**
-     * Führt einen transportneutralen Request über HTTP aus.
-     *
-     * @param request transportneutraler Request
-     * @return normierte Antwort mit Status, Body und Headern oder Transportfehler
-     */
+    /** {@inheritDoc} */
     @Override
     public TransportResponse send(TransportRequest request) {
         Objects.requireNonNull(request, "request");
@@ -63,14 +58,7 @@ public final class HttpTransportClient implements TransportClient {
         }
     }
 
-    /**
-     * Lädt den Response-Body in eine Datei.
-     *
-     * @param request transportneutraler Request
-     * @param targetFile Zieldatei
-     * @param overwrite legt fest, ob eine vorhandene Datei ersetzt wird
-     * @return Download-Ergebnis mit Statuscode oder technischem Fehler
-     */
+    /** {@inheritDoc} */
     @Override
     public DownloadResult download(TransportRequest request, Path targetFile, boolean overwrite) {
         Objects.requireNonNull(request, "request");
@@ -85,11 +73,13 @@ public final class HttpTransportClient implements TransportClient {
             try (InputStream body = response.body()) {
                 if (statusCode < 200 || statusCode >= 300) {
                     drain(body);
-                    return DownloadResult.httpError(statusCode);
+                    return statusCode >= 400 && statusCode < 500
+                            ? DownloadResult.rejected(statusCode)
+                            : DownloadResult.serverError(statusCode);
                 }
 
                 writeAtomically(body, targetFile, overwrite);
-                return DownloadResult.ok(statusCode, Files.size(targetFile));
+                return DownloadResult.success(statusCode, Files.size(targetFile));
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

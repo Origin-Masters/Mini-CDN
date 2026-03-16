@@ -8,7 +8,7 @@ import java.util.Map;
  * Fachlicher Port für Verwaltung und Auswahl von Edge-Knoten.
  *
  * <p>Die Anwendungsschicht kennt nur diesen Vertrag und hängt damit nicht
- * von einer konkreten In-Memory-, HTTP- oder Persistenz-Implementierung ab.</p>
+ * von einer konkreten In-Memory-, Adapter- oder Persistenz-Implementierung ab.</p>
  */
 public interface EdgeRegistry {
 

@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
  * Port für die fachliche Kommunikation mit Edge-Knoten.
  *
  * <p>Die Fachlogik kennt nur fachliche Operationen und keine
- * HTTP-spezifischen Details wie Endpunkte, Verben oder Statuscodes.</p>
+ * transportspezifischen Details wie konkrete Endpunkte oder Protokollcodes.</p>
  */
 public interface EdgeGateway {
 

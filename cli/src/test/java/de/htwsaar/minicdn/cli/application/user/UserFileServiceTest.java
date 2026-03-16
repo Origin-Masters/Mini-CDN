@@ -5,10 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import de.htwsaar.minicdn.cli.adapter.out.http.HttpUserFileTransfers;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
+import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
-import de.htwsaar.minicdn.cli.domain.model.TransportRequest;
-import de.htwsaar.minicdn.cli.domain.model.TransportResponse;
-import de.htwsaar.minicdn.cli.domain.port.TransportClient;
+import de.htwsaar.minicdn.cli.domain.model.RemoteFileProbe;
+import de.htwsaar.minicdn.cli.domain.model.ResolvedFileRoute;
+import de.htwsaar.minicdn.cli.domain.port.UserFileTransfers;
+import de.htwsaar.minicdn.common.util.ExitCodes;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -26,12 +31,16 @@ class UserFileServiceTest {
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
     private RecordingTransportClient transportClient;
+    private RecordingTransportClient nonRedirectTransportClient;
+    private HttpUserFileTransfers transfers;
     private UserFileService service;
 
     @BeforeEach
     void setUp() {
         transportClient = new RecordingTransportClient();
-        service = new UserFileService(transportClient, TIMEOUT);
+        nonRedirectTransportClient = new RecordingTransportClient();
+        transfers = new HttpUserFileTransfers(transportClient, nonRedirectTransportClient, TIMEOUT);
+        service = new UserFileService(new ThrowingUserFileTransfers());
     }
 
     // -------------------------------------------------------------------------
@@ -43,9 +52,9 @@ class UserFileServiceTest {
         Path out = Path.of("download.bin");
 
         DownloadResult result =
-                service.downloadViaRouter(ROUTER_BASE_URL, "/docs/manual.pdf", "eu", "client-1", out, true);
+                transfers.downloadViaRouter(ROUTER_BASE_URL, "/docs/manual.pdf", "eu", "client-1", null, out, true);
 
-        assertEquals(200, result.statusCode());
+        assertEquals(200, result.code());
         assertEquals(123L, result.bytesWritten());
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
@@ -63,8 +72,8 @@ class UserFileServiceTest {
 
     @Test
     void downloadViaRouter_shouldTrimRegionAndClientId() {
-        service.downloadViaRouter(
-                ROUTER_BASE_URL, "docs/manual.pdf", "  eu  ", "  client-1  ", Path.of("x.bin"), false);
+        transfers.downloadViaRouter(
+                ROUTER_BASE_URL, "docs/manual.pdf", "  eu  ", "  client-1  ", null, Path.of("x.bin"), false);
 
         assertEquals("eu", transportClient.lastRequest.headers().get("X-Client-Region"));
         assertEquals("client-1", transportClient.lastRequest.headers().get("X-Client-Id"));
@@ -72,7 +81,7 @@ class UserFileServiceTest {
 
     @Test
     void downloadViaRouter_shouldNotSendClientIdHeaderWhenBlank() {
-        service.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "   ", Path.of("x.bin"), false);
+        transfers.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "   ", null, Path.of("x.bin"), false);
 
         assertFalse(transportClient.lastRequest.headers().containsKey("X-Client-Id"));
     }
@@ -83,17 +92,18 @@ class UserFileServiceTest {
 
     @Test
     void downloadViaRouter_withUserId_shouldIncludeUserIdHeaderWhenPositive() {
-        service.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", 17L, Path.of("x.bin"), false);
+        transfers.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", 17L, Path.of("x.bin"), false);
 
         assertEquals("17", transportClient.lastRequest.headers().get("X-User-Id"));
     }
 
     @Test
     void downloadViaRouter_withUserId_shouldSkipUserIdHeaderWhenNullOrNonPositive() {
-        service.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", null, Path.of("a.bin"), false);
+        transfers.downloadViaRouter(
+                ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", null, Path.of("a.bin"), false);
         assertFalse(transportClient.lastRequest.headers().containsKey("X-User-Id"));
 
-        service.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", 0L, Path.of("b.bin"), false);
+        transfers.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", 0L, Path.of("b.bin"), false);
         assertFalse(transportClient.lastRequest.headers().containsKey("X-User-Id"));
     }
 
@@ -105,7 +115,8 @@ class UserFileServiceTest {
     void downloadViaRouter_shouldRejectBlankRemotePath() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> service.downloadViaRouter(ROUTER_BASE_URL, "   ", "eu", "client-1", Path.of("x.bin"), false));
+                () -> transfers.downloadViaRouter(
+                        ROUTER_BASE_URL, "   ", "eu", "client-1", null, Path.of("x.bin"), false));
         assertEquals(0, transportClient.downloadCalls);
     }
 
@@ -113,8 +124,8 @@ class UserFileServiceTest {
     void downloadViaRouter_shouldRejectBlankRegion() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> service.downloadViaRouter(
-                        ROUTER_BASE_URL, "docs/manual.pdf", "   ", "client-1", Path.of("x.bin"), false));
+                () -> transfers.downloadViaRouter(
+                        ROUTER_BASE_URL, "docs/manual.pdf", "   ", "client-1", null, Path.of("x.bin"), false));
         assertEquals(0, transportClient.downloadCalls);
     }
 
@@ -123,7 +134,6 @@ class UserFileServiceTest {
         assertThrows(
                 NullPointerException.class,
                 () -> service.downloadViaRouter(ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", null, false));
-        assertEquals(0, transportClient.downloadCalls);
     }
 
     // -------------------------------------------------------------------------
@@ -132,12 +142,13 @@ class UserFileServiceTest {
 
     @Test
     void downloadViaRouter_shouldMapTransportExceptionToIoErrorResult() {
-        transportClient.throwOnDownload = new RuntimeException("boom");
+        service = new UserFileService(new ThrowingUserFileTransfers());
 
         DownloadResult result = service.downloadViaRouter(
                 ROUTER_BASE_URL, "docs/manual.pdf", "eu", "client-1", Path.of("x.bin"), false);
 
-        assertEquals(null, result.statusCode());
+        assertEquals(ExitCodes.REQUEST_FAILED, result.status());
+        assertEquals(null, result.code());
         assertEquals(0L, result.bytesWritten());
         assertEquals("boom", result.error());
     }
@@ -184,7 +195,7 @@ class UserFileServiceTest {
         Path lastTargetFile;
         boolean lastOverwrite;
         RuntimeException throwOnDownload;
-        DownloadResult nextResult = DownloadResult.ok(200, 123L);
+        DownloadResult nextResult = DownloadResult.success(200, 123L);
 
         @Override
         public TransportResponse send(TransportRequest request) {
@@ -202,6 +213,43 @@ class UserFileServiceTest {
                 throw throwOnDownload;
             }
             return nextResult;
+        }
+    }
+
+    private static final class ThrowingUserFileTransfers implements UserFileTransfers {
+        @Override
+        public DownloadResult downloadViaRouter(
+                URI routerBaseUrl,
+                String remotePath,
+                String region,
+                String clientId,
+                Long userId,
+                Path out,
+                boolean overwrite) {
+            throw new RuntimeException("boom");
+        }
+
+        @Override
+        public ResolvedFileRoute resolveRoute(
+                URI routerBaseUrl, String remotePath, String region, String clientId, Long userId) {
+            return ResolvedFileRoute.of(routerBaseUrl);
+        }
+
+        @Override
+        public RemoteFileProbe probeRemoteFile(ResolvedFileRoute route) {
+            return RemoteFileProbe.of(1L);
+        }
+
+        @Override
+        public DownloadResult downloadSegment(
+                ResolvedFileRoute route,
+                long startInclusive,
+                long endInclusive,
+                String region,
+                String clientId,
+                Long userId,
+                Path out) {
+            return DownloadResult.success(206, 1L);
         }
     }
 }

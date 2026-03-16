@@ -78,7 +78,7 @@ public final class AdminRoutingCommand implements Runnable {
      * @return konfigurierte Service-Instanz auf Basis des aktuellen CLI-Kontexts
      */
     private AdminRoutingService service() {
-        return new AdminRoutingService(ctx.transportClient(), ctx.defaultRequestTimeout(), ctx.adminToken());
+        return new AdminRoutingService(ctx.adminOperations(), ctx.adminToken());
     }
 
     /**
@@ -93,11 +93,11 @@ public final class AdminRoutingCommand implements Runnable {
             ConsoleUtils.error(ctx.err(), "[ROUTING] request failed: %s", result.error());
             return REQUEST_FAILED.code();
         }
-        if (!result.is2xx()) {
+        if (!result.isRemoteSuccess()) {
             ConsoleUtils.error(
                     ctx.err(),
                     "[ROUTING] request rejected: HTTP %s%s",
-                    result.statusCode(),
+                    result.code(),
                     result.body() == null || result.body().isBlank() ? "" : ", body=" + result.body());
             return REJECTED.code();
         }

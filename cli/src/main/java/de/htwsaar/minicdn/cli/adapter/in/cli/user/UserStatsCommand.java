@@ -1,8 +1,6 @@
 package de.htwsaar.minicdn.cli.adapter.in.cli.user;
 
-import static de.htwsaar.minicdn.common.util.ExitCodes.REJECTED;
 import static de.htwsaar.minicdn.common.util.ExitCodes.REQUEST_FAILED;
-import static de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS;
 import static de.htwsaar.minicdn.common.util.ExitCodes.VALIDATION;
 
 import de.htwsaar.minicdn.cli.adapter.in.cli.support.ConsoleUtils;
@@ -49,16 +47,10 @@ public final class UserStatsCommand implements Runnable {
      * @param ctx gemeinsamer CLI-Kontext
      */
     public UserStatsCommand(CliContext ctx) {
-        this(
-                ctx,
-                new UserStatsService(
-                        Objects.requireNonNull(ctx, "ctx").transportClient(),
-                        ctx.defaultRequestTimeout(),
-                        ctx.routerBaseUrl(),
-                        () -> {
-                            Long loggedInUserId = ctx.sessionState().loggedInUserId();
-                            return loggedInUserId == null ? -1L : loggedInUserId;
-                        }));
+        this(ctx, new UserStatsService(Objects.requireNonNull(ctx, "ctx").userOperations(), ctx.routerBaseUrl(), () -> {
+            Long loggedInUserId = ctx.sessionState().loggedInUserId();
+            return loggedInUserId == null ? -1L : loggedInUserId;
+        }));
     }
 
     /**
@@ -184,7 +176,11 @@ public final class UserStatsCommand implements Runnable {
             ctx.err().flush();
         }
 
-        return REJECTED.code();
+        return resultCodeRejected();
+    }
+
+    private int resultCodeRejected() {
+        return de.htwsaar.minicdn.common.util.ExitCodes.REJECTED.code();
     }
 
     /**
@@ -202,7 +198,7 @@ public final class UserStatsCommand implements Runnable {
             ctx.out().flush();
         }
 
-        return SUCCESS.code();
+        return de.htwsaar.minicdn.common.util.ExitCodes.SUCCESS.code();
     }
 
     /**
@@ -216,20 +212,28 @@ public final class UserStatsCommand implements Runnable {
     int handleResult(String operation, String successTitle, CallResult result) {
         Objects.requireNonNull(result, "result");
 
-        if (result.error() != null) {
-            return requestFailed(operation, result.error());
-        }
-
-        Integer statusCode = result.statusCode();
-        if (statusCode == null) {
-            return requestFailed(operation, "fehlender HTTP-Status");
-        }
-
-        if (result.is2xx()) {
+        if (result.isSuccess()) {
             return printSuccessBody(successTitle, result.body());
         }
+        if (result.isRejected()) {
+            return rejected(operation, result.code(), result.body());
+        }
+        if (result.isClientError()) {
+            return validationError(result.error());
+        }
+        if (result.isServerError()) {
+            ConsoleUtils.error(
+                    ctx.err(),
+                    "[USER] %s fehlgeschlagen: Serverfehler%s",
+                    Objects.toString(operation, "Request"),
+                    formatCodeSuffix(result.code()));
+            return result.exitCode();
+        }
+        return requestFailed(operation, result.error());
+    }
 
-        return rejected(operation, statusCode, result.body());
+    private static String formatCodeSuffix(Integer code) {
+        return code == null ? "" : " (Code " + code + ")";
     }
 
     /**

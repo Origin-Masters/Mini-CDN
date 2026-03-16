@@ -6,15 +6,11 @@ import java.util.Objects;
 import picocli.CommandLine;
 
 /**
- * Picocli-Factory für einfache Constructor Injection von {@link CliContext}.
+ * Picocli-Factory für einfache Constructor Injection mit {@link CliContext}.
  *
- * <p>Aufgaben:
- * - Erkennt Commands, die einen Konstruktor {@code (CliContext)} besitzen,
- *   und instanziiert diese automatisch mit dem aktuellen Kontext.
- * - Delegiert alle anderen Fälle an die Picocli-Default-Factory.
- *
- * <p>Nutzen:
- * - Keine statischen Singletons, Commands bleiben leicht testbar.
+ * <p>Die Factory erkennt Command-Klassen mit einem Konstruktor
+ * {@code (CliContext)} und erzeugt diese automatisch mit dem aktuellen
+ * Kontext. Alle anderen Fälle delegiert sie an die Picocli-Standard-Factory.</p>
  */
 public final class ContextFactory implements CommandLine.IFactory {
     private final CliContext ctx;
@@ -22,6 +18,7 @@ public final class ContextFactory implements CommandLine.IFactory {
 
     /**
      * Erstellt eine Factory mit Picocli-Default-Factory als Fallback.
+     *
      * @param ctx aktueller Kontext
      */
     public ContextFactory(CliContext ctx) {
@@ -42,8 +39,8 @@ public final class ContextFactory implements CommandLine.IFactory {
     /**
      * Instanziiert eine Klasse für Picocli.
      *
-     * @param cls Zielklasse (Command)
-     * @return neue Instanz (ggf. mit injected {@link CliContext})
+     * @param cls Zielklasse des Kommandos
+     * @return neue Instanz, bei Bedarf mit injiziertem {@link CliContext}
      * @throws Exception wenn Instanziierung fehlschlägt
      */
     @Override

@@ -83,9 +83,7 @@ public final class AdminFileCommand implements Runnable {
      * @param ctx gemeinsamer CLI-Kontext
      */
     public AdminFileCommand(CliContext ctx) {
-        this(
-                ctx,
-                new UserFileService(Objects.requireNonNull(ctx, "ctx").transportClient(), ctx.defaultRequestTimeout()));
+        this(ctx, new UserFileService(Objects.requireNonNull(ctx, "ctx").userFileTransfers()));
     }
 
     /**
@@ -119,8 +117,7 @@ public final class AdminFileCommand implements Runnable {
      */
     AdminFileService adminFileService(URI routerBaseUrl) {
         return new AdminFileService(
-                ctx.transportClient(),
-                ctx.defaultRequestTimeout(),
+                ctx.adminOperations(),
                 Objects.requireNonNull(routerBaseUrl, "routerBaseUrl"),
                 ctx.adminToken(),
                 resolveLoggedInUserId());
@@ -298,12 +295,12 @@ public final class AdminFileCommand implements Runnable {
 
                 CallResult result = parent.adminFileService(baseRouter).uploadViaRouter(cleanPath, file, cleanRegion);
 
-                if (result.is2xx()) {
+                if (result.isRemoteSuccess()) {
                     ConsoleUtils.info(
                             parent.ctx.out(),
                             "%s Upload via router successful HTTP %d path=%s region=%s",
                             LOG_PREFIX,
-                            result.statusCode(),
+                            result.code(),
                             cleanPath,
                             cleanRegion);
                     return SUCCESS.code();
@@ -311,7 +308,7 @@ public final class AdminFileCommand implements Runnable {
 
                 return parent.requestFailed(
                         "%s Upload via router failed HTTP %d error=%s body=%s path=%s region=%s",
-                        LOG_PREFIX, result.statusCode(), result.error(), result.body(), cleanPath, cleanRegion);
+                        LOG_PREFIX, result.code(), result.error(), result.body(), cleanPath, cleanRegion);
             } catch (IllegalArgumentException ex) {
                 return parent.validationError(ex.getMessage());
             }
@@ -347,9 +344,9 @@ public final class AdminFileCommand implements Runnable {
                     return parent.requestFailed("%s File list failed: %s", LOG_PREFIX, result.error());
                 }
 
-                if (!result.is2xx()) {
+                if (!result.isRemoteSuccess()) {
                     return parent.requestFailed(
-                            "%s File list failed HTTP %d body=%s", LOG_PREFIX, result.statusCode(), result.body());
+                            "%s File list failed HTTP %d body=%s", LOG_PREFIX, result.code(), result.body());
                 }
 
                 if (result.body() == null || result.body().isBlank()) {
@@ -397,12 +394,12 @@ public final class AdminFileCommand implements Runnable {
 
                 CallResult result = parent.adminFileService(baseRouter).showViaRouter(cleanPath);
 
-                if (result.is2xx()) {
+                if (result.isRemoteSuccess()) {
                     ConsoleUtils.info(
                             parent.ctx.out(),
                             "%s Show via router successful HTTP %d router=%s path=%s",
                             LOG_PREFIX,
-                            result.statusCode(),
+                            result.code(),
                             baseRouter,
                             cleanPath);
                     parent.printJsonIfPresent(result.body());
@@ -411,7 +408,7 @@ public final class AdminFileCommand implements Runnable {
 
                 return parent.requestFailed(
                         "%s Show via router failed HTTP %d error=%s body=%s router=%s path=%s",
-                        LOG_PREFIX, result.statusCode(), result.error(), result.body(), baseRouter, cleanPath);
+                        LOG_PREFIX, result.code(), result.error(), result.body(), baseRouter, cleanPath);
             } catch (IllegalArgumentException ex) {
                 return parent.validationError(ex.getMessage());
             }
@@ -475,8 +472,8 @@ public final class AdminFileCommand implements Runnable {
                     return parent.requestFailed("%s Download via router failed: %s", LOG_PREFIX, result.error());
                 }
 
-                Integer statusCode = result.statusCode();
-                if (result.is2xx()) {
+                Integer statusCode = result.code();
+                if (result.isRemoteSuccess()) {
                     ConsoleUtils.info(
                             parent.ctx.out(),
                             "%s Download via router successful HTTP %d router=%s path=%s out=%s bytes=%d",
@@ -540,12 +537,12 @@ public final class AdminFileCommand implements Runnable {
 
                 CallResult result = parent.adminFileService(baseRouter).deleteViaRouter(cleanPath, cleanRegion);
 
-                if (result.is2xx()) {
+                if (result.isRemoteSuccess()) {
                     ConsoleUtils.info(
                             parent.ctx.out(),
                             "%s Delete via router successful HTTP %d path=%s region=%s",
                             LOG_PREFIX,
-                            result.statusCode(),
+                            result.code(),
                             cleanPath,
                             cleanRegion);
                     return SUCCESS.code();
@@ -553,7 +550,7 @@ public final class AdminFileCommand implements Runnable {
 
                 return parent.requestFailed(
                         "%s Delete via router failed HTTP %d error=%s body=%s path=%s region=%s",
-                        LOG_PREFIX, result.statusCode(), result.error(), result.body(), cleanPath, cleanRegion);
+                        LOG_PREFIX, result.code(), result.error(), result.body(), cleanPath, cleanRegion);
             } catch (IllegalArgumentException ex) {
                 return parent.validationError(ex.getMessage());
             }
