@@ -145,7 +145,7 @@ public class EdgeHttpClient implements EdgeGateway {
     @Override
     public CompletableFuture<Boolean> invalidatePrefix(EdgeNode node, String prefix) {
         String encodedPrefix = URLEncoder.encode(prefix == null ? "" : prefix, StandardCharsets.UTF_8);
-        return executeDelete(resolve(node, "api/edge/admin/cache/prefix?value=" + encodedPrefix));
+        return executeDelete(resolve(node, "api/edge/admin/cache/prefixes?value=" + encodedPrefix));
     }
 
     /**
@@ -156,7 +156,7 @@ public class EdgeHttpClient implements EdgeGateway {
      */
     @Override
     public CompletableFuture<Boolean> clearCache(EdgeNode node) {
-        return executeDelete(resolve(node, "api/edge/admin/cache/all"));
+        return executeDelete(resolve(node, "api/edge/admin/cache/files"));
     }
 
     /**
@@ -190,7 +190,7 @@ public class EdgeHttpClient implements EdgeGateway {
         }
 
         try {
-            URI configUri = resolve(node, "api/edge/admin/config");
+            URI configUri = resolve(node, "api/edge/admin/configs");
             String payload = JacksonCodec.toJson(Map.of("originBaseUrl", originBaseUrl));
 
             Map<String, String> headers = new LinkedHashMap<>();

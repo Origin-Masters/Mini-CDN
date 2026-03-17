@@ -32,13 +32,13 @@ curl -sf -X PUT -H "X-Admin-Token: $ADMIN_TOKEN" \
 curl -sf -X PATCH -H "X-Admin-Token: $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"defaultTtlMs":120000,"maxEntries":150,"replacementStrategy":"LFU"}' \
-  "$EDGE/api/edge/admin/config" >/dev/null
+  "$EDGE/api/edge/admin/configs" >/dev/null
 
 # Set edge prefix-specific TTL for recovery-basic.
 curl -sf -X PUT -H "X-Admin-Token: $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"prefix":"recovery-basic","ttlMs":240000}' \
-  "$EDGE/api/edge/admin/config/ttl" >/dev/null
+  "$EDGE/api/edge/admin/configs/expirations" >/dev/null
 
 # Restart to test persistence of the state.
 "$SCRIPT_DIR/../runtime/shutdown-services.sh" >/dev/null
@@ -50,10 +50,10 @@ sleep 6
 curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$ROUTER/api/cdn/routing" | grep -qi "$REGION"
 
 # Edge config still uses LFU.
-curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$EDGE/api/edge/admin/config" | grep -q '"replacementStrategy":"LFU"'
+curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$EDGE/api/edge/admin/configs" | grep -q '"replacementStrategy":"LFU"'
 
 # TTL config still contains recovery-basic.
-curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$EDGE/api/edge/admin/config/ttl" | grep -q '"recovery-basic":240000'
+curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$EDGE/api/edge/admin/configs/expirations" | grep -q '"recovery-basic":240000'
 
 # First fetch should be a cache MISS.
 CACHE=$(curl -sI "$EDGE/api/edge/files/$FILE" | tr -d '\r' | awk -F': ' '/^X-Cache:/{print $2}')

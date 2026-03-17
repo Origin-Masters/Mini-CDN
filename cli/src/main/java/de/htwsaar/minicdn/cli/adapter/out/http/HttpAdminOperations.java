@@ -141,7 +141,7 @@ public final class HttpAdminOperations implements AdminOperations {
     /** {@inheritDoc} */
     @Override
     public CallResult getEdgeConfig(URI edgeBaseUrl, String adminToken) {
-        return sendGet(edgeBaseUrl, adminToken, "api/edge/admin/config");
+        return sendGet(edgeBaseUrl, adminToken, "api/edge/admin/configs");
     }
 
     /** {@inheritDoc} */
@@ -171,13 +171,13 @@ public final class HttpAdminOperations implements AdminOperations {
         if (originBaseUrl != null) {
             payload.put("originBaseUrl", originBaseUrl.toString());
         }
-        return sendPatch(edgeBaseUrl, adminToken, "api/edge/admin/config", JacksonCodec.toJson(payload));
+        return sendPatch(edgeBaseUrl, adminToken, "api/edge/admin/configs", JacksonCodec.toJson(payload));
     }
 
     /** {@inheritDoc} */
     @Override
     public CallResult getEdgeTtlPolicies(URI edgeBaseUrl, String adminToken) {
-        return sendGet(edgeBaseUrl, adminToken, "api/edge/admin/config/ttl");
+        return sendGet(edgeBaseUrl, adminToken, "api/edge/admin/configs/expirations");
     }
 
     /** {@inheritDoc} */
@@ -187,14 +187,15 @@ public final class HttpAdminOperations implements AdminOperations {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("prefix", cleanPrefix);
         payload.put("ttlMs", ttlMs);
-        return sendPut(edgeBaseUrl, adminToken, "api/edge/admin/config/ttl", JacksonCodec.toJson(payload));
+        return sendPut(edgeBaseUrl, adminToken, "api/edge/admin/configs/expirations", JacksonCodec.toJson(payload));
     }
 
     /** {@inheritDoc} */
     @Override
     public CallResult removeEdgeTtlPolicy(URI edgeBaseUrl, String adminToken, String prefix) {
         String cleanPrefix = HttpAdapterSupport.requireText(prefix, "prefix");
-        URI url = base(edgeBaseUrl).resolve("api/edge/admin/config/ttl?prefix=" + UriUtils.urlEncode(cleanPrefix));
+        URI url = base(edgeBaseUrl)
+                .resolve("api/edge/admin/configs/expirations?prefix=" + UriUtils.urlEncode(cleanPrefix));
         return send(TransportRequest.delete(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 

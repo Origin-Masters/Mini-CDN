@@ -38,7 +38,7 @@ class AdminConfigServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8081/api/edge/admin/config/ttl",
+                "http://localhost:8081/api/edge/admin/configs/expirations",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -57,7 +57,7 @@ class AdminConfigServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("PUT", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8081/api/edge/admin/config/ttl",
+                "http://localhost:8081/api/edge/admin/configs/expirations",
                 transportClient.lastRequest.uri().toString());
         assertEquals("{\"prefix\":\"videos/\",\"ttlMs\":15000}", transportClient.lastRequest.body());
     }
@@ -77,7 +77,7 @@ class AdminConfigServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8081/api/edge/admin/config/ttl?prefix=videos%2F2026",
+                "http://localhost:8081/api/edge/admin/configs/expirations?prefix=videos%2F2026",
                 transportClient.lastRequest.uri().toString());
     }
 

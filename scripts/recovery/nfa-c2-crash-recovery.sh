@@ -156,7 +156,7 @@ curl -sf -X PUT -H "X-Admin-Token: $TOKEN" \
 curl -sf -X PUT -H "X-Admin-Token: $TOKEN" \
   -H "Content-Type: application/json" \
   -d "{\"prefix\":\"$FILE\",\"ttlMs\":$FILE_TTL_MS}" \
-  "$EDGE_URL/api/edge/admin/config/ttl" >/dev/null
+  "$EDGE_URL/api/edge/admin/configs/expirations" >/dev/null
 
 echo "[4/7] Warm edge cache (MISS -> HIT)"
 # Erster Zugriff: Datei sollte noch nicht im Edge-Cache liegen -> MISS.

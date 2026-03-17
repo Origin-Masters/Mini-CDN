@@ -164,7 +164,7 @@ curl -sf -X PUT "${ADMIN_HEADER[@]}" \
 curl -sf -X PUT "${ADMIN_HEADER[@]}" \
   -H "Content-Type: application/json" \
   -d "{\"prefix\":\"$FILE\",\"ttlMs\":$FILE_TTL_MS}" \
-  "$EDGE_URL/api/edge/admin/config/ttl" >/dev/null
+  "$EDGE_URL/api/edge/admin/configs/expirations" >/dev/null
 
 echo "[4/7] Warm edge cache (MISS -> HIT)"
 # First request fills the cache, second request proves the cache is active.

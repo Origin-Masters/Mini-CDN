@@ -160,11 +160,11 @@ class RegionalRoutingThreeEdgesIT extends AbstractE2E {
     /**
      * Liest die Region einer Edge ueber deren Info-Endpunkt aus.
      *
-     * <p>Das ist der direkte Nachweis fuer Akzeptanzkriterium 1 auf Edge-Seite.</p>
+     * <p>Das ist der direkte Nachweis für Akzeptanzkriterium 1 auf Edge-Seite.</p>
      */
     private static String fetchEdgeRegion(String edgeBase) throws Exception {
         HttpResponse<String> response = CLIENT.send(
-                HttpRequest.newBuilder(URI.create(edgeBase + "/api/edge/info"))
+                HttpRequest.newBuilder(URI.create(edgeBase + "/api/edge/infos"))
                         .GET()
                         .build(),
                 HttpResponse.BodyHandlers.ofString());
