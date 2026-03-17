@@ -3,23 +3,25 @@
 stages:
   - build
   - test
+  - docs
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 
-  api_docs_job:
-    stage: build
-    tags: ["maven"]
-    image: python:3.13-slim
-    script:
-      - mkdir -p artifacts
-      - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
-    artifacts:
-      when: always
-      paths:
-        - artifacts/api-endpoints.md
-      expire_in: 1 week
-  build_job:
+api_docs_job:
+  stage: build
+  tags: ["maven"]
+  image: python:3.13-slim
+  script:
+    - mkdir -p artifacts
+    - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
+  artifacts:
+    when: always
+    paths:
+      - artifacts/api-endpoints.md
+    expire_in: 1 week
+
+build_job:
   stage: build
   tags: ["maven"]
   image: maven:3.9-jdk-21
@@ -36,10 +38,10 @@ variables:
       - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
       - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
     exclude:
-      - '**/*-sources.jar'
-      - '**/*-javadoc.jar'
-      - '**/original-*.jar'
-    expire_in: 1 week
+      - "**/*-sources.jar"
+      - "**/*-javadoc.jar"
+      - "**/original-*.jar"
+    expire_in: never
 
 test_job:
   stage: test
@@ -59,3 +61,34 @@ test_job:
     paths:
       - "*/target/surefire-reports/"
   retry: 1
+
+wiki_update_job:
+  stage: docs
+  tags: ["maven"]
+  image: curlimages/curl:8.8.0
+  needs:
+    - job: api_docs_job
+      artifacts: true
+  rules:
+    - if: '$GITLAB_API_TOKEN'
+    - when: never
+  script:
+    - export WIKI_TITLE="API Endpoints"
+    - export WIKI_SLUG="api-endpoints"
+    - export WIKI_PAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/${WIKI_SLUG}"
+    - |
+      if curl --silent --fail \
+        --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        "${WIKI_PAGE_URL}" > /dev/null; then
+        curl --silent --show-error --fail --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+          --data-urlencode "title=${WIKI_TITLE}" \
+          --data-urlencode "content@artifacts/api-endpoints.md" \
+          "${WIKI_PAGE_URL}"
+      else
+        curl --silent --show-error --fail --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+          --data-urlencode "title=${WIKI_TITLE}" \
+          --data-urlencode "content@artifacts/api-endpoints.md" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis"
+      fi
