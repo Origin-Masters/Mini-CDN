@@ -1,81 +1,99 @@
 # GitLab CI/CD workflow for our mini-CDN project
 
-stages:
-  - build
-  - test
-  - docs
+    # Pipeline stages execute in this order.
+    stages:
+      - build   # Generate derived artifacts (e.g., API docs)
+      - test    # Build and verify code quality/tests
+      - docs    # Publish documentation to GitLab Wiki
 
-variables:
-  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+    # Global environment variables available to all jobs.
+    variables:
+      # Store Maven dependencies inside the project workspace so they can be cached.
+      MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 
-cache:
-  key: "maven-${CI_COMMIT_REF_SLUG}"
-  paths:
-    - .m2/repository/
-  policy: pull-push
+    # Shared cache configuration for Maven dependencies.
+    cache:
+      # Cache key scoped by branch/tag slug to avoid cross-branch dependency clashes.
+      key: "maven-${CI_COMMIT_REF_SLUG}"
+      paths:
+        - .m2/repository/ # Local Maven repository directory
+      policy: pull-push   # Restore cache before job, then update cache after job
 
-api_docs_job:
-  stage: build
-  tags: ["maven"]
-  image: python:3.13-slim
-  script:
-    - mkdir -p artifacts
-    - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
-  artifacts:
-    when: always
-    paths:
-      - artifacts/api-endpoints.md
-    expire_in: 1 week
+    # Job: Generate markdown API endpoint documentation from repository scripts.
+    api_docs_job:
+      stage: build
+      tags: ["maven"]         # Runner tag required by your GitLab runners
+      image: python:3.13-slim # Python runtime for docs generation script
+      script:
+        - mkdir -p artifacts
+        - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
+      artifacts:
+        when: always
+        paths:
+          - artifacts/api-endpoints.md # Produced markdown file to pass to later jobs
+        expire_in: 1 week              # Keep generated docs artifact for one week
 
-verify_job:
-  stage: test
-  tags: ["maven"]
-  image: maven:3.9-jdk-21
-  script:
-    - mvn clean verify -B -Dminicdn.admin.token=secret-token
-  artifacts:
-    when: always
-    reports:
-      junit:
-        - "*/target/surefire-reports/TEST-*.xml"
-    paths:
-      - origin/target/mini-cdn-origin-1.0-SNAPSHOT.jar
-      - edge/target/mini-cdn-edge-1.0-SNAPSHOT.jar
-      - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
-      - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
-      - "*/target/surefire-reports/"
-    exclude:
-      - "**/*-sources.jar"
-      - "**/*-javadoc.jar"
-      - "**/original-*.jar"
-    expire_in: never
-  retry: 1
+    # Job: Build all modules and run tests/verification via Maven.
+    verify_job:
+      stage: test
+      tags: ["maven"]
+      image: maven:3.9-jdk-21
+      script:
+        # Runs clean + full lifecycle verification for the multi-module project.
+        - mvn clean verify -B -Dminicdn.admin.token=secret-token
+      artifacts:
+        when: always
+        reports:
+          junit:
+            # Collect JUnit XML files so GitLab can display test results in UI.
+            - "*/target/surefire-reports/TEST-*.xml"
+        paths:
+          # Persist built module jars and test reports for download/debugging.
+          - origin/target/mini-cdn-origin-1.0-SNAPSHOT.jar
+          - edge/target/mini-cdn-edge-1.0-SNAPSHOT.jar
+          - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
+          - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
+          - "*/target/surefire-reports/"
+        exclude:
+          # Avoid storing auxiliary jars that are not needed as deliverables.
+          - "**/*-sources.jar"
+          - "**/*-javadoc.jar"
+          - "**/original-*.jar"
+        expire_in: never # Keep build artifacts indefinitely
+      retry: 1           # Retry once automatically on transient failure
 
-wiki_update_job:
-  stage: docs
-  tags: ["maven"]
-  image: curlimages/curl:8.8.0
-  needs:
-    - job: api_docs_job
-      artifacts: true
-  script:
-    - test -n "${GITLAB_API_TOKEN}" || { echo "GITLAB_API_TOKEN is not set"; exit 1; }
-    - export WIKI_TITLE="API Endpoints"
-    - export WIKI_SLUG="api-endpoints"
-    - export WIKI_PAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/${WIKI_SLUG}"
-    - |
-      if curl --silent --fail \
-        --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
-        "${WIKI_PAGE_URL}" > /dev/null; then
-        curl --silent --show-error --fail --request PUT \
-          --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
-          --data-urlencode "title=${WIKI_TITLE}" \
-          --data-urlencode "content@artifacts/api-endpoints.md" \
-          "${WIKI_PAGE_URL}"
-      else
-        curl --silent --show-error --fail --request POST \
-          --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
-          --data-urlencode "title=${WIKI_TITLE}" \
-          --data-urlencode "content@artifacts/api-endpoints.md" \
-          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis"
-      fi
+    # Job: Publish or update the API documentation page in the GitLab Wiki.
+    wiki_update_job:
+      stage: docs
+      tags: ["maven"]
+      image: curlimages/curl:8.8.0
+      needs:
+        # Download artifacts from docs generation job before running.
+        - job: api_docs_job
+          artifacts: true
+      script:
+        # Fail fast if API token was not provided in CI/CD variables.
+        - test -n "${GITLAB_API_TOKEN}" || { echo "GITLAB_API_TOKEN is not set"; exit 1; }
+        # Page metadata for the wiki endpoint.
+        - export WIKI_TITLE="API Endpoints"
+        - export WIKI_SLUG="api-endpoints"
+        - export WIKI_PAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/${WIKI_SLUG}"
+        - |
+          # Upsert behavior:
+          # 1) If page exists -> update with PUT
+          # 2) If page does not exist -> create with POST
+          if curl --silent --fail \
+            --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+            "${WIKI_PAGE_URL}" > /dev/null; then
+            curl --silent --show-error --fail --request PUT \
+              --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+              --data-urlencode "title=${WIKI_TITLE}" \
+              --data-urlencode "content@artifacts/api-endpoints.md" \
+              "${WIKI_PAGE_URL}"
+          else
+            curl --silent --show-error --fail --request POST \
+              --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+              --data-urlencode "title=${WIKI_TITLE}" \
+              --data-urlencode "content@artifacts/api-endpoints.md" \
+              "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis"
+          fi
