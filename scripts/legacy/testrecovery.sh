@@ -57,7 +57,7 @@ ensure_up
 
 log "[2/7] Routing und Testdaten vorbereiten"
 curl -sf -X POST -H "X-Admin-Token: $ADMIN_TOKEN" \
-  "$ROUTER/api/cdn/routing?region=$REGION&url=$EDGE" >/dev/null
+  "$ROUTER/api/cdn/routings?region=$REGION&url=$EDGE" >/dev/null
 
 curl -sf -X PUT -H "X-Admin-Token: $ADMIN_TOKEN" \
   -H "Content-Type: application/octet-stream" \

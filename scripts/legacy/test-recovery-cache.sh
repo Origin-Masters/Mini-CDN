@@ -38,7 +38,7 @@ fi
 
 echo "[2/6] Ensure [EDGE] is registered at router"
 curl -sf -X POST -H "X-Admin-Token: $ADMIN_TOKEN" \
-  "$ROUTER/api/cdn/routing?region=$REGION&url=$EDGE" >/dev/null
+  "$ROUTER/api/cdn/routings?region=$REGION&url=$EDGE" >/dev/null
 
 echo "[3/6] Upload test file to [ORIGIN]"
 curl -sf -X PUT -H "X-Admin-Token: $ADMIN_TOKEN" \

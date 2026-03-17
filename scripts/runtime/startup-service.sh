@@ -69,5 +69,5 @@ fi
 # Edge registrieren (hier wird der ADMIN_TOKEN verwendet)
 echo -e "\nRegistering [EDGE] at [ROUTER]..."
 curl -sf -X POST -H "X-Admin-Token: $ADMIN_TOKEN" \
-  "http://localhost:8082/api/cdn/routing?region=EU&url=http://localhost:8081" > /dev/null
+  "http://localhost:8082/api/cdn/routings?region=EU&url=http://localhost:8081" > /dev/null
 echo "[EDGE] registered for region [EU]"

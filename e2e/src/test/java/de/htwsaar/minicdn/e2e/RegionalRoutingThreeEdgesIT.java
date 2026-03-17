@@ -177,7 +177,7 @@ class RegionalRoutingThreeEdgesIT extends AbstractE2E {
     private static void registerEdge(String region, String edgeBase) throws Exception {
         HttpResponse<Void> response = CLIENT.send(
                 HttpRequest.newBuilder(
-                                URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + edgeBase))
+                                URI.create(ROUTER_BASE + "/api/cdn/routings?region=" + region + "&url=" + edgeBase))
                         .header("X-Admin-Token", ADMIN_TOKEN)
                         .POST(HttpRequest.BodyPublishers.noBody())
                         .build(),
@@ -192,7 +192,7 @@ class RegionalRoutingThreeEdgesIT extends AbstractE2E {
     private static void unregisterEdge(String region, String edgeBase) throws Exception {
         CLIENT.send(
                 HttpRequest.newBuilder(
-                                URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + edgeBase))
+                                URI.create(ROUTER_BASE + "/api/cdn/routings?region=" + region + "&url=" + edgeBase))
                         .header("X-Admin-Token", ADMIN_TOKEN)
                         .DELETE()
                         .build(),

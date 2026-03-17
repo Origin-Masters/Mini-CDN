@@ -17,7 +17,7 @@ fi
 # 2) Ensure router can route EU requests to the edge node.
 echo "[2/7] Register edge at router..."
 curl -sf -X POST -H "X-Admin-Token: $TOKEN" \
-  "http://localhost:8082/api/cdn/routing?region=EU&url=http://localhost:8081" >/dev/null
+  "http://localhost:8082/api/cdn/routings?region=EU&url=http://localhost:8081" >/dev/null
 
 # 3) Upload one small file to origin as benchmark.
 echo "[3/7] Upload test file to origin..."

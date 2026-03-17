@@ -106,7 +106,7 @@ try {
 
     Invoke-WebRequest `
         -Method POST `
-        -Uri "http://localhost:8082/api/cdn/routing?region=EU&url=http://localhost:8081" `
+        -Uri "http://localhost:8082/api/cdn/routings?region=EU&url=http://localhost:8081" `
         -Headers @{ "X-Admin-Token" = "secret-token" } `
         -UseBasicParsing | Out-Null
 

@@ -109,7 +109,7 @@ class AdminConfigServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/origin/cluster?checkHealth=true",
+                "http://localhost:8082/api/cdn/admin/origins/clusters?checkHealth=true",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -125,7 +125,7 @@ class AdminConfigServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/origin/spares?url=http%3A%2F%2Flocalhost%3A8084",
+                "http://localhost:8082/api/cdn/admin/origins/spares?url=http%3A%2F%2Flocalhost%3A8084",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -141,7 +141,7 @@ class AdminConfigServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/origin/promote?url=http%3A%2F%2Flocalhost%3A8084",
+                "http://localhost:8082/api/cdn/admin/origins/promotions?url=http%3A%2F%2Flocalhost%3A8084",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -156,7 +156,7 @@ class AdminConfigServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/origin/failover/check",
+                "http://localhost:8082/api/cdn/admin/origins/failovers/checks",
                 transportClient.lastRequest.uri().toString());
     }
 

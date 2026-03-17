@@ -142,7 +142,7 @@ echo "[3/7] Create persisted state"
 # register the edge at the router
 # afterwards the edge is known to the router
 curl -sf -X POST -H "X-Admin-Token: $TOKEN" \
-  "$ROUTER_URL/api/cdn/routing?region=$REGION&url=$EDGE_URL" >/dev/null
+  "$ROUTER_URL/api/cdn/routings?region=$REGION&url=$EDGE_URL" >/dev/null
 
 # PUT test file to the origin, so it can be cached at the edge.
 # Diese Datei verwenden wir später, um zu checken ob nach dem Crash Daten verloren gingen.

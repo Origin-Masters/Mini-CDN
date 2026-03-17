@@ -102,7 +102,7 @@ public class UserStatsController {
      * @param fileId technische Datei-ID aus der Rangliste
      * @return Dateidetails oder {@code 404}, wenn die ID unbekannt ist
      */
-    @GetMapping("/file/{fileId}")
+    @GetMapping("/files/{fileId}")
     public ResponseEntity<Map<String, Object>> fileById(
             @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
             @PathVariable("fileId") long fileId) {

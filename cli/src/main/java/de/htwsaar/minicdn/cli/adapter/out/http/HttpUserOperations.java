@@ -41,7 +41,7 @@ public final class HttpUserOperations implements UserOperations {
 
         try {
             TransportResponse response = transportClient.send(TransportRequest.postJson(
-                    base(routerBaseUrl).resolve("api/cdn/auth/login"),
+                    base(routerBaseUrl).resolve("api/cdn/auth/logins"),
                     requestTimeout,
                     HttpAdapterSupport.jsonHeaders(),
                     JacksonCodec.toJson(Map.of("name", cleanUsername))));
@@ -56,7 +56,7 @@ public final class HttpUserOperations implements UserOperations {
     /** {@inheritDoc} */
     @Override
     public CallResult fileStats(URI routerBaseUrl, long loggedInUserId, long fileId) {
-        URI url = base(routerBaseUrl).resolve("api/cdn/stats/file/" + fileId);
+        URI url = base(routerBaseUrl).resolve("api/cdn/stats/files/" + fileId);
         return HttpAdapterSupport.execute(
                 transportClient,
                 TransportRequest.get(url, requestTimeout, Map.of("X-User-Id", String.valueOf(loggedInUserId))));

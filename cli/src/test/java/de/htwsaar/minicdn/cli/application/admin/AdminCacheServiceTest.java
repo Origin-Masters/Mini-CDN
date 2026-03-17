@@ -32,7 +32,7 @@ class AdminCacheServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/cache/region/eu-west/files/videos/intro.mp4",
+                "http://localhost:8082/api/cdn/admin/caches/regions/eu-west/files/videos/intro.mp4",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -48,7 +48,7 @@ class AdminCacheServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/cache/region/eu-west/prefix?value=videos%2F2026",
+                "http://localhost:8082/api/cdn/admin/caches/regions/eu-west/prefixes?value=videos%2F2026",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -63,7 +63,7 @@ class AdminCacheServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/cache/region/eu-west/all",
+                "http://localhost:8082/api/cdn/admin/caches/regions/eu-west/invalidations",
                 transportClient.lastRequest.uri().toString());
     }
 

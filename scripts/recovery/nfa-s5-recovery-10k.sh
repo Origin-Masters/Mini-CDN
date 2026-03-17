@@ -154,7 +154,7 @@ start_stack
 echo "[3/7] Create persisted state"
 # Router needs the edge in its routing table
 curl -sf -X POST "${ADMIN_HEADER[@]}" \
-  "$ROUTER_URL/api/cdn/routing?region=$REGION&url=$EDGE_URL" >/dev/null
+  "$ROUTER_URL/api/cdn/routings?region=$REGION&url=$EDGE_URL" >/dev/null
 # Store one small file at the origin; this is the file we warm and recover later.
 curl -sf -X PUT "${ADMIN_HEADER[@]}" \
   -H "Content-Type: application/octet-stream" \

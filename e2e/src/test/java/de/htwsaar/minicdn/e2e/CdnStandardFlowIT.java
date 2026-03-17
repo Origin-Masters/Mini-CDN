@@ -335,7 +335,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void registerEdgeInRouter() throws Exception {
-        URI addEdgeUri = uri(ROUTER_BASE + "/api/cdn/routing?region=" + REGION + "&url=" + EDGE_BASE);
+        URI addEdgeUri = uri(ROUTER_BASE + "/api/cdn/routings?region=" + REGION + "&url=" + EDGE_BASE);
         HttpRequest addEdgeReq = HttpRequest.newBuilder(addEdgeUri)
                 .header("X-Admin-Token", ADMIN_TOKEN)
                 .POST(HttpRequest.BodyPublishers.noBody())
@@ -346,7 +346,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void registerEdgeInRouter(String region, String url) throws Exception {
-        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
+        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routings?region=" + region + "&url=" + url);
         CLIENT.send(
                 HttpRequest.newBuilder(uri)
                         .header("X-Admin-Token", ADMIN_TOKEN)
@@ -356,7 +356,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void cleanupRouterEdgeRegistration() throws Exception {
-        URI delEdgeUri = uri(ROUTER_BASE + "/api/cdn/routing?region=" + REGION + "&url=" + EDGE_BASE);
+        URI delEdgeUri = uri(ROUTER_BASE + "/api/cdn/routings?region=" + REGION + "&url=" + EDGE_BASE);
         HttpRequest delReq = HttpRequest.newBuilder(delEdgeUri)
                 .header("X-Admin-Token", ADMIN_TOKEN)
                 .DELETE()
@@ -405,7 +405,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void unregisterEdge(String region, String url) throws Exception {
-        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
+        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routings?region=" + region + "&url=" + url);
         CLIENT.send(
                 HttpRequest.newBuilder(uri)
                         .header("X-Admin-Token", ADMIN_TOKEN)
@@ -439,7 +439,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static List<String> fetchRoutingUrls(String region) throws Exception {
-        URI routingUri = URI.create(ROUTER_BASE + "/api/cdn/routing?checkHealth=false");
+        URI routingUri = URI.create(ROUTER_BASE + "/api/cdn/routings?checkHealth=false");
         HttpRequest request = HttpRequest.newBuilder(routingUri)
                 .header("X-Admin-Token", ADMIN_TOKEN)
                 .GET()

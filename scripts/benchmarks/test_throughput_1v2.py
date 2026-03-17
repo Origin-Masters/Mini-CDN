@@ -184,7 +184,7 @@ def ensure_edge_jar(config: BenchmarkConfig) -> None:
 def ensure_single_edge_setup(config: BenchmarkConfig) -> None:
     """Register baseline edge route for deterministic 1-edge run."""
     query = urllib.parse.urlencode({"region": config.test_region, "url": "http://localhost:8081"})
-    url = f"{config.router_base}/api/cdn/routing?{query}"
+    url = f"{config.router_base}/api/cdn/routings?{query}"
     status, _, _ = request("POST", url, token=config.token)
     if status not in (200, 201, 204, 409):
         raise BenchmarkError(f"Failed baseline edge setup: status={status}")
@@ -265,7 +265,7 @@ def run_load_test(config: BenchmarkConfig, label: str, client_prefix: str) -> Ru
 
 def start_second_edge(config: BenchmarkConfig) -> str:
     """Start one additional edge using router lifecycle adapter endpoint."""
-    url = f"{config.router_base}/api/cdn/admin/edges/start/auto"
+    url = f"{config.router_base}/api/cdn/admin/edges/activations/automations"
     payload = {
         "region": config.test_region,
         "count": 1,

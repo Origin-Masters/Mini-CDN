@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Admin-API zur Runtime-Verwaltung von Origin-Hot-Spares über den Router.
  */
 @RestController
-@RequestMapping("/api/cdn/admin/origin")
+@RequestMapping("/api/cdn/admin/origins")
 public class OriginClusterAdminController {
 
     private final OriginClusterService originClusterService;
@@ -24,7 +24,7 @@ public class OriginClusterAdminController {
         this.originClusterService = originClusterService;
     }
 
-    @GetMapping("/cluster")
+    @GetMapping("/clusters")
     public ResponseEntity<OriginClusterService.OriginClusterSnapshot> getCluster(
             @RequestParam(value = "checkHealth", defaultValue = "false") boolean checkHealth) {
         return ResponseEntity.ok(originClusterService.snapshot(checkHealth));
@@ -53,7 +53,7 @@ public class OriginClusterAdminController {
         }
     }
 
-    @PostMapping("/promote")
+    @PostMapping("/promotions")
     public ResponseEntity<?> promote(@RequestParam("url") String url) {
         try {
             boolean promoted = originClusterService.promoteToActive(url);
@@ -66,7 +66,7 @@ public class OriginClusterAdminController {
         }
     }
 
-    @PostMapping("/failover/check")
+    @PostMapping("/failovers/checks")
     public ResponseEntity<OriginClusterService.OriginClusterSnapshot> runFailoverCheck() {
         originClusterService.failoverIfActiveIsUnhealthy();
         return ResponseEntity.ok(originClusterService.snapshot(true));

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
  * HTTP-Adapter für Pflege und Abfrage des Routing-Indexes.
  */
 @RestController
-@RequestMapping("/api/cdn/routing")
+@RequestMapping("/api/cdn")
 public class RoutingAdminController {
 
     private final RouterAdminService routerAdminService;
@@ -30,7 +30,7 @@ public class RoutingAdminController {
      * @param url Basis-URL der Edge-Instanz
      * @return Created bei Erfolg
      */
-    @PostMapping
+    @PostMapping("/routings")
     public ResponseEntity<Void> addEdgeNode(
             @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
 
@@ -44,7 +44,7 @@ public class RoutingAdminController {
      * @param requests Liste der Bulk-Updates
      * @return Ergebnisliste je Update
      */
-    @PostMapping("/bulk")
+    @PostMapping("/routes/batches")
     public ResponseEntity<List<BulkResponse>> bulkUpdate(@RequestBody List<BulkRequest> requests) {
         return ResponseEntity.ok(routerAdminService.bulkUpdate(requests));
     }
@@ -56,7 +56,7 @@ public class RoutingAdminController {
      * @param url Basis-URL der Edge-Instanz
      * @return OK bei Erfolg, sonst NOT_FOUND
      */
-    @DeleteMapping
+    @DeleteMapping("/routings")
     public ResponseEntity<?> deleteEdgeNode(
             @RequestParam(value = "region") String region, @RequestParam(value = "url") String url) {
 
@@ -73,7 +73,7 @@ public class RoutingAdminController {
      * @param checkHealth ob der Health-Check der Edges ausgefuehrt wird
      * @return Routing-Index nach Region
      */
-    @GetMapping
+    @GetMapping("/routings")
     public ResponseEntity<Map<String, List<EdgeNodeStatus>>> getIndex(
             @RequestParam(value = "checkHealth", defaultValue = "false") boolean checkHealth) {
         return ResponseEntity.ok(routerAdminService.getIndex(checkHealth));
