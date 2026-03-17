@@ -78,7 +78,7 @@ public final class HttpAdminOperations implements AdminOperations {
     /** {@inheritDoc} */
     @Override
     public CallResult getOriginConfig(URI originBaseUrl, String adminToken) {
-        return sendGet(originBaseUrl, adminToken, "api/origin/admin/config");
+        return sendGet(originBaseUrl, adminToken, "api/origin/admin/configs");
     }
 
     /** {@inheritDoc} */
@@ -91,7 +91,7 @@ public final class HttpAdminOperations implements AdminOperations {
         if (hasText(logLevel)) {
             payload.put("logLevel", logLevel.trim());
         }
-        return sendPatch(originBaseUrl, adminToken, "api/origin/admin/config", JacksonCodec.toJson(payload));
+        return sendPatch(originBaseUrl, adminToken, "api/origin/admin/configs", JacksonCodec.toJson(payload));
     }
 
     /** {@inheritDoc} */
