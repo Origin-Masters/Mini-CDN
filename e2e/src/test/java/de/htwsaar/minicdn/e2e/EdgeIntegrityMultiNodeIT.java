@@ -37,9 +37,10 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
 
     @Test
     void integrity_is_identical_on_three_edges() throws Exception {
-
+        // Erzeugt einen eindeutigen Ordnernamen für die zweite zusätzliche Edge
         String edge2StateDir = "target/e2e-edge-state-edge2-" + System.nanoTime();
 
+        // 2. Edge starten
         edge2Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
                 .run(
@@ -54,6 +55,7 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
 
         String edge3StateDir = "target/e2e-edge-state-edge3-" + System.nanoTime();
 
+        // 3. Edge starten
         edge3Ctx = new SpringApplicationBuilder(EdgeApp.class)
                 .profiles("edge")
                 .run(
@@ -70,6 +72,7 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
         URI adminUri = URI.create(ORIGIN_BASE + "/api/origin/admin/files/" + fileName);
 
         byte[] payload = new byte[128_000];
+        // Datei auf Origin hochladen
         CLIENT.send(
                 HttpRequest.newBuilder(adminUri)
                         .header("X-Admin-Token", ADMIN_TOKEN)
@@ -78,13 +81,16 @@ class EdgeIntegrityMultiNodeIT extends AbstractE2E {
                 HttpResponse.BodyHandlers.discarding());
 
         try {
+            // SHA256-Hash der Orignaldatei holen
             String originSha = fetchSha(ORIGIN_BASE + "/api/origin/files/" + fileName);
             assertNotNull(originSha);
 
+            // Selbe Datei wird von allen Edges abgefragt und Hash geholt
             String edge1Sha = fetchSha(EDGE_BASE + "/api/edge/files/" + fileName);
             String edge2Sha = fetchSha(edge2Base + "/api/edge/files/" + fileName);
             String edge3Sha = fetchSha(edge3Base + "/api/edge/files/" + fileName);
 
+            // erwartet wird, dass alle Hashes übereinstimmen
             assertEquals(originSha, edge1Sha);
             assertEquals(originSha, edge2Sha);
             assertEquals(originSha, edge3Sha);

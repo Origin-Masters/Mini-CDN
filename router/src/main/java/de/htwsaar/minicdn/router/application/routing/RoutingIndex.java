@@ -182,18 +182,21 @@ public class RoutingIndex implements EdgeRegistry {
         if (cleanRegion == null || maxCandidates <= 0) {
             return List.of();
         }
-
+        // Holt alle gesunden Edges dieser Region
         List<EdgeNode> healthyNodes = healthySnapshot(cleanRegion);
         if (healthyNodes.isEmpty()) {
             return List.of();
         }
 
-        int size = healthyNodes.size();
-        int limit = Math.min(maxCandidates, size);
+        int size = healthyNodes.size();            // Anzahl gesunder Edge
+        int limit = Math.min(maxCandidates, size); // Anzahl Kandidaten
 
+        // Zähler holen, wenn noch keiner existiert neuen mit Wert 0 anlegen
         AtomicLong counter = regionCounters.computeIfAbsent(cleanRegion, ignored -> new AtomicLong(0));
+        // Start Index berechnen, holt aktuellen Zähler inkrementiert und modulo size
         int startIndex = Math.floorMod(counter.getAndIncrement(), size);
 
+        // Kandidatenliste anlegen
         List<EdgeNode> candidates = new ArrayList<>(limit);
         for (int i = 0; i < limit; i++) {
             candidates.add(healthyNodes.get((startIndex + i) % size));
