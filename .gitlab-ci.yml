@@ -41,15 +41,14 @@
       script:
         # Runs clean + full lifecycle verification for the multi-module project.
         - mvn clean verify -B -Dminicdn.admin.token=secret-token
-        # Build one downloadable bundle for the professor.
+        # Build one downloadable server bundle for the professor.
         - mkdir -p artifacts
         - |
-          tar -czf artifacts/mini-cdn-professor-bundle.tar.gz \
+          tar -czf artifacts/mini-cdn-professor-servers.tar.gz \
             .env.example \
             origin/target/origin-*-exec.jar \
             edge/target/edge-*-exec.jar \
             router/target/router-*-exec.jar \
-            cli/target/cli-*-exec.jar \
             origin/data \
             origin/data-spare \
             edge/data \
@@ -61,8 +60,8 @@
             # Collect JUnit XML files so GitLab can display test results in UI.
             - "*/target/surefire-reports/TEST-*.xml"
         paths:
-          # Persist one simple bundle for download plus test reports.
-          - artifacts/mini-cdn-professor-bundle.tar.gz
+          # Persist the server bundle plus test reports.
+          - artifacts/mini-cdn-professor-servers.tar.gz
           - "*/target/surefire-reports/"
         exclude:
           # Avoid storing auxiliary jars that are not needed as deliverables.
@@ -71,6 +70,26 @@
           - "**/original-*.jar"
         expire_in: never # Keep build artifacts indefinitely
       retry: 1           # Retry once automatically on transient failure
+
+    # Job: Build a separate CLI bundle so the artifact stays below the GitLab upload limit.
+    cli_bundle_job:
+      stage: test
+      tags: ["maven"]
+      image: maven:3.9-jdk-21
+      needs:
+        - verify_job
+      script:
+        - mvn -pl cli -am clean package -B -DskipTests -Dminicdn.admin.token=secret-token
+        - mkdir -p artifacts
+        - |
+          tar -czf artifacts/mini-cdn-professor-cli.tar.gz \
+            .env.example \
+            cli/target/cli-*-exec.jar
+      artifacts:
+        when: always
+        paths:
+          - artifacts/mini-cdn-professor-cli.tar.gz
+        expire_in: never
 
     # Job: Publish or update the API documentation page in the GitLab Wiki.
     wiki_update_job:
