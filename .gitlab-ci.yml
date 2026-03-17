@@ -8,6 +8,12 @@ stages:
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 
+cache:
+  key: "maven-${CI_COMMIT_REF_SLUG}"
+  paths:
+    - .m2/repository/
+  policy: pull-push
+
 api_docs_job:
   stage: build
   tags: ["maven"]
@@ -21,45 +27,28 @@ api_docs_job:
       - artifacts/api-endpoints.md
     expire_in: 1 week
 
-build_job:
-  stage: build
-  tags: ["maven"]
-  image: maven:3.9-jdk-21
-  script:
-    - mvn clean verify -DskipTests
-  cache:
-    paths:
-      - .m2/repository/
-  artifacts:
-    when: always
-    paths:
-      - origin/target/mini-cdn-origin-1.0-SNAPSHOT.jar
-      - edge/target/mini-cdn-edge-1.0-SNAPSHOT.jar
-      - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
-      - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
-    exclude:
-      - "**/*-sources.jar"
-      - "**/*-javadoc.jar"
-      - "**/original-*.jar"
-    expire_in: never
-
-test_job:
+verify_job:
   stage: test
   tags: ["maven"]
   image: maven:3.9-jdk-21
   script:
-    - echo "Running unit tests..."
-    - mvn test -B -Dminicdn.admin.token=secret-token
-  cache:
-    paths:
-      - .m2/repository/
+    - mvn clean verify -B -Dminicdn.admin.token=secret-token
   artifacts:
     when: always
     reports:
       junit:
         - "*/target/surefire-reports/TEST-*.xml"
     paths:
+      - origin/target/mini-cdn-origin-1.0-SNAPSHOT.jar
+      - edge/target/mini-cdn-edge-1.0-SNAPSHOT.jar
+      - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
+      - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
       - "*/target/surefire-reports/"
+    exclude:
+      - "**/*-sources.jar"
+      - "**/*-javadoc.jar"
+      - "**/original-*.jar"
+    expire_in: never
   retry: 1
 
 wiki_update_job:
@@ -70,7 +59,7 @@ wiki_update_job:
     - job: api_docs_job
       artifacts: true
   rules:
-    - if: '$Projektdoku'
+    - if: '$GITLAB_API_TOKEN'
     - when: never
   script:
     - export WIKI_TITLE="API Endpoints"
