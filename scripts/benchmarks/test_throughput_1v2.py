@@ -63,6 +63,10 @@ class BenchmarkError(RuntimeError):
     """Raised for benchmark setup and execution errors."""
 
 
+class RequestFailed(BenchmarkError):
+    """Raised when an HTTP request cannot be executed at all."""
+
+
 def env_bool(name: str, default: bool) -> bool:
     """Parse boolean environment variables in a predictable way."""
     raw = os.getenv(name)
@@ -117,6 +121,9 @@ def request(
             return int(response.status), response.read(), dict(response.headers.items())
     except urllib.error.HTTPError as ex:
         return int(ex.code), ex.read(), dict(ex.headers.items()) if ex.headers else {}
+    except urllib.error.URLError as ex:
+        reason = ex.reason if ex.reason else ex
+        raise RequestFailed(f"Request failed for {method} {url}: {reason}") from ex
 
 
 def require_status(method: str, url: str, expected: int, **kwargs: object) -> bytes:
@@ -130,7 +137,10 @@ def require_status(method: str, url: str, expected: int, **kwargs: object) -> by
 def ensure_services(config: BenchmarkConfig) -> None:
     """Validate router availability and optionally start local services."""
     health_url = f"{config.router_base}/api/cdn/health"
-    status, _, _ = request("GET", health_url, token=config.token)
+    try:
+        status, _, _ = request("GET", health_url, token=config.token)
+    except RequestFailed:
+        status = 0
     if status == 200:
         return
 
@@ -148,7 +158,10 @@ def ensure_services(config: BenchmarkConfig) -> None:
 
     subprocess.run([bash, startup_script], check=True, cwd=ROOT_DIR)
 
-    status_after, _, _ = request("GET", health_url, token=config.token)
+    try:
+        status_after, _, _ = request("GET", health_url, token=config.token)
+    except RequestFailed as ex:
+        raise BenchmarkError("Router is still unreachable after startup attempt.") from ex
     if status_after != 200:
         raise BenchmarkError("Router is still unreachable after startup attempt.")
 
