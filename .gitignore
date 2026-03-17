@@ -24,6 +24,7 @@ ehthumbs.db
 .classpath
 
 .minicdn.history
+artifacts/
 edge.log
 scripts/tools/git-stats.ps1
 origin.log

@@ -41,6 +41,19 @@
       script:
         # Runs clean + full lifecycle verification for the multi-module project.
         - mvn clean verify -B -Dminicdn.admin.token=secret-token
+        # Build one downloadable bundle for the professor.
+        - mkdir -p artifacts
+        - |
+          tar -czf artifacts/mini-cdn-professor-bundle.tar.gz \
+            .env.example \
+            origin/target/origin-*-exec.jar \
+            edge/target/edge-*-exec.jar \
+            router/target/router-*-exec.jar \
+            cli/target/cli-*-exec.jar \
+            origin/data \
+            origin/data-spare \
+            edge/data \
+            router/data
       artifacts:
         when: always
         reports:
@@ -48,11 +61,8 @@
             # Collect JUnit XML files so GitLab can display test results in UI.
             - "*/target/surefire-reports/TEST-*.xml"
         paths:
-          # Persist built module jars and test reports for download/debugging.
-          - origin/target/mini-cdn-origin-1.0-SNAPSHOT.jar
-          - edge/target/mini-cdn-edge-1.0-SNAPSHOT.jar
-          - router/target/mini-cdn-router-1.0-SNAPSHOT.jar
-          - cli/target/mini-cdn-cli-1.0-SNAPSHOT.jar
+          # Persist one simple bundle for download plus test reports.
+          - artifacts/mini-cdn-professor-bundle.tar.gz
           - "*/target/surefire-reports/"
         exclude:
           # Avoid storing auxiliary jars that are not needed as deliverables.
