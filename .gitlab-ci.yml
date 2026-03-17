@@ -58,10 +58,8 @@ wiki_update_job:
   needs:
     - job: api_docs_job
       artifacts: true
-  rules:
-    - if: '$GITLAB_API_TOKEN'
-    - when: never
   script:
+    - test -n "${GITLAB_API_TOKEN}" || { echo "GITLAB_API_TOKEN is not set"; exit 1; }
     - export WIKI_TITLE="API Endpoints"
     - export WIKI_SLUG="api-endpoints"
     - export WIKI_PAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/${WIKI_SLUG}"
