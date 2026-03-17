@@ -70,7 +70,7 @@ wiki_update_job:
     - job: api_docs_job
       artifacts: true
   rules:
-    - if: '$GITLAB_API_TOKEN'
+    - if: '$Projektdoku'
     - when: never
   script:
     - export WIKI_TITLE="API Endpoints"
