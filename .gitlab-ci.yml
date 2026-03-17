@@ -1,50 +1,39 @@
-# GitLab CI/CD workflow for our mini-CDN project
+stages:
+      - build
+      - test
+      - docs
 
-    # Pipeline stages execute in this order.
-    stages:
-      - build   # Generate derived artifacts (e.g., API docs)
-      - test    # Build and verify code quality/tests
-      - docs    # Publish documentation to GitLab Wiki
-
-    # Global environment variables available to all jobs.
     variables:
-      # Store Maven dependencies inside the project workspace so they can be cached.
       MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 
-    # Shared cache configuration for Maven dependencies.
     cache:
-      # Cache key scoped by branch/tag slug to avoid cross-branch dependency clashes.
       key: "maven-${CI_COMMIT_REF_SLUG}"
       paths:
-        - .m2/repository/ # Local Maven repository directory
-      policy: pull-push   # Restore cache before job, then update cache after job
+        - .m2/repository/
+      policy: pull-push
 
-    # Job: Generate markdown API endpoint documentation from repository scripts.
     api_docs_job:
       stage: build
-      tags: ["maven"]         # Runner tag required by your GitLab runners
-      image: python:3.13-slim # Python runtime for docs generation script
+      tags: ["maven"]
+      image: python:3.13-slim
       script:
         - mkdir -p artifacts
         - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
       artifacts:
         when: always
         paths:
-          - artifacts/api-endpoints.md # Produced markdown file to pass to later jobs
-        expire_in: 1 week              # Keep generated docs artifact for one week
+          - artifacts/api-endpoints.md
+        expire_in: 1 week
 
-    # Job: Build all modules and run tests/verification via Maven.
     verify_job:
       stage: test
       tags: ["maven"]
       image: maven:3.9-jdk-21
       script:
-        # Runs clean + full lifecycle verification for the multi-module project.
         - mvn clean verify -B -Dminicdn.admin.token=secret-token
-        # Build one downloadable server bundle for the professor.
         - mkdir -p artifacts
         - |
-          tar -czf artifacts/mini-cdn-professor-servers.tar.gz \
+          tar -czf artifacts/mini-cdn-submission-servers.tar.gz \
             .env.example \
             origin/target/origin-*-exec.jar \
             edge/target/edge-*-exec.jar \
@@ -57,21 +46,17 @@
         when: always
         reports:
           junit:
-            # Collect JUnit XML files so GitLab can display test results in UI.
             - "*/target/surefire-reports/TEST-*.xml"
         paths:
-          # Persist the server bundle plus test reports.
-          - artifacts/mini-cdn-professor-servers.tar.gz
+          - artifacts/mini-cdn-submission-servers.tar.gz
           - "*/target/surefire-reports/"
         exclude:
-          # Avoid storing auxiliary jars that are not needed as deliverables.
           - "**/*-sources.jar"
           - "**/*-javadoc.jar"
           - "**/original-*.jar"
-        expire_in: never # Keep build artifacts indefinitely
-      retry: 1           # Retry once automatically on transient failure
+        expire_in: never
+      retry: 1
 
-    # Job: Build a separate CLI bundle so the artifact stays below the GitLab upload limit.
     cli_bundle_job:
       stage: test
       tags: ["maven"]
@@ -82,35 +67,29 @@
         - mvn -pl cli -am clean package -B -DskipTests -Dminicdn.admin.token=secret-token
         - mkdir -p artifacts
         - |
-          tar -czf artifacts/mini-cdn-professor-cli.tar.gz \
+          tar -czf artifacts/mini-cdn-submission-cli.tar.gz \
             .env.example \
             cli/target/cli-*-exec.jar
       artifacts:
         when: always
         paths:
-          - artifacts/mini-cdn-professor-cli.tar.gz
+          - artifacts/mini-cdn-submission-cli.tar.gz
         expire_in: never
 
-    # Job: Publish or update the API documentation page in the GitLab Wiki.
     wiki_update_job:
       stage: docs
       tags: ["maven"]
       image: curlimages/curl:8.8.0
       needs:
-        # Download artifacts from docs generation job before running.
         - job: api_docs_job
           artifacts: true
       script:
-        # Fail fast if API token was not provided in CI/CD variables.
         - test -n "${GITLAB_API_TOKEN}" || { echo "GITLAB_API_TOKEN is not set"; exit 1; }
-        # Page metadata for the wiki endpoint.
         - export WIKI_TITLE="API Endpoints"
         - export WIKI_SLUG="api-endpoints"
         - export WIKI_PAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/${WIKI_SLUG}"
         - |
-          # Upsert behavior:
-          # 1) If page exists -> update with PUT
-          # 2) If page does not exist -> create with POST
+          # Update existing wiki page, otherwise create it.
           if curl --silent --fail \
             --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
             "${WIKI_PAGE_URL}" > /dev/null; then

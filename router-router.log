@@ -1,0 +1,101 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-17 18:04:35,149","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Starting RouterApp using Java 21.0.1 with PID 22270 (/Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router/target/router-1.0-SNAPSHOT-exec.jar started by michalroziel in /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-17 18:04:35,151","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Running with Spring Boot v3.2.5, Spring v6.1.6"}
+{"timestamp":"2026-03-17 18:04:35,151","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"The following 1 profile is active: "cdn""}
+{"timestamp":"2026-03-17 18:04:35,725","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8082 (http)"}
+{"timestamp":"2026-03-17 18:04:35,730","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-03-17 18:04:35,731","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-17 18:04:35,731","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-17 18:04:35,749","level":"INFO","thread":"main","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-17 18:04:35,750","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 561 ms"}
+{"timestamp":"2026-03-17 18:04:35,776","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.logging.TraceIdFilter","message":"Filter 'traceIdFilter' configured for use"}
+{"timestamp":"2026-03-17 18:04:35,777","level":"DEBUG","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.common.auth.AdminAuthFilter","message":"Filter 'adminAuthFilter' configured for use"}
+{"timestamp":"2026-03-17 18:04:36,017","level":"INFO","thread":"main","traceId":"","logger":"org.jooq.Constants","message":"
+                                      
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@  @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@  @@  @@    @@@@@@@@@@
+@@@@@@@@@@  @@@@  @@  @@    @@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@    @@  @@  @@@@  @@@@@@@@@@
+@@@@@@@@@@    @@  @@  @@@@  @@@@@@@@@@
+@@@@@@@@@@        @@  @  @  @@@@@@@@@@
+@@@@@@@@@@        @@        @@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  Thank you for using jOOQ 3.20.10 (Build date: 2025-12-05T08:57:46Z)
+                                      "}
+{"timestamp":"2026-03-17 18:04:36,018","level":"INFO","thread":"main","traceId":"","logger":"org.jooq.Constants","message":"
+
+jOOQ tip of the day: jOOQ supports a variety of out-of-the-box export formats, including CSV, XML, JSON, HTML, and Text: https://www.jooq.org/doc/latest/manual/sql-execution/exporting/
+"}
+{"timestamp":"2026-03-17 18:04:36,349","level":"INFO","thread":"main","traceId":"","logger":"org.jooq.impl.DefaultExecuteContext.logVersionSupport","message":"Version                  : Database version is supported by dialect SQLITE: 3.45.1"}
+{"timestamp":"2026-03-17 18:04:36,537","level":"WARN","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.application.origin.OriginClusterService","message":"[ORIGIN-FAILOVER] Konnte Origin http://localhost:8080/ nicht an Edge http://localhost:8081/ in Region EU propagieren."}
+{"timestamp":"2026-03-17 18:04:36,746","level":"INFO","thread":"main","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8082"]"}
+{"timestamp":"2026-03-17 18:04:36,752","level":"INFO","thread":"main","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8082 (http) with context path ''"}
+{"timestamp":"2026-03-17 18:04:36,770","level":"INFO","thread":"main","traceId":"","logger":"de.htwsaar.minicdn.router.RouterApp","message":"Started RouterApp in 1.894 seconds (process running for 2.195)"}
+{"timestamp":"2026-03-17 18:04:36,776","level":"WARN","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist nicht erreichbar und wurde aus dem Routing entfernt."}
+{"timestamp":"2026-03-17 18:04:37,638","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-17 18:04:37,638","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-17 18:04:37,638","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected StandardServletMultipartResolver"}
+{"timestamp":"2026-03-17 18:04:37,638","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected AcceptHeaderLocaleResolver"}
+{"timestamp":"2026-03-17 18:04:37,638","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected FixedThemeResolver"}
+{"timestamp":"2026-03-17 18:04:37,638","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@721bf7ad"}
+{"timestamp":"2026-03-17 18:04:37,638","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Detected org.springframework.web.servlet.support.SessionFlashMapManager@545d2560"}
+{"timestamp":"2026-03-17 18:04:37,639","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data"}
+{"timestamp":"2026-03-17 18:04:37,639","level":"INFO","thread":"http-nio-8082-exec-1","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-17 18:04:37,643","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"21b47cc2-617b-4e81-9046-2d8c699f0732","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/health", parameters={}"}
+{"timestamp":"2026-03-17 18:04:37,663","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"21b47cc2-617b-4e81-9046-2d8c699f0732","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-17 18:04:37,673","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"bc7cd928-c801-4c34-ba4a-0a1c9fa0f00e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/admin/edges/start", parameters={}"}
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+{"timestamp":"2026-03-17 18:04:38,284","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Starting EdgeApp using Java 21.0.1 with PID 22273 (/Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/edge/target/edge-1.0-SNAPSHOT-exec.jar started by michalroziel in /Users/michalroziel/Documents/HTW SAAR/Semester 5/Distributed-Systems/gruppe-08-mini-cdn/router)"}
+{"timestamp":"2026-03-17 18:04:38,286","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"The following 1 profile is active: "edge""}
+{"timestamp":"2026-03-17 18:04:38,819","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat initialized with port 8081 (http)"}
+{"timestamp":"2026-03-17 18:04:38,824","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Initializing ProtocolHandler ["http-nio-8081"]"}
+{"timestamp":"2026-03-17 18:04:38,825","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardService","message":"Starting service [Tomcat]"}
+{"timestamp":"2026-03-17 18:04:38,825","level":"INFO","traceId":"","logger":"org.apache.catalina.core.StandardEngine","message":"Starting Servlet engine: [Apache Tomcat/10.1.20]"}
+{"timestamp":"2026-03-17 18:04:38,841","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring embedded WebApplicationContext"}
+{"timestamp":"2026-03-17 18:04:38,842","level":"INFO","traceId":"","logger":"org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext","message":"Root WebApplicationContext: initialization completed in 515 ms"}
+{"timestamp":"2026-03-17 18:04:38,890","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.bootstrap.EdgeRecoveryBootstrap","message":"Wiederhergestellt: Runtime-Konfiguration und 0 TTL-Policies"}
+{"timestamp":"2026-03-17 18:04:39,043","level":"INFO","traceId":"","logger":"org.apache.coyote.http11.Http11NioProtocol","message":"Starting ProtocolHandler ["http-nio-8081"]"}
+{"timestamp":"2026-03-17 18:04:39,055","level":"INFO","traceId":"","logger":"org.springframework.boot.web.embedded.tomcat.TomcatWebServer","message":"Tomcat started on port 8081 (http) with context path ''"}
+{"timestamp":"2026-03-17 18:04:39,064","level":"INFO","traceId":"","logger":"de.htwsaar.minicdn.edge.EdgeApp","message":"Started EdgeApp in 1.057 seconds (process running for 1.342)"}
+{"timestamp":"2026-03-17 18:04:39,140","level":"INFO","traceId":"","logger":"org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]","message":"Initializing Spring DispatcherServlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-17 18:04:39,140","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Initializing Servlet 'dispatcherServlet'"}
+{"timestamp":"2026-03-17 18:04:39,141","level":"INFO","traceId":"","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed initialization in 1 ms"}
+{"timestamp":"2026-03-17 18:04:39,225","level":"DEBUG","thread":"http-nio-8082-exec-3","traceId":"bc7cd928-c801-4c34-ba4a-0a1c9fa0f00e","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 201 CREATED"}
+{"timestamp":"2026-03-17 18:04:41,792","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-17 18:04:46,539","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"ec0b21de-bfc4-4710-b8c9-7eb61ee9c102","logger":"org.springframework.web.servlet.DispatcherServlet","message":"POST "/api/cdn/auth/login", parameters={}"}
+{"timestamp":"2026-03-17 18:04:46,744","level":"DEBUG","thread":"http-nio-8082-exec-4","traceId":"ec0b21de-bfc4-4710-b8c9-7eb61ee9c102","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-17 18:04:46,794","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-17 18:04:51,808","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-17 18:04:56,822","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-17 18:05:01,837","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-17 18:05:06,851","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-17 18:05:11,866","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-17 18:05:16,880","level":"DEBUG","thread":"ForkJoinPool.commonPool-worker-1","traceId":"","logger":"de.htwsaar.minicdn.router.application.health.EdgeHealthChecker","message":"[HEALTH] Edge http://localhost:8081/ in Region EU ist gesund."}
+{"timestamp":"2026-03-17 18:05:19,196","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"9be6e4ec-016d-4a3b-8b65-e868e7853182","logger":"org.springframework.web.servlet.DispatcherServlet","message":"GET "/api/cdn/admin/edges/managed", parameters={}"}
+{"timestamp":"2026-03-17 18:05:19,201","level":"DEBUG","thread":"http-nio-8082-exec-2","traceId":"9be6e4ec-016d-4a3b-8b65-e868e7853182","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}
+{"timestamp":"2026-03-17 18:05:19,209","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"54951b4e-6c79-4252-a42b-fddce28e4895","logger":"org.springframework.web.servlet.DispatcherServlet","message":"DELETE "/api/cdn/admin/edges/edge-22273?deregister=true", parameters={masked}"}
+{"timestamp":"2026-03-17 18:05:19,255","level":"DEBUG","thread":"http-nio-8082-exec-1","traceId":"54951b4e-6c79-4252-a42b-fddce28e4895","logger":"org.springframework.web.servlet.DispatcherServlet","message":"Completed 200 OK"}

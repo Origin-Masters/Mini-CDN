@@ -82,7 +82,7 @@ class CdnStandardFlowIT extends AbstractE2E {
 
         try {
             registerEdgeInRouter(REGION, "http://localhost:9999"); // toter Edge
-            registerEdgeInRouter();                                    // laufender Edge
+            registerEdgeInRouter(); // laufender Edge
             registerEdgeInRouter(REGION, "http://localhost:7777"); // toter Edge
             HttpResponse<Void> response = requestRouting(tf.fileName());
 

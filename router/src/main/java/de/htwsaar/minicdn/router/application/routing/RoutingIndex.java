@@ -188,7 +188,7 @@ public class RoutingIndex implements EdgeRegistry {
             return List.of();
         }
 
-        int size = healthyNodes.size();            // Anzahl gesunder Edge
+        int size = healthyNodes.size(); // Anzahl gesunder Edge
         int limit = Math.min(maxCandidates, size); // Anzahl Kandidaten
 
         // Zähler holen, wenn noch keiner existiert neuen mit Wert 0 anlegen
