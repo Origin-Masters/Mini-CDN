@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwsaar.minicdn.cli.adapter.out.http.HttpAdminOperations;
 import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
 import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
@@ -14,6 +13,7 @@ import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.DownloadResult;
 import de.htwsaar.minicdn.cli.domain.model.UserResult;
+import de.htwsaar.minicdn.common.serialization.JacksonCodec;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -27,8 +27,6 @@ import org.junit.jupiter.api.Test;
  * HTTP-Methode, Header-Setzung, Input-Validierung und JSON-Parsing.
  */
 class AdminUserServiceTest {
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final String ADMIN_TOKEN = "secret-token";
     private static final long USER_ID = 42L;
@@ -168,7 +166,7 @@ class AdminUserServiceTest {
      */
     private static void assertJsonEquals(Map<String, Object> expected, String actualJson) {
         try {
-            Map<String, Object> actual = MAPPER.readValue(actualJson, new TypeReference<>() {});
+            Map<String, Object> actual = JacksonCodec.fromJson(actualJson, new TypeReference<>() {});
             assertEquals(expected, actual);
         } catch (Exception ex) {
             throw new AssertionError("JSON assertion failed: " + ex.getMessage(), ex);

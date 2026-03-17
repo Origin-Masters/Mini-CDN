@@ -1,11 +1,11 @@
 package de.htwsaar.minicdn.cli.application.admin;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.UserResult;
 import de.htwsaar.minicdn.cli.domain.port.AdminOperations;
+import de.htwsaar.minicdn.common.serialization.JacksonCodec;
+import de.htwsaar.minicdn.common.serialization.MiniCdnSerializationException;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -18,7 +18,6 @@ import java.util.Objects;
  */
 public final class AdminUserService {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final TypeReference<List<UserResult>> USER_LIST_TYPE = new TypeReference<>() {};
 
     private final AdminOperations adminOperations;
@@ -73,8 +72,8 @@ public final class AdminUserService {
             return List.of();
         }
         try {
-            return MAPPER.readValue(body, USER_LIST_TYPE);
-        } catch (JsonProcessingException ex) {
+            return JacksonCodec.fromJson(body, USER_LIST_TYPE);
+        } catch (MiniCdnSerializationException ex) {
             throw new IllegalArgumentException("failed to parse users JSON", ex);
         }
     }

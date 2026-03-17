@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import de.htwsaar.minicdn.common.serialization.JacksonCodec;
 import de.htwsaar.minicdn.edge.EdgeApp;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -31,7 +31,6 @@ class RegionalRoutingThreeEdgesIT extends AbstractE2E {
 
     private static final HttpClient CLIENT =
             HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build();
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static ConfigurableApplicationContext edgeEuCtx;
     private static ConfigurableApplicationContext edgeUsCtx;
@@ -171,7 +170,7 @@ class RegionalRoutingThreeEdgesIT extends AbstractE2E {
                 HttpResponse.BodyHandlers.ofString());
 
         assertEquals(200, response.statusCode());
-        JsonNode body = OBJECT_MAPPER.readTree(response.body());
+        JsonNode body = JacksonCodec.toTree(response.body());
         return body.path("region").asText();
     }
 

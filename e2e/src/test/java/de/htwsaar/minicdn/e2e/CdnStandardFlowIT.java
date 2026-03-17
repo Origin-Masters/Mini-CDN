@@ -3,7 +3,7 @@ package de.htwsaar.minicdn.e2e;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import de.htwsaar.minicdn.common.serialization.JacksonCodec;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,7 +20,6 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static final String REGION = "eu-west";
     private static final String CACHE_HEADER = "X-Cache";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int PARALLEL_REQUESTS = 10;
     private static final long MAX_AVG_LATENCY_MS = 150;
     private static final long MAX_SLOWEST_REQUEST_MS = 300;
@@ -448,7 +447,7 @@ class CdnStandardFlowIT extends AbstractE2E {
         HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
 
-        JsonNode root = OBJECT_MAPPER.readTree(response.body());
+        JsonNode root = JacksonCodec.toTree(response.body());
         JsonNode regionNodes = root.path(region);
 
         List<String> urls = new ArrayList<>();

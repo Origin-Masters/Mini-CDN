@@ -1,7 +1,5 @@
 package de.htwsaar.minicdn.cli.adapter.out.http;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwsaar.minicdn.cli.adapter.out.transport.TransportClient;
 import de.htwsaar.minicdn.cli.adapter.out.transport.TransportRequest;
 import de.htwsaar.minicdn.cli.adapter.out.transport.TransportResponse;
@@ -9,6 +7,8 @@ import de.htwsaar.minicdn.cli.domain.model.CallResult;
 import de.htwsaar.minicdn.cli.domain.model.LoginResult;
 import de.htwsaar.minicdn.cli.domain.model.UserResult;
 import de.htwsaar.minicdn.cli.domain.port.UserOperations;
+import de.htwsaar.minicdn.common.serialization.JacksonCodec;
+import de.htwsaar.minicdn.common.serialization.MiniCdnSerializationException;
 import de.htwsaar.minicdn.common.util.UriUtils;
 import java.net.URI;
 import java.time.Duration;
@@ -19,8 +19,6 @@ import java.util.Objects;
  * HTTP-Adapter für benutzerbezogene CLI-Operationen.
  */
 public final class HttpUserOperations implements UserOperations {
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final TransportClient transportClient;
     private final Duration requestTimeout;
@@ -46,9 +44,9 @@ public final class HttpUserOperations implements UserOperations {
                     base(routerBaseUrl).resolve("api/cdn/auth/login"),
                     requestTimeout,
                     HttpAdapterSupport.jsonHeaders(),
-                    MAPPER.writeValueAsString(Map.of("name", cleanUsername))));
+                    JacksonCodec.toJson(Map.of("name", cleanUsername))));
             return toLoginResult(response);
-        } catch (JsonProcessingException ex) {
+        } catch (MiniCdnSerializationException ex) {
             throw new IllegalArgumentException("failed to serialize login payload", ex);
         } catch (Exception ex) {
             return LoginResult.transportError(ex.getMessage());
@@ -99,9 +97,9 @@ public final class HttpUserOperations implements UserOperations {
         }
 
         try {
-            UserResult user = MAPPER.readValue(rawBody, UserResult.class);
+            UserResult user = JacksonCodec.fromJson(rawBody, UserResult.class);
             return LoginResult.success(user, statusCode, rawBody);
-        } catch (JsonProcessingException ex) {
+        } catch (MiniCdnSerializationException ex) {
             return LoginResult.parsingError(statusCode, rawBody, ex.getMessage());
         }
     }

@@ -1,8 +1,8 @@
 package de.htwsaar.minicdn.router.adapter.out.http;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwsaar.minicdn.common.logging.TraceIdFilter;
+import de.htwsaar.minicdn.common.serialization.JacksonCodec;
 import de.htwsaar.minicdn.common.util.PathUtils;
 import de.htwsaar.minicdn.common.util.UriUtils;
 import de.htwsaar.minicdn.router.domain.model.EdgeNode;
@@ -34,21 +34,17 @@ public class EdgeHttpClient implements EdgeGateway {
     private static final Duration ADMIN_OPERATION_TIMEOUT = Duration.ofSeconds(3);
 
     private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
     private final String adminToken;
 
     /**
      * Erstellt den Adapter für Edge-Kommunikation.
      *
      * @param httpClient HTTP-Client
-     * @param objectMapper Jackson ObjectMapper
      * @param adminToken Admin-Token für technische Aufrufe
      */
-    public EdgeHttpClient(
-            HttpClient httpClient, ObjectMapper objectMapper, @Value("${minicdn.admin.token}") String adminToken) {
+    public EdgeHttpClient(HttpClient httpClient, @Value("${minicdn.admin.token}") String adminToken) {
 
         this.httpClient = httpClient;
-        this.objectMapper = objectMapper;
         this.adminToken = adminToken;
     }
 
@@ -118,7 +114,7 @@ public class EdgeHttpClient implements EdgeGateway {
             throw new IllegalStateException("Edge stats request failed with HTTP " + response.statusCode());
         }
 
-        EdgeStatsPayload payload = objectMapper.readValue(response.body(), EdgeStatsPayload.class);
+        EdgeStatsPayload payload = JacksonCodec.fromJson(response.body(), EdgeStatsPayload.class);
         return new EdgeNodeStats(
                 payload.cacheHits(),
                 payload.cacheMisses(),
@@ -195,7 +191,7 @@ public class EdgeHttpClient implements EdgeGateway {
 
         try {
             URI configUri = resolve(node, "api/edge/admin/config");
-            String payload = objectMapper.writeValueAsString(Map.of("originBaseUrl", originBaseUrl));
+            String payload = JacksonCodec.toJson(Map.of("originBaseUrl", originBaseUrl));
 
             Map<String, String> headers = new LinkedHashMap<>();
             headers.put("Content-Type", "application/json");
