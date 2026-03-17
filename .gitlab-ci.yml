@@ -7,19 +7,19 @@ stages:
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 
-api_docs_job:
-  stage: build
-  tags: ["maven"]
-  image: python:3.13-slim
-  script:
-    - mkdir -p artifacts
-    - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
-  artifacts:
-    when: always
-    paths:
-      - artifacts/api-endpoints.md
-    expire_in: 1 week
-build_job:
+  api_docs_job:
+    stage: build
+    tags: ["maven"]
+    image: python:3.13-slim
+    script:
+      - mkdir -p artifacts
+      - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
+    artifacts:
+      when: always
+      paths:
+        - artifacts/api-endpoints.md
+      expire_in: 1 week
+  build_job:
   stage: build
   tags: ["maven"]
   image: maven:3.9-jdk-21
