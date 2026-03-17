@@ -35,8 +35,8 @@ import picocli.CommandLine.Spec;
         mixinStandardHelpOptions = true,
         footerHeading = "%nBeispiele:%n",
         footer = {
-            "  user file download-segmented -r EU Lebenslauf.pdf -o ./Lebenslauf-seg-4.pdf --segments 4 --retries 2 --overwrite",
-            "  user file download-segmented -r EU Lebenslauf.pdf -o ./Lebenslauf2.pdf --segments 6 --retries 2 --edge http://localhost:8081 --edge http://localhost:10001 --overwrite ",
+            "  user file download-segmented --region EU --path Lebenslauf.pdf --out ./Lebenslauf-seg-4.pdf --segments 4 --retries 2 --overwrite",
+            "  user file download-segmented --region EU --path Lebenslauf.pdf --out ./Lebenslauf2.pdf --segments 6 --retries 2 --edge http://localhost:8081 --edge http://localhost:10001 --overwrite ",
         },
         subcommands = {UserFileCommand.FileDownloadCommand.class, UserFileCommand.FileSegmentedDownloadCommand.class})
 public final class UserFileCommand implements Runnable {
@@ -258,9 +258,9 @@ public final class UserFileCommand implements Runnable {
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
-                "  user file download --region EU docs/manual.pdf --out ./manual.pdf",
-                "  user file download --region EU docs/manual.pdf --out ./manual.pdf --client-id alice",
-                "  user file download --region EU docs/manual.pdf --out ./manual.pdf --overwrite"
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf",
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf --client-id alice",
+                "  user file download --region EU --path docs/manual.pdf --out ./manual.pdf --overwrite"
             })
     public static final class FileDownloadCommand implements Callable<Integer> {
 
