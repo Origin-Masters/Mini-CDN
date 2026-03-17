@@ -1,6 +1,7 @@
 Write-Host "Starting MINI-CDN..." -ForegroundColor Cyan
 
-$root = Get-Location
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$root = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
 
 $originJar = "$root\origin\target\origin-1.0-SNAPSHOT-exec.jar"
 $edgeJar   = "$root\edge\target\edge-1.0-SNAPSHOT-exec.jar"
@@ -30,7 +31,7 @@ Start-Service "ORIGIN" $originJar "origin" "$root\origin.log"
 
 Start-Service "EDGE" $edgeJar "edge" "$root\edge.log"
 
-Start-Service "ROUTER" $routerJar "router" "$root\router.log"
+Start-Service "ROUTER" $routerJar "cdn" "$root\router.log"
 
 
 

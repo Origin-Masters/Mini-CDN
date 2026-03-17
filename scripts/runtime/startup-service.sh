@@ -1,24 +1,23 @@
 #!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Lade den Token aus der Umgebungsvariable// fallback : secret-token
 ADMIN_TOKEN="${MINICDN_ADMIN_TOKEN:-secret-token}"
 
 echo -e "Starting [MINI-CDN] servers...\n"
 
-cd origin
+cd "$ROOT_DIR/origin"
 echo "Starting ORIGIN..."
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=origin" > ../origin.log 2>&1 &
-cd ..
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=origin" > "$ROOT_DIR/origin.log" 2>&1 &
 
-cd edge
+cd "$ROOT_DIR/edge"
 echo "Starting EDGE..."
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=edge" > ../edge.log 2>&1 &
-cd ..
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=edge" > "$ROOT_DIR/edge.log" 2>&1 &
 
-cd router
+cd "$ROOT_DIR/router"
 echo -e "Starting ROUTER...\n\n"
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=cdn" > ../router.log 2>&1 &
-cd ..
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=cdn" > "$ROOT_DIR/router.log" 2>&1 &
 
 sleep 6
 

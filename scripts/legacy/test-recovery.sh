@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 ADMIN_TOKEN="${MINICDN_ADMIN_TOKEN:-secret-token}"
 ORIGIN="http://localhost:8080"
@@ -12,7 +13,7 @@ FILE="recovery-basic-$(date +%s).txt"
 # verify state is preserved and is persistent after restart.
 
 # Ensure services are up before configuring state.
-curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$ROUTER/api/cdn/health" >/dev/null 2>&1 || ./startup-service.sh >/dev/null
+curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$ROUTER/api/cdn/health" >/dev/null 2>&1 || "$SCRIPT_DIR/../runtime/startup-service.sh" >/dev/null
 sleep 6
 
 
@@ -40,8 +41,8 @@ curl -sf -X PUT -H "X-Admin-Token: $ADMIN_TOKEN" \
   "$EDGE/api/edge/admin/config/ttl" >/dev/null
 
 # Restart to test persistence of the state.
-./shutdown-services.sh >/dev/null
-./startup-service.sh >/dev/null
+"$SCRIPT_DIR/../runtime/shutdown-services.sh" >/dev/null
+"$SCRIPT_DIR/../runtime/startup-service.sh" >/dev/null
 sleep 6
 
 # Verify state and a cache MISS on first fetch.

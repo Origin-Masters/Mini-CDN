@@ -1,5 +1,7 @@
 #!/bin/bash
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 ADMIN_TOKEN="${MINICDN_ADMIN_TOKEN:-secret-token}"
 ORIGIN="${ORIGIN_BASE_URL:-http://localhost:8080}"
@@ -30,7 +32,7 @@ edge_cache_header() {
 
 ensure_up() {
   if ! curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$ROUTER/api/cdn/health" >/dev/null 2>&1; then
-    timeout 90 ./startup-service.sh >/dev/null
+    timeout 90 "$SCRIPT_DIR/../runtime/startup-service.sh" >/dev/null
   fi
 
   for _ in $(seq 1 40); do
@@ -84,8 +86,8 @@ done
 log "[5/7] EDGE neu starten und Recovery-Zeit messen"
 start_ms="$(now_ms)"
 (
-  cd edge
-  mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=edge" > ../edge.log 2>&1
+  cd "$ROOT_DIR/edge"
+  mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=edge" > "$ROOT_DIR/edge.log" 2>&1
 ) &
 
 for _ in $(seq 1 20); do

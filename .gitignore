@@ -25,7 +25,7 @@ ehthumbs.db
 
 .minicdn.history
 edge.log
-git-stats.ps1
+scripts/tools/git-stats.ps1
 origin.log
 router.log
 target

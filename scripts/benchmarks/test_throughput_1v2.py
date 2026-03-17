@@ -21,6 +21,9 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Mapping, Optional
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
+
 
 @dataclass(frozen=True)
 class BenchmarkConfig:
@@ -136,14 +139,14 @@ def ensure_services(config: BenchmarkConfig) -> None:
             "Router is not reachable. Start services manually or set AUTO_START_SERVICES=true."
         )
 
-    startup_script = "startup-service.sh"
+    startup_script = os.path.join(ROOT_DIR, "scripts", "runtime", "startup-service.sh")
     bash = shutil.which("bash")
     if not bash or not os.path.exists(startup_script):
         raise BenchmarkError(
-            "AUTO_START_SERVICES=true but bash/startup-service.sh is unavailable. Start services manually."
+            "AUTO_START_SERVICES=true but scripts/runtime/startup-service.sh is unavailable. Start services manually."
         )
 
-    subprocess.run([bash, startup_script], check=True)
+    subprocess.run([bash, startup_script], check=True, cwd=ROOT_DIR)
 
     status_after, _, _ = request("GET", health_url, token=config.token)
     if status_after != 200:
@@ -159,7 +162,7 @@ def ensure_edge_jar(config: BenchmarkConfig) -> None:
     if not mvn:
         raise BenchmarkError(f"Missing {config.edge_jar} and Maven is not available to build it.")
 
-    subprocess.run([mvn, "-q", "-DskipTests", "package"], cwd="edge", check=True)
+    subprocess.run([mvn, "-q", "-DskipTests", "package"], cwd=os.path.join(ROOT_DIR, "edge"), check=True)
 
     if not os.path.exists(config.edge_jar):
         raise BenchmarkError(f"Edge JAR not found after build: {config.edge_jar}")
@@ -310,7 +313,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--duration-sec", type=int, default=int(os.getenv("DURATION_SEC", "20")))
     parser.add_argument("--concurrency", type=int, default=int(os.getenv("CONCURRENCY", "40")))
     parser.add_argument("--warmup-requests", type=int, default=int(os.getenv("WARMUP_REQUESTS", "200")))
-    parser.add_argument("--edge-jar", default=os.getenv("EDGE_JAR", "edge/target/edge-1.0-SNAPSHOT-exec.jar"))
+    parser.add_argument(
+        "--edge-jar",
+        default=os.getenv("EDGE_JAR", os.path.join(ROOT_DIR, "edge", "target", "edge-1.0-SNAPSHOT-exec.jar")),
+    )
     parser.add_argument(
         "--auto-start-services",
         action="store_true",

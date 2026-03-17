@@ -14,7 +14,8 @@
 TOKEN="${MINICDN_ADMIN_TOKEN:-secret-token}"
 
 # Absoluter path for the directory so exec JAR paths are correct
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # base urls of the three services, we use for API calls.
 ORIGIN_URL="http://localhost:8080"
