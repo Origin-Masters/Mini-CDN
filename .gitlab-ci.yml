@@ -1,107 +1,106 @@
 stages:
-      - build
-      - test
-      - docs
+  - build
+  - test
+  - docs
 
-    variables:
-      MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
 
-    cache:
-      key: "maven-${CI_COMMIT_REF_SLUG}"
-      paths:
-        - .m2/repository/
-      policy: pull-push
+cache:
+  key: "maven-${CI_COMMIT_REF_SLUG}"
+  paths:
+    - .m2/repository/
+  policy: pull-push
 
-    api_docs_job:
-      stage: build
-      tags: ["maven"]
-      image: python:3.13-slim
-      script:
-        - mkdir -p artifacts
-        - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
-      artifacts:
-        when: always
-        paths:
-          - artifacts/api-endpoints.md
-        expire_in: 1 week
+api_docs_job:
+  stage: build
+  tags: ["maven"]
+  image: python:3.13-slim
+  script:
+    - mkdir -p artifacts
+    - python3 scripts/docs/generate_endpoint_table.py > artifacts/api-endpoints.md
+  artifacts:
+    when: always
+    paths:
+      - artifacts/api-endpoints.md
+    expire_in: 1 week
 
-    verify_job:
-      stage: test
-      tags: ["maven"]
-      image: maven:3.9-jdk-21
-      script:
-        - mvn clean verify -B -Dminicdn.admin.token=secret-token
-        - mkdir -p artifacts
-        - |
-          tar -czf artifacts/mini-cdn-submission-servers.tar.gz \
-            .env.example \
-            origin/target/origin-*-exec.jar \
-            edge/target/edge-*-exec.jar \
-            router/target/router-*-exec.jar \
-            origin/data \
-            origin/data-spare \
-            edge/data \
-            router/data
-      artifacts:
-        when: always
-        reports:
-          junit:
-            - "*/target/surefire-reports/TEST-*.xml"
-        paths:
-          - artifacts/mini-cdn-submission-servers.tar.gz
-          - "*/target/surefire-reports/"
-        exclude:
-          - "**/*-sources.jar"
-          - "**/*-javadoc.jar"
-          - "**/original-*.jar"
-        expire_in: never
-      retry: 1
+verify_job:
+  stage: test
+  tags: ["maven"]
+  image: maven:3.9-jdk-21
+  script:
+    - mvn clean verify -B -Dminicdn.admin.token=secret-token
+    - mkdir -p artifacts
+    - |
+      tar -czf artifacts/mini-cdn-submission-servers.tar.gz \
+        .env.example \
+        origin/target/origin-*-exec.jar \
+        edge/target/edge-*-exec.jar \
+        router/target/router-*-exec.jar \
+        origin/data \
+        origin/data-spare \
+        edge/data \
+        router/data
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - "*/target/surefire-reports/TEST-*.xml"
+    paths:
+      - artifacts/mini-cdn-submission-servers.tar.gz
+      - "*/target/surefire-reports/"
+    exclude:
+      - "**/*-sources.jar"
+      - "**/*-javadoc.jar"
+      - "**/original-*.jar"
+    expire_in: never
+  retry: 1
 
-    cli_bundle_job:
-      stage: test
-      tags: ["maven"]
-      image: maven:3.9-jdk-21
-      needs:
-        - verify_job
-      script:
-        - mvn -pl cli -am clean package -B -DskipTests -Dminicdn.admin.token=secret-token
-        - mkdir -p artifacts
-        - |
-          tar -czf artifacts/mini-cdn-submission-cli.tar.gz \
-            .env.example \
-            cli/target/cli-*-exec.jar
-      artifacts:
-        when: always
-        paths:
-          - artifacts/mini-cdn-submission-cli.tar.gz
-        expire_in: never
+cli_bundle_job:
+  stage: test
+  tags: ["maven"]
+  image: maven:3.9-jdk-21
+  needs:
+    - verify_job
+  script:
+    - mvn -pl cli -am clean package -B -DskipTests -Dminicdn.admin.token=secret-token
+    - mkdir -p artifacts
+    - |
+      tar -czf artifacts/mini-cdn-submission-cli.tar.gz \
+        .env.example \
+        cli/target/cli-*-exec.jar
+  artifacts:
+    when: always
+    paths:
+      - artifacts/mini-cdn-submission-cli.tar.gz
+    expire_in: never
 
-    wiki_update_job:
-      stage: docs
-      tags: ["maven"]
-      image: curlimages/curl:8.8.0
-      needs:
-        - job: api_docs_job
-          artifacts: true
-      script:
-        - test -n "${GITLAB_API_TOKEN}" || { echo "GITLAB_API_TOKEN is not set"; exit 1; }
-        - export WIKI_TITLE="API Endpoints"
-        - export WIKI_SLUG="api-endpoints"
-        - export WIKI_PAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/${WIKI_SLUG}"
-        - |
-          # Update existing wiki page, otherwise create it.
-          if curl --silent --fail \
-            --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
-            "${WIKI_PAGE_URL}" > /dev/null; then
-            curl --silent --show-error --fail --request PUT \
-              --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
-              --data-urlencode "title=${WIKI_TITLE}" \
-              --data-urlencode "content@artifacts/api-endpoints.md" \
-              "${WIKI_PAGE_URL}"
-          else
-            curl --silent --show-error --fail --request POST \
-              --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
-              --data-urlencode "title=${WIKI_TITLE}" \
-              --data-urlencode "content@artifacts/api-endpoints.md" \
-              "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis"
-          fi
+wiki_update_job:
+  stage: docs
+  tags: ["maven"]
+  image: curlimages/curl:8.8.0
+  needs:
+    - job: api_docs_job
+      artifacts: true
+  script:
+    - test -n "${GITLAB_API_TOKEN}" || { echo "GITLAB_API_TOKEN is not set"; exit 1; }
+    - export WIKI_TITLE="API Endpoints"
+    - export WIKI_SLUG="api-endpoints"
+    - export WIKI_PAGE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/${WIKI_SLUG}"
+    - |
+      if curl --silent --fail \
+        --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        "${WIKI_PAGE_URL}" > /dev/null; then
+        curl --silent --show-error --fail --request PUT \
+          --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+          --data-urlencode "title=${WIKI_TITLE}" \
+          --data-urlencode "content@artifacts/api-endpoints.md" \
+          "${WIKI_PAGE_URL}"
+      else
+        curl --silent --show-error --fail --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+          --data-urlencode "title=${WIKI_TITLE}" \
+          --data-urlencode "content@artifacts/api-endpoints.md" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis"
+      fi
