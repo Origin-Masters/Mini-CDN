@@ -81,11 +81,12 @@ class CdnStandardFlowIT extends AbstractE2E {
         TestFile tf = createOriginFile("Retry Test Content");
 
         try {
-            registerEdgeInRouter(REGION, "http://localhost:9999");
-            registerEdgeInRouter();
-            registerEdgeInRouter(REGION, "http://localhost:7777");
+            registerEdgeInRouter(REGION, "http://localhost:9999"); // toter Edge
+            registerEdgeInRouter();                                    // laufender Edge
+            registerEdgeInRouter(REGION, "http://localhost:7777"); // toter Edge
             HttpResponse<Void> response = requestRouting(tf.fileName());
 
+            // erwartet wird, dass an den healthy Edge redirected wird
             assertEquals(307, response.statusCode());
             String location = response.headers().firstValue("location").orElse("");
             assertTrue(location.startsWith(EDGE_BASE));

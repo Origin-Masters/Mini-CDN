@@ -62,8 +62,6 @@ class RegionalRoutingThreeEdgesIT extends AbstractE2E {
     @Test
     void router_routes_clients_to_edge_of_same_region_with_three_edges() throws Exception {
         // Drei echte Edge-Server mit drei verschiedenen Regionen starten.
-        // So koennen wir sauber pruefen, ob die Client-Region spaeter wirklich
-        // auf die passende Edge derselben Region gemappt wird.
         edgeEuCtx = startEdgeWithRegion(REGION_EU);
         edgeEuBase = "http://localhost:" + localPort(edgeEuCtx);
 
@@ -77,17 +75,16 @@ class RegionalRoutingThreeEdgesIT extends AbstractE2E {
         URI originAdminUri = URI.create(ORIGIN_BASE + "/api/origin/admin/files/" + fileName);
 
         try {
-            // Testdatei auf dem Origin anlegen, damit der Router spaeter etwas
-            // Sinnvolles an die passende Edge weiterleiten kann.
+            // Testdatei auf dem Origin anlegen
             uploadOriginFile(originAdminUri, "US-M3 Routing Test");
 
+            // erwartet wird, dass Edges mit der richtigen Region konfiguriert sind
             // Akzeptanzkriterium 1: Edge-Server haben eine konfigurierbare Region.
             assertEquals(REGION_EU, fetchEdgeRegion(edgeEuBase));
             assertEquals(REGION_US, fetchEdgeRegion(edgeUsBase));
             assertEquals(REGION_ASIA, fetchEdgeRegion(edgeAsiaBase));
 
-            // Die drei Edges werden unter ihrer jeweiligen Region beim Router registriert.
-            // Der Router weiss danach also, welche Edge zu welcher Region gehoert.
+            // Die drei Edges werden beim Router registriert.
             registerEdge(REGION_EU, edgeEuBase);
             registerEdge(REGION_US, edgeUsBase);
             registerEdge(REGION_ASIA, edgeAsiaBase);
