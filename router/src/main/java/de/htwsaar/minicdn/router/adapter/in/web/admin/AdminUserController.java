@@ -4,6 +4,7 @@ import de.htwsaar.minicdn.router.adapter.in.web.dto.CreateUserRequest;
 import de.htwsaar.minicdn.router.application.user.RouterUserService;
 import de.htwsaar.minicdn.router.application.user.model.UserResult;
 import java.util.List;
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,12 +36,18 @@ public class AdminUserController {
      * @throws Exception bei Fehlern im Service-Layer
      */
     @PostMapping
-    public ResponseEntity<UserResult> addUser(@RequestBody CreateUserRequest req) throws Exception {
+    public ResponseEntity<?> addUser(@RequestBody CreateUserRequest req) throws Exception {
         if (req == null || req.name() == null || req.name().isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        long id = userService.addUser(req.name().trim(), req.role());
-        return ResponseEntity.ok(new UserResult(id, req.name().trim(), req.role()));
+
+        String cleanName = req.name().trim();
+        if (userService.findByName(cleanName).isPresent()) {
+            return ResponseEntity.status(409).body(Map.of("error", "user already exists: " + cleanName));
+        }
+
+        long id = userService.addUser(cleanName, req.role());
+        return ResponseEntity.ok(new UserResult(id, cleanName, req.role()));
     }
 
     /**
