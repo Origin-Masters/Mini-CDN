@@ -62,8 +62,9 @@ public class RouterAdminService {
      */
     public void addEdgeNode(String region, String url) {
         EdgeNode node = new EdgeNode(url);
-        routingIndex.addEdge(region, node);
-        syncNewEdgeToActiveOrigin(region, node);
+        String effectiveRegion = resolveRegistrationRegion(region, node);
+        routingIndex.addEdge(effectiveRegion, node);
+        syncNewEdgeToActiveOrigin(effectiveRegion, node);
     }
 
     /**
@@ -104,6 +105,23 @@ public class RouterAdminService {
                     node.url(),
                     region);
         }
+    }
+
+    private String resolveRegistrationRegion(String requestedRegion, EdgeNode node) {
+        String configuredRegion = edgeGateway.fetchConfiguredRegion(node, Duration.ofSeconds(2));
+        if (configuredRegion != null && !configuredRegion.isBlank()) {
+            if (requestedRegion != null
+                    && !requestedRegion.isBlank()
+                    && !configuredRegion.equals(requestedRegion.trim())) {
+                log.info(
+                        "[ROUTING-REGISTER] Verwende Edge-Region {} statt angeforderter Region {} fuer {}.",
+                        configuredRegion,
+                        requestedRegion,
+                        node.url());
+            }
+            return configuredRegion;
+        }
+        return requestedRegion;
     }
 
     /**

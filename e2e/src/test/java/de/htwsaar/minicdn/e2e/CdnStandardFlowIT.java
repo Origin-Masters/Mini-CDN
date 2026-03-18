@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 class CdnStandardFlowIT extends AbstractE2E {
 
-    private static final String REGION = "eu-west";
+    private static final String REGION = "EU";
     private static final String CACHE_HEADER = "X-Cache";
     private static final int PARALLEL_REQUESTS = 10;
     private static final long MAX_AVG_LATENCY_MS = 150;
@@ -247,7 +247,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     @Test
     @DisplayName("TS-C2: Ausgefallene Replikate werden automatisch erkannt und entfernt")
     void failover_removes_dead_replica_within_ten_seconds() throws Exception {
-        String region = "failover-e2e";
+        String region = "EU";
         String deadEdgeUrl = "http://localhost:65534";
         String deadEdgeUrlNormalized = deadEdgeUrl + "/"; // toter Edge
         String healthyEdgeUrlNormalized = EDGE_BASE + "/"; // laufender Edge

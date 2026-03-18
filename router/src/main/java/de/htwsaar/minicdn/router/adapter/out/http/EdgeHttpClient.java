@@ -122,6 +122,30 @@ public class EdgeHttpClient implements EdgeGateway {
                 payload.downloadsByFile() == null ? Map.of() : payload.downloadsByFile());
     }
 
+    @Override
+    public String fetchConfiguredRegion(EdgeNode node, Duration timeout) {
+        try {
+            HttpRequest request = withCurrentTraceId(HttpRequest.newBuilder()
+                            .uri(resolve(node, "api/edge/infos"))
+                            .timeout(timeout))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                return null;
+            }
+
+            EdgeInfoPayload payload = JacksonCodec.fromJson(response.body(), EdgeInfoPayload.class);
+            if (payload == null || payload.region() == null || payload.region().isBlank()) {
+                return null;
+            }
+            return payload.region().trim();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     /**
      * Invalidiert genau eine Datei im Edge-Cache.
      *
@@ -262,4 +286,7 @@ public class EdgeHttpClient implements EdgeGateway {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record EdgeStatsPayload(
             long cacheHits, long cacheMisses, long filesCached, Map<String, Long> downloadsByFile) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record EdgeInfoPayload(String region) {}
 }
