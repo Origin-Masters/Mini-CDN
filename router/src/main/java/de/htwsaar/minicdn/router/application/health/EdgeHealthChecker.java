@@ -81,6 +81,7 @@ public class EdgeHealthChecker {
      */
     private void updateNodeHealth(String region, EdgeNode node, boolean healthy) {
         if (healthy) {
+            syncNodeRegionIfNeeded(region, node);
             edgeRegistry.markHealthy(region, node);
             log.debug("[HEALTH] Edge {} in Region {} ist gesund.", node.url(), region);
             return;
@@ -91,5 +92,26 @@ public class EdgeHealthChecker {
                 "[HEALTH] Edge {} in Region {} ist nicht erreichbar und wurde aus dem Routing entfernt.",
                 node.url(),
                 region);
+    }
+
+    private void syncNodeRegionIfNeeded(String currentRegion, EdgeNode node) {
+        String configuredRegion = edgeGateway.fetchConfiguredRegion(node, Duration.ofMillis(healthTimeoutMs));
+        if (configuredRegion == null || configuredRegion.isBlank()) {
+            return;
+        }
+
+        String cleanConfiguredRegion = configuredRegion.trim();
+        if (cleanConfiguredRegion.equals(currentRegion)) {
+            return;
+        }
+
+        boolean removed = edgeRegistry.removeEdge(currentRegion, node, false);
+        edgeRegistry.addEdge(cleanConfiguredRegion, node);
+        log.info(
+                "[HEALTH] Edge {} wurde im Routing von Region {} nach {} synchronisiert (removedFromOldRegion={}).",
+                node.url(),
+                currentRegion,
+                cleanConfiguredRegion,
+                removed);
     }
 }
