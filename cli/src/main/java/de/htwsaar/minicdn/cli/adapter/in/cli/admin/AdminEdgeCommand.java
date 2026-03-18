@@ -262,7 +262,7 @@ public final class AdminEdgeCommand implements Runnable {
      */
     @Command(
             name = "start",
-            description = "Start a managed edge process via router (POST /api/cdn/admin/edges/start).",
+            description = "Start a managed edge process via router (POST /api/cdn/admin/edges/activations).",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
@@ -490,7 +490,7 @@ public final class AdminEdgeCommand implements Runnable {
     @Command(
             name = "stop-region",
             description =
-                    "Stop all managed edge processes in a region via router (DELETE /api/cdn/admin/edges/region/{region}).",
+                    "Stop all managed edge processes in a region via router (DELETE /api/cdn/admin/edges/regions/{region}).",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
@@ -610,7 +610,7 @@ public final class AdminEdgeCommand implements Runnable {
      */
     @Command(
             name = "managed",
-            description = "List all edges managed by the router (GET /api/cdn/admin/edges/managed).",
+            description = "List all edges managed by the router (GET /api/cdn/admin/edges/managements).",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {
@@ -689,7 +689,7 @@ public final class AdminEdgeCommand implements Runnable {
     @Command(
             name = "auto-start",
             description =
-                    "Start multiple managed edge processes via router with auto port allocation (POST /api/cdn/admin/edges/start/auto).",
+                    "Start multiple managed edge processes via router with auto port allocation (POST /api/cdn/admin/edges/activations/automations).",
             mixinStandardHelpOptions = true,
             footerHeading = "%nBeispiele:%n",
             footer = {

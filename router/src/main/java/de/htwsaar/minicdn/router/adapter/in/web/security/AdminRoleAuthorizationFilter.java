@@ -67,6 +67,8 @@ public class AdminRoleAuthorizationFilter extends OncePerRequestFilter {
 
     private static boolean isAdminRoute(String requestUri) {
         return requestUri != null
-                && (requestUri.startsWith("/api/cdn/admin/") || requestUri.startsWith("/api/cdn/routing"));
+                && (requestUri.startsWith("/api/cdn/admin/")
+                        || requestUri.startsWith("/api/cdn/routings")
+                        || requestUri.startsWith("/api/cdn/routes/batches"));
     }
 }

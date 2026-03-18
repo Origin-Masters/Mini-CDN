@@ -57,8 +57,14 @@ public class RouterUserService implements AutoCloseable {
             throw new IllegalArgumentException("Invalid role " + role + ". Valid values: 0=USER, 1=ADMIN");
         if (name == null || name.trim().isBlank()) throw new IllegalArgumentException("Name cannot be empty");
 
+        String cleanName = name.trim();
+        Optional<UserResult> existingUser = findByName(cleanName);
+        if (existingUser.isPresent()) {
+            return existingUser.get().id();
+        }
+
         return dsl.insertInto(USERS, USERS.NAME, USERS.ROLE)
-                .values(name.trim(), role)
+                .values(cleanName, role)
                 .returningResult(USERS.ID)
                 .fetchOne()
                 .value1()

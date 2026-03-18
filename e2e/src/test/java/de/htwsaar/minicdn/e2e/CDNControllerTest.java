@@ -40,7 +40,7 @@ class CDNControllerTest extends AbstractE2E {
      * @Order(2)
      * @DisplayName("E2E: Registrierung einer Edge-Node und anschließendes Routing")
      * void testRegistrationAndRouting() {
-     * String registrationUrl = ROUTER_BASE + "/api/cdn/routing?region=EU&url=" + EDGE_BASE;
+     * String registrationUrl = ROUTER_BASE + "/api/cdn/routings?region=EU&url=" + EDGE_BASE;
      * ResponseEntity<Void> regResponse = restTemplate.postForEntity(registrationUrl, null, Void.class);
      * assertEquals(HttpStatus.CREATED, regResponse.getStatusCode());
      *
@@ -78,7 +78,7 @@ class CDNControllerTest extends AbstractE2E {
      * @Order(3)
      * @DisplayName("E2E: Bulk-Update von mehreren Nodes")
      * void testBulkUpdateIntegration() {
-     * String bulkUrl = ROUTER_BASE + "/api/cdn/routing/bulk";
+     * String bulkUrl = ROUTER_BASE + "/api/cdn/routes/batches";
      * String jsonPayload =
      * """
      * [

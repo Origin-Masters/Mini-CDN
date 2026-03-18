@@ -53,7 +53,7 @@ public final class HttpAdminOperations implements AdminOperations {
     public CallResult invalidateFile(URI routerBaseUrl, String adminToken, String region, String path) {
         String cleanRegion = UriUtils.urlEncode(HttpAdapterSupport.requireText(region, "region"));
         String cleanPath = PathUtils.normalizeRelativePath(path);
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/cache/region/" + cleanRegion + "/files/" + cleanPath);
+        URI url = base(routerBaseUrl).resolve("api/cdn/admin/caches/regions/" + cleanRegion + "/files/" + cleanPath);
         return send(TransportRequest.delete(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 
@@ -63,7 +63,7 @@ public final class HttpAdminOperations implements AdminOperations {
         String cleanRegion = UriUtils.urlEncode(HttpAdapterSupport.requireText(region, "region"));
         String cleanPrefix = UriUtils.urlEncode(PathUtils.normalizeRelativePath(prefix));
         URI url = base(routerBaseUrl)
-                .resolve("api/cdn/admin/cache/region/" + cleanRegion + "/prefix?value=" + cleanPrefix);
+                .resolve("api/cdn/admin/caches/regions/" + cleanRegion + "/prefixes?value=" + cleanPrefix);
         return send(TransportRequest.delete(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 
@@ -71,14 +71,14 @@ public final class HttpAdminOperations implements AdminOperations {
     @Override
     public CallResult clearRegion(URI routerBaseUrl, String adminToken, String region) {
         String cleanRegion = UriUtils.urlEncode(HttpAdapterSupport.requireText(region, "region"));
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/cache/region/" + cleanRegion + "/all");
+        URI url = base(routerBaseUrl).resolve("api/cdn/admin/caches/regions/" + cleanRegion + "/invalidations");
         return send(TransportRequest.delete(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 
     /** {@inheritDoc} */
     @Override
     public CallResult getOriginConfig(URI originBaseUrl, String adminToken) {
-        return sendGet(originBaseUrl, adminToken, "api/origin/admin/config");
+        return sendGet(originBaseUrl, adminToken, "api/origin/admin/configs");
     }
 
     /** {@inheritDoc} */
@@ -91,13 +91,13 @@ public final class HttpAdminOperations implements AdminOperations {
         if (hasText(logLevel)) {
             payload.put("logLevel", logLevel.trim());
         }
-        return sendPatch(originBaseUrl, adminToken, "api/origin/admin/config", JacksonCodec.toJson(payload));
+        return sendPatch(originBaseUrl, adminToken, "api/origin/admin/configs", JacksonCodec.toJson(payload));
     }
 
     /** {@inheritDoc} */
     @Override
     public CallResult getOriginCluster(URI routerBaseUrl, String adminToken, boolean checkHealth) {
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/origin/cluster?checkHealth=" + checkHealth);
+        URI url = base(routerBaseUrl).resolve("api/cdn/admin/origins/clusters?checkHealth=" + checkHealth);
         return send(TransportRequest.get(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 
@@ -106,7 +106,7 @@ public final class HttpAdminOperations implements AdminOperations {
     public CallResult addOriginSpare(URI routerBaseUrl, String adminToken, URI spareBaseUrl) {
         String url = UriUtils.urlEncode(
                 HttpAdapterSupport.requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
-        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/spares?url=" + url);
+        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origins/spares?url=" + url);
         return send(TransportRequest.postJson(
                 target, requestTimeout, HttpAdapterSupport.adminJsonHeaders(adminToken), "{}"));
     }
@@ -116,7 +116,7 @@ public final class HttpAdminOperations implements AdminOperations {
     public CallResult removeOriginSpare(URI routerBaseUrl, String adminToken, URI spareBaseUrl) {
         String url = UriUtils.urlEncode(
                 HttpAdapterSupport.requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
-        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/spares?url=" + url);
+        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origins/spares?url=" + url);
         return send(TransportRequest.delete(target, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 
@@ -125,7 +125,7 @@ public final class HttpAdminOperations implements AdminOperations {
     public CallResult promoteOriginSpare(URI routerBaseUrl, String adminToken, URI spareBaseUrl) {
         String url = UriUtils.urlEncode(
                 HttpAdapterSupport.requireText(spareBaseUrl == null ? null : spareBaseUrl.toString(), "url"));
-        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/promote?url=" + url);
+        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origins/promotions?url=" + url);
         return send(TransportRequest.postJson(
                 target, requestTimeout, HttpAdapterSupport.adminJsonHeaders(adminToken), "{}"));
     }
@@ -133,7 +133,7 @@ public final class HttpAdminOperations implements AdminOperations {
     /** {@inheritDoc} */
     @Override
     public CallResult checkOriginFailover(URI routerBaseUrl, String adminToken) {
-        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origin/failover/check");
+        URI target = base(routerBaseUrl).resolve("api/cdn/admin/origins/failovers/checks");
         return send(TransportRequest.postJson(
                 target, requestTimeout, HttpAdapterSupport.adminJsonHeaders(adminToken), "{}"));
     }
@@ -141,7 +141,7 @@ public final class HttpAdminOperations implements AdminOperations {
     /** {@inheritDoc} */
     @Override
     public CallResult getEdgeConfig(URI edgeBaseUrl, String adminToken) {
-        return sendGet(edgeBaseUrl, adminToken, "api/edge/admin/config");
+        return sendGet(edgeBaseUrl, adminToken, "api/edge/admin/configs");
     }
 
     /** {@inheritDoc} */
@@ -171,13 +171,13 @@ public final class HttpAdminOperations implements AdminOperations {
         if (originBaseUrl != null) {
             payload.put("originBaseUrl", originBaseUrl.toString());
         }
-        return sendPatch(edgeBaseUrl, adminToken, "api/edge/admin/config", JacksonCodec.toJson(payload));
+        return sendPatch(edgeBaseUrl, adminToken, "api/edge/admin/configs", JacksonCodec.toJson(payload));
     }
 
     /** {@inheritDoc} */
     @Override
     public CallResult getEdgeTtlPolicies(URI edgeBaseUrl, String adminToken) {
-        return sendGet(edgeBaseUrl, adminToken, "api/edge/admin/config/ttl");
+        return sendGet(edgeBaseUrl, adminToken, "api/edge/admin/configs/expirations");
     }
 
     /** {@inheritDoc} */
@@ -187,14 +187,15 @@ public final class HttpAdminOperations implements AdminOperations {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("prefix", cleanPrefix);
         payload.put("ttlMs", ttlMs);
-        return sendPut(edgeBaseUrl, adminToken, "api/edge/admin/config/ttl", JacksonCodec.toJson(payload));
+        return sendPut(edgeBaseUrl, adminToken, "api/edge/admin/configs/expirations", JacksonCodec.toJson(payload));
     }
 
     /** {@inheritDoc} */
     @Override
     public CallResult removeEdgeTtlPolicy(URI edgeBaseUrl, String adminToken, String prefix) {
         String cleanPrefix = HttpAdapterSupport.requireText(prefix, "prefix");
-        URI url = base(edgeBaseUrl).resolve("api/edge/admin/config/ttl?prefix=" + UriUtils.urlEncode(cleanPrefix));
+        URI url = base(edgeBaseUrl)
+                .resolve("api/edge/admin/configs/expirations?prefix=" + UriUtils.urlEncode(cleanPrefix));
         return send(TransportRequest.delete(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 
@@ -218,7 +219,7 @@ public final class HttpAdminOperations implements AdminOperations {
         payload.put("autoRegister", autoRegister);
         payload.put("waitUntilReady", waitUntilReady);
 
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/edges/start");
+        URI url = base(routerBaseUrl).resolve("api/cdn/admin/edges/activations");
         return send(TransportRequest.postJson(
                 url,
                 managedEdgeStartTimeout(1, waitUntilReady),
@@ -240,7 +241,7 @@ public final class HttpAdminOperations implements AdminOperations {
     public CallResult stopRegion(URI routerBaseUrl, String adminToken, String region, boolean deregister) {
         String cleanRegion = HttpAdapterSupport.requireText(region, "region");
         String encodedRegion = UriUtils.urlEncode(cleanRegion);
-        String path = "api/cdn/admin/edges/region/" + encodedRegion + "?deregister=" + deregister;
+        String path = "api/cdn/admin/edges/regions/" + encodedRegion + "?deregister=" + deregister;
         URI url = base(routerBaseUrl).resolve(path);
         return send(TransportRequest.delete(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
@@ -248,7 +249,7 @@ public final class HttpAdminOperations implements AdminOperations {
     /** {@inheritDoc} */
     @Override
     public CallResult listManagedEdges(URI routerBaseUrl, String adminToken) {
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/edges/managed");
+        URI url = base(routerBaseUrl).resolve("api/cdn/admin/edges/managements");
         return send(TransportRequest.get(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 
@@ -272,7 +273,7 @@ public final class HttpAdminOperations implements AdminOperations {
         payload.put("autoRegister", autoRegister);
         payload.put("waitUntilReady", waitUntilReady);
 
-        URI url = base(routerBaseUrl).resolve("api/cdn/admin/edges/start/auto");
+        URI url = base(routerBaseUrl).resolve("api/cdn/admin/edges/activations/automations");
         return send(TransportRequest.postJson(
                 url,
                 managedEdgeStartTimeout(count, waitUntilReady),
@@ -346,14 +347,14 @@ public final class HttpAdminOperations implements AdminOperations {
     /** {@inheritDoc} */
     @Override
     public CallResult listRoutingNodes(URI routerBaseUrl, String adminToken, boolean checkHealth) {
-        URI url = base(routerBaseUrl).resolve("api/cdn/routing?checkHealth=" + checkHealth);
+        URI url = base(routerBaseUrl).resolve("api/cdn/routings?checkHealth=" + checkHealth);
         return send(TransportRequest.get(url, requestTimeout, HttpAdapterSupport.adminHeaders(adminToken)));
     }
 
     /** {@inheritDoc} */
     @Override
     public CallResult bulkUpdateRouting(URI routerBaseUrl, String adminToken, String jsonBody) {
-        URI url = base(routerBaseUrl).resolve("api/cdn/routing/bulk");
+        URI url = base(routerBaseUrl).resolve("api/cdn/routes/batches");
         return send(TransportRequest.postJson(
                 url,
                 requestTimeout,
@@ -457,7 +458,7 @@ public final class HttpAdminOperations implements AdminOperations {
         String cleanRegion = UriUtils.urlEncode(HttpAdapterSupport.requireText(region, "region"));
         String cleanEdgeUrl = UriUtils.urlEncode(
                 HttpAdapterSupport.requireText(edgeBaseUrl == null ? null : edgeBaseUrl.toString(), "url"));
-        return base(routerBaseUrl).resolve("api/cdn/routing?region=" + cleanRegion + "&url=" + cleanEdgeUrl);
+        return base(routerBaseUrl).resolve("api/cdn/routings?region=" + cleanRegion + "&url=" + cleanEdgeUrl);
     }
 
     private static String normalizeInstanceId(String instanceId) {

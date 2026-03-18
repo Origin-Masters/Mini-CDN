@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Admin token for protected endpoints.
 TOKEN="${MINICDN_ADMIN_TOKEN:-secret-token}"
@@ -10,13 +11,13 @@ FILE="recovery-10k.txt"
 echo "[1/7] Ensure services are running..."
 if ! curl -sf -H "X-Admin-Token: $TOKEN" "http://localhost:8082/api/cdn/health" >/dev/null 2>&1; then
   echo "  router is down -> starting services"
-  ./startup-service.sh >/dev/null
+  "$SCRIPT_DIR/../runtime/startup-service.sh" >/dev/null
 fi
 
 # 2) Ensure router can route EU requests to the edge node.
 echo "[2/7] Register edge at router..."
 curl -sf -X POST -H "X-Admin-Token: $TOKEN" \
-  "http://localhost:8082/api/cdn/routing?region=EU&url=http://localhost:8081" >/dev/null
+  "http://localhost:8082/api/cdn/routings?region=EU&url=http://localhost:8081" >/dev/null
 
 # 3) Upload one small file to origin as benchmark.
 echo "[3/7] Upload test file to origin..."
@@ -41,8 +42,8 @@ done
 # 6) Restart and measure how long recovery takes.
 echo "[6/7] Restart services and measure recovery..."
 SECONDS=0
-./shutdown-services.sh >/dev/null
-./startup-service.sh >/dev/null
+"$SCRIPT_DIR/../runtime/shutdown-services.sh" >/dev/null
+"$SCRIPT_DIR/../runtime/startup-service.sh" >/dev/null
 
 # Wait for router liveness (max 60s).
 echo "  waiting for router health..."

@@ -103,7 +103,7 @@ public final class SystemInitService {
                     "edge",
                     EDGE_PORT,
                     "Edge-Port " + EDGE_PORT
-                            + " ist bereits belegt. Starte die bestehende Edge neu über '/api/cdn/admin/edges/start', damit sie managed wird.");
+                            + " ist bereits belegt. Starte die bestehende Edge neu über '/api/cdn/admin/edges/activations', damit sie managed wird.");
         }
 
         String detail = result.message();

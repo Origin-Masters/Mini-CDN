@@ -2,7 +2,9 @@ package de.htwsaar.minicdn.common.serialization;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import de.htwsaar.minicdn.common.dto.RegisterNodeDto;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class JacksonCodecTest {
@@ -35,5 +37,22 @@ class JacksonCodecTest {
         assertThrows(MiniCdnSerializationException.class, () -> {
             JacksonCodec.fromJson(invalidJson, RegisterNodeDto.class);
         });
+    }
+
+    @Test
+    void testFromJson_TypeReference() {
+        String json =
+                """
+                [
+                  {"region":"EU","url":"http://localhost:8081"},
+                  {"region":"US","url":"http://localhost:8082"}
+                ]
+                """;
+
+        List<RegisterNodeDto> dtos = JacksonCodec.fromJson(json, new TypeReference<>() {});
+
+        assertEquals(2, dtos.size());
+        assertEquals("EU", dtos.get(0).getRegion());
+        assertEquals("http://localhost:8082", dtos.get(1).getUrl());
     }
 }

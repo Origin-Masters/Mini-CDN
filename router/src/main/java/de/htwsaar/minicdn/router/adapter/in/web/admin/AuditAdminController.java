@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Admin-API für Abfrage und Export von Audit-Logs.
  */
 @RestController
-@RequestMapping("/api/cdn/admin/audit")
+@RequestMapping("/api/cdn/admin/audits")
 public class AuditAdminController {
 
     private final AuditLogService auditLogService;
@@ -58,7 +58,7 @@ public class AuditAdminController {
     /**
      * Exportiert Audit-Logs eines spezifizierten Users als CSV.
      */
-    @GetMapping(value = "/export", produces = "text/csv")
+    @GetMapping(value = "/exports", produces = "text/csv")
     public ResponseEntity<String> exportCsv(
             @RequestParam("userId") long userId,
             @RequestParam(value = "from", required = false) String from,

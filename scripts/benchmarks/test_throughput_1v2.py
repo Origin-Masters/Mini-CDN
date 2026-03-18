@@ -21,6 +21,9 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Mapping, Optional
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
+
 
 @dataclass(frozen=True)
 class BenchmarkConfig:
@@ -58,6 +61,10 @@ class RunResult:
 
 class BenchmarkError(RuntimeError):
     """Raised for benchmark setup and execution errors."""
+
+
+class RequestFailed(BenchmarkError):
+    """Raised when an HTTP request cannot be executed at all."""
 
 
 def env_bool(name: str, default: bool) -> bool:
@@ -114,6 +121,9 @@ def request(
             return int(response.status), response.read(), dict(response.headers.items())
     except urllib.error.HTTPError as ex:
         return int(ex.code), ex.read(), dict(ex.headers.items()) if ex.headers else {}
+    except urllib.error.URLError as ex:
+        reason = ex.reason if ex.reason else ex
+        raise RequestFailed(f"Request failed for {method} {url}: {reason}") from ex
 
 
 def require_status(method: str, url: str, expected: int, **kwargs: object) -> bytes:
@@ -127,7 +137,10 @@ def require_status(method: str, url: str, expected: int, **kwargs: object) -> by
 def ensure_services(config: BenchmarkConfig) -> None:
     """Validate router availability and optionally start local services."""
     health_url = f"{config.router_base}/api/cdn/health"
-    status, _, _ = request("GET", health_url, token=config.token)
+    try:
+        status, _, _ = request("GET", health_url, token=config.token)
+    except RequestFailed:
+        status = 0
     if status == 200:
         return
 
@@ -136,16 +149,19 @@ def ensure_services(config: BenchmarkConfig) -> None:
             "Router is not reachable. Start services manually or set AUTO_START_SERVICES=true."
         )
 
-    startup_script = "startup-service.sh"
+    startup_script = os.path.join(ROOT_DIR, "scripts", "runtime", "startup-service.sh")
     bash = shutil.which("bash")
     if not bash or not os.path.exists(startup_script):
         raise BenchmarkError(
-            "AUTO_START_SERVICES=true but bash/startup-service.sh is unavailable. Start services manually."
+            "AUTO_START_SERVICES=true but scripts/runtime/startup-service.sh is unavailable. Start services manually."
         )
 
-    subprocess.run([bash, startup_script], check=True)
+    subprocess.run([bash, startup_script], check=True, cwd=ROOT_DIR)
 
-    status_after, _, _ = request("GET", health_url, token=config.token)
+    try:
+        status_after, _, _ = request("GET", health_url, token=config.token)
+    except RequestFailed as ex:
+        raise BenchmarkError("Router is still unreachable after startup attempt.") from ex
     if status_after != 200:
         raise BenchmarkError("Router is still unreachable after startup attempt.")
 
@@ -159,7 +175,7 @@ def ensure_edge_jar(config: BenchmarkConfig) -> None:
     if not mvn:
         raise BenchmarkError(f"Missing {config.edge_jar} and Maven is not available to build it.")
 
-    subprocess.run([mvn, "-q", "-DskipTests", "package"], cwd="edge", check=True)
+    subprocess.run([mvn, "-q", "-DskipTests", "package"], cwd=os.path.join(ROOT_DIR, "edge"), check=True)
 
     if not os.path.exists(config.edge_jar):
         raise BenchmarkError(f"Edge JAR not found after build: {config.edge_jar}")
@@ -168,7 +184,7 @@ def ensure_edge_jar(config: BenchmarkConfig) -> None:
 def ensure_single_edge_setup(config: BenchmarkConfig) -> None:
     """Register baseline edge route for deterministic 1-edge run."""
     query = urllib.parse.urlencode({"region": config.test_region, "url": "http://localhost:8081"})
-    url = f"{config.router_base}/api/cdn/routing?{query}"
+    url = f"{config.router_base}/api/cdn/routings?{query}"
     status, _, _ = request("POST", url, token=config.token)
     if status not in (200, 201, 204, 409):
         raise BenchmarkError(f"Failed baseline edge setup: status={status}")
@@ -249,7 +265,7 @@ def run_load_test(config: BenchmarkConfig, label: str, client_prefix: str) -> Ru
 
 def start_second_edge(config: BenchmarkConfig) -> str:
     """Start one additional edge using router lifecycle adapter endpoint."""
-    url = f"{config.router_base}/api/cdn/admin/edges/start/auto"
+    url = f"{config.router_base}/api/cdn/admin/edges/activations/automations"
     payload = {
         "region": config.test_region,
         "count": 1,
@@ -310,7 +326,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--duration-sec", type=int, default=int(os.getenv("DURATION_SEC", "20")))
     parser.add_argument("--concurrency", type=int, default=int(os.getenv("CONCURRENCY", "40")))
     parser.add_argument("--warmup-requests", type=int, default=int(os.getenv("WARMUP_REQUESTS", "200")))
-    parser.add_argument("--edge-jar", default=os.getenv("EDGE_JAR", "edge/target/edge-1.0-SNAPSHOT-exec.jar"))
+    parser.add_argument(
+        "--edge-jar",
+        default=os.getenv("EDGE_JAR", os.path.join(ROOT_DIR, "edge", "target", "edge-1.0-SNAPSHOT-exec.jar")),
+    )
     parser.add_argument(
         "--auto-start-services",
         action="store_true",

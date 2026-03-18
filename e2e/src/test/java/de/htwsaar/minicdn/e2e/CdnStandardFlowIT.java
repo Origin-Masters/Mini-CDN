@@ -3,7 +3,7 @@ package de.htwsaar.minicdn.e2e;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import de.htwsaar.minicdn.common.serialization.JacksonCodec;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,7 +20,6 @@ class CdnStandardFlowIT extends AbstractE2E {
 
     private static final String REGION = "eu-west";
     private static final String CACHE_HEADER = "X-Cache";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int PARALLEL_REQUESTS = 10;
     private static final long MAX_AVG_LATENCY_MS = 150;
     private static final long MAX_SLOWEST_REQUEST_MS = 300;
@@ -82,11 +81,12 @@ class CdnStandardFlowIT extends AbstractE2E {
         TestFile tf = createOriginFile("Retry Test Content");
 
         try {
-            registerEdgeInRouter(REGION, "http://localhost:9999");
-            registerEdgeInRouter();
-            registerEdgeInRouter(REGION, "http://localhost:7777");
+            registerEdgeInRouter(REGION, "http://localhost:9999"); // toter Edge
+            registerEdgeInRouter(); // laufender Edge
+            registerEdgeInRouter(REGION, "http://localhost:7777"); // toter Edge
             HttpResponse<Void> response = requestRouting(tf.fileName());
 
+            // erwartet wird, dass an den healthy Edge redirected wird
             assertEquals(307, response.statusCode());
             String location = response.headers().firstValue("location").orElse("");
             assertTrue(location.startsWith(EDGE_BASE));
@@ -335,7 +335,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void registerEdgeInRouter() throws Exception {
-        URI addEdgeUri = uri(ROUTER_BASE + "/api/cdn/routing?region=" + REGION + "&url=" + EDGE_BASE);
+        URI addEdgeUri = uri(ROUTER_BASE + "/api/cdn/routings?region=" + REGION + "&url=" + EDGE_BASE);
         HttpRequest addEdgeReq = HttpRequest.newBuilder(addEdgeUri)
                 .header("X-Admin-Token", ADMIN_TOKEN)
                 .POST(HttpRequest.BodyPublishers.noBody())
@@ -346,7 +346,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void registerEdgeInRouter(String region, String url) throws Exception {
-        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
+        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routings?region=" + region + "&url=" + url);
         CLIENT.send(
                 HttpRequest.newBuilder(uri)
                         .header("X-Admin-Token", ADMIN_TOKEN)
@@ -356,7 +356,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void cleanupRouterEdgeRegistration() throws Exception {
-        URI delEdgeUri = uri(ROUTER_BASE + "/api/cdn/routing?region=" + REGION + "&url=" + EDGE_BASE);
+        URI delEdgeUri = uri(ROUTER_BASE + "/api/cdn/routings?region=" + REGION + "&url=" + EDGE_BASE);
         HttpRequest delReq = HttpRequest.newBuilder(delEdgeUri)
                 .header("X-Admin-Token", ADMIN_TOKEN)
                 .DELETE()
@@ -405,7 +405,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static void unregisterEdge(String region, String url) throws Exception {
-        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routing?region=" + region + "&url=" + url);
+        URI uri = URI.create(ROUTER_BASE + "/api/cdn/routings?region=" + region + "&url=" + url);
         CLIENT.send(
                 HttpRequest.newBuilder(uri)
                         .header("X-Admin-Token", ADMIN_TOKEN)
@@ -439,7 +439,7 @@ class CdnStandardFlowIT extends AbstractE2E {
     }
 
     private static List<String> fetchRoutingUrls(String region) throws Exception {
-        URI routingUri = URI.create(ROUTER_BASE + "/api/cdn/routing?checkHealth=false");
+        URI routingUri = URI.create(ROUTER_BASE + "/api/cdn/routings?checkHealth=false");
         HttpRequest request = HttpRequest.newBuilder(routingUri)
                 .header("X-Admin-Token", ADMIN_TOKEN)
                 .GET()
@@ -448,7 +448,7 @@ class CdnStandardFlowIT extends AbstractE2E {
         HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
 
-        JsonNode root = OBJECT_MAPPER.readTree(response.body());
+        JsonNode root = JacksonCodec.toTree(response.body());
         JsonNode regionNodes = root.path(region);
 
         List<String> urls = new ArrayList<>();

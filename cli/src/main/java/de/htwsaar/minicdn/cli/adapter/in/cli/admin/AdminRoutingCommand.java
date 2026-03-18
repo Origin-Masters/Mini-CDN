@@ -220,10 +220,10 @@ public final class AdminRoutingCommand implements Runnable {
         @Option(names = "--router", defaultValue = ROUTER_URL, description = "Router base URL.")
         private URI router;
 
-        @Option(names = "--json", description = "Inline JSON array payload for /api/cdn/routing/bulk.")
+        @Option(names = "--json", description = "Inline JSON array payload for /api/cdn/routes/batches.")
         private String json;
 
-        @Option(names = "--file", description = "Path to a JSON file for /api/cdn/routing/bulk.")
+        @Option(names = "--file", description = "Path to a JSON file for /api/cdn/routes/batches.")
         private Path file;
 
         /**

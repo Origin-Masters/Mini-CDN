@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Nützlich für den Router und Ops-Monitoring.
  */
 @RestController
-@RequestMapping("/api/edge/info")
+@RequestMapping("/api/edge/infos")
 @Profile("edge")
 public class EdgeNodeInfoController {
 

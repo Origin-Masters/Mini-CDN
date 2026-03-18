@@ -32,7 +32,7 @@ class AdminRoutingServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/routing?region=eu-west&url=http%3A%2F%2Flocalhost%3A8081",
+                "http://localhost:8082/api/cdn/routings?region=eu-west&url=http%3A%2F%2Flocalhost%3A8081",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -48,7 +48,7 @@ class AdminRoutingServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("DELETE", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/routing?region=eu-west&url=http%3A%2F%2Flocalhost%3A8081",
+                "http://localhost:8082/api/cdn/routings?region=eu-west&url=http%3A%2F%2Flocalhost%3A8081",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -63,7 +63,7 @@ class AdminRoutingServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/routing?checkHealth=true",
+                "http://localhost:8082/api/cdn/routings?checkHealth=true",
                 transportClient.lastRequest.uri().toString());
     }
 
@@ -81,7 +81,7 @@ class AdminRoutingServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/routing/bulk",
+                "http://localhost:8082/api/cdn/routes/batches",
                 transportClient.lastRequest.uri().toString());
     }
 
