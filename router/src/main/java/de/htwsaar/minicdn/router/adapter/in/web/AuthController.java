@@ -44,7 +44,7 @@ public class AuthController {
      * @param request Login-Daten mit dem Benutzernamen
      * @return HTTP-Antwort mit Benutzerdaten oder passendem Fehlerstatus
      */
-    @PostMapping("/login")
+    @PostMapping("/logins")
     public ResponseEntity<UserResult> login(@RequestBody LoginRequest request) {
         if (request == null || request.name() == null || request.name().isBlank()) {
             return ResponseEntity.badRequest().build();
@@ -53,7 +53,7 @@ public class AuthController {
         return userService
                 .findByName(request.name().trim())
                 .map(user -> {
-                    auditLogService.append(user.id(), "POST /api/cdn/auth/login", "/api/cdn/auth/login", 200);
+                    auditLogService.append(user.id(), "POST /api/cdn/auth/logins", "/api/cdn/auth/logins", 200);
                     return ResponseEntity.ok(user);
                 })
                 .orElseGet(() -> ResponseEntity.status(404).build());

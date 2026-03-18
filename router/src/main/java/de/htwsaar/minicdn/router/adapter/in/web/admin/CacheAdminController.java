@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
  * HTTP-Adapter für regionenweite Cache-Invalidierung.
  */
 @RestController
-@RequestMapping("/api/cdn/admin/cache")
+@RequestMapping("/api/cdn/admin/caches")
 public class CacheAdminController {
 
     private final RouterAdminService routerAdminService;
@@ -27,7 +27,7 @@ public class CacheAdminController {
      * @param path Pfad der Datei relativ zum Origin
      * @return Ergebnis der Invalidierung
      */
-    @DeleteMapping("/region/{region}/files/{path:.+}")
+    @DeleteMapping("/regions/{region}/files/{path:.+}")
     public ResponseEntity<?> invalidatePath(@PathVariable String region, @PathVariable String path) {
         return execute(() -> routerAdminService.invalidatePath(region, path));
     }
@@ -39,7 +39,7 @@ public class CacheAdminController {
      * @param value Prefix für die Invalidierung
      * @return Ergebnis der Invalidierung
      */
-    @DeleteMapping("/region/{region}/prefix")
+    @DeleteMapping("/regions/{region}/prefixes")
     public ResponseEntity<?> invalidatePrefix(@PathVariable String region, @RequestParam String value) {
         return execute(() -> routerAdminService.invalidatePrefix(region, value));
     }
@@ -50,7 +50,7 @@ public class CacheAdminController {
      * @param region Region der Edge-Cluster
      * @return Ergebnis der Invalidierung
      */
-    @DeleteMapping("/region/{region}/all")
+    @DeleteMapping("/regions/{region}/invalidations")
     public ResponseEntity<?> clearRegion(@PathVariable String region) {
         return execute(() -> routerAdminService.clearRegion(region));
     }

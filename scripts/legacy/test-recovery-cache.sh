@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 ADMIN_TOKEN="${MINICDN_ADMIN_TOKEN:-secret-token}"
 ORIGIN="${ORIGIN_BASE_URL:-http://localhost:8080}"
@@ -32,12 +33,12 @@ cache_header() {
 
 echo "[1/6] Ensure [SERVICES] are running"
 if ! curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$ROUTER/api/cdn/health" >/dev/null 2>&1; then
-  ./startup-service.sh >/dev/null
+  "$SCRIPT_DIR/../runtime/startup-service.sh" >/dev/null
 fi
 
 echo "[2/6] Ensure [EDGE] is registered at router"
 curl -sf -X POST -H "X-Admin-Token: $ADMIN_TOKEN" \
-  "$ROUTER/api/cdn/routing?region=$REGION&url=$EDGE" >/dev/null
+  "$ROUTER/api/cdn/routings?region=$REGION&url=$EDGE" >/dev/null
 
 echo "[3/6] Upload test file to [ORIGIN]"
 curl -sf -X PUT -H "X-Admin-Token: $ADMIN_TOKEN" \
@@ -56,8 +57,8 @@ echo "  before restart #2: $CACHE_SECOND"
 
 echo "[5/6] Restart [SERVICES]..."
 start_ms="$(now_ms)"
-./shutdown-services.sh >/dev/null
-./startup-service.sh >/dev/null
+"$SCRIPT_DIR/../runtime/shutdown-services.sh" >/dev/null
+"$SCRIPT_DIR/../runtime/startup-service.sh" >/dev/null
 
 until curl -sf -H "X-Admin-Token: $ADMIN_TOKEN" "$ROUTER/api/cdn/health" >/dev/null 2>&1; do
   sleep 1

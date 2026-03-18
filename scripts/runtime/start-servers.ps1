@@ -1,6 +1,7 @@
 Write-Host "Starting MINI-CDN..." -ForegroundColor Cyan
 
-$root = Get-Location
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$root = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
 
 $originJar = "$root\origin\target\origin-1.0-SNAPSHOT-exec.jar"
 $edgeJar   = "$root\edge\target\edge-1.0-SNAPSHOT-exec.jar"
@@ -30,7 +31,7 @@ Start-Service "ORIGIN" $originJar "origin" "$root\origin.log"
 
 Start-Service "EDGE" $edgeJar "edge" "$root\edge.log"
 
-Start-Service "ROUTER" $routerJar "router" "$root\router.log"
+Start-Service "ROUTER" $routerJar "cdn" "$root\router.log"
 
 
 
@@ -105,7 +106,7 @@ try {
 
     Invoke-WebRequest `
         -Method POST `
-        -Uri "http://localhost:8082/api/cdn/routing?region=EU&url=http://localhost:8081" `
+        -Uri "http://localhost:8082/api/cdn/routings?region=EU&url=http://localhost:8081" `
         -Headers @{ "X-Admin-Token" = "secret-token" } `
         -UseBasicParsing | Out-Null
 

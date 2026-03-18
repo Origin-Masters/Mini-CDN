@@ -28,7 +28,7 @@ public class EdgeLifecycleController {
      * @param req Startparameter fuer die Edge-Instanz
      * @return gestartete Instanz oder Fehlermeldung
      */
-    @PostMapping("/start")
+    @PostMapping("/activations")
     public ResponseEntity<?> start(@RequestBody StartEdgeRequest req) {
         lifecycleService.ensureEnabled();
         try {
@@ -47,7 +47,7 @@ public class EdgeLifecycleController {
      * @param req Startparameter fuer den Auto-Start
      * @return Liste gestarteter Instanzen oder Fehlermeldung
      */
-    @PostMapping("/start/auto")
+    @PostMapping("/activations/automations")
     public ResponseEntity<?> startAuto(@RequestBody AutoStartEdgesRequest req) {
         lifecycleService.ensureEnabled();
         try {
@@ -89,7 +89,7 @@ public class EdgeLifecycleController {
      * @param deregister ob die Instanzen deregistriert werden sollen
      * @return Anzahl gestoppter Instanzen oder Fehlermeldung
      */
-    @DeleteMapping("/region/{region}")
+    @DeleteMapping("/regions/{region}")
     public ResponseEntity<?> deleteRegion(
             @PathVariable("region") String region,
             @RequestParam(name = "deregister", defaultValue = "true") boolean deregister) {
@@ -117,7 +117,7 @@ public class EdgeLifecycleController {
      *
      * @return Liste der Instanzen
      */
-    @GetMapping("/managed")
+    @GetMapping("/managements")
     public ResponseEntity<?> listManaged() {
         lifecycleService.ensureEnabled();
         return ResponseEntity.ok(lifecycleService.listManaged());

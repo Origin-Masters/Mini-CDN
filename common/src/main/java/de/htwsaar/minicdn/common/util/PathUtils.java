@@ -82,12 +82,11 @@ public final class PathUtils {
     /**
      * Entfernt bekannte führende Präfixe aus einem relativen Pfad.
      *
-     * <p>Beispiele:
+     * <p>Beispiele:</p>
      * <ul>
      *   <li>{@code stripLeadingPrefixes("origin/data/file.txt", "origin", "data")} ergibt {@code file.txt}</li>
      *   <li>{@code stripLeadingPrefixes("data/file.txt", "origin", "data")} ergibt {@code file.txt}</li>
      * </ul>
-     * </p>
      *
      * <p>Die Eingabe wird zuerst normalisiert. Anschließend werden die
      * angegebenen Präfixe nur am Anfang des Pfads entfernt, in der

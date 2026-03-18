@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*;
  *
  * <ul>
  *   <li>DELETE /api/edge/admin/cache/files/{path} – einzelne Datei</li>
- *   <li>DELETE /api/edge/admin/cache/prefix?value=… – Pfad-Prefix</li>
- *   <li>DELETE /api/edge/admin/cache/all – gesamter Cache</li>
+ *   <li>DELETE /api/edge/admin/cache/prefixes?value=… – Pfad-Prefix</li>
+ *   <li>DELETE /api/edge/admin/cache/files – gesamter Cache</li>
  * </ul>
  */
 @RestController
@@ -53,7 +53,7 @@ public class EdgeCacheAdminController {
      * @param value Pfad-Prefix (Query-Parameter)
      * @return Anzahl invalidierter Einträge
      */
-    @DeleteMapping("/prefix")
+    @DeleteMapping("/prefixes")
     public ResponseEntity<Map<String, Object>> invalidateByPrefix(@RequestParam("value") String value) {
         try {
             int count = fileService.invalidatePrefix(value);
@@ -70,7 +70,7 @@ public class EdgeCacheAdminController {
      *
      * @return Bestätigung
      */
-    @DeleteMapping("/all")
+    @DeleteMapping("/files")
     public ResponseEntity<Map<String, String>> clearAll() {
         fileService.clearCache();
         return ResponseEntity.ok(Map.of("status", "cache cleared"));

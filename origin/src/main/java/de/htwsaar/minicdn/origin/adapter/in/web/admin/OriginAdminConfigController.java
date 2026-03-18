@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Admin-API für Live-Konfiguration des Origin-Servers.
  */
 @RestController
-@RequestMapping("/api/origin/admin/config")
+@RequestMapping("/api/origin/admin/configs")
 @Profile("origin")
 public class OriginAdminConfigController {
 

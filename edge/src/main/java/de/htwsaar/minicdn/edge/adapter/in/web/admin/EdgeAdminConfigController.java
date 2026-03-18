@@ -14,16 +14,16 @@ import org.springframework.web.bind.annotation.*;
  * Admin-API für Live-Konfiguration der Edge-Node.
  *
  * <ul>
- *   <li>GET  /api/edge/admin/config          – aktuelle Konfiguration</li>
- *   <li>PUT  /api/edge/admin/config          – vollständiges Update</li>
- *   <li>PATCH /api/edge/admin/config         – partielles Update</li>
- *   <li>GET  /api/edge/admin/config/ttl      – TTL-Policies</li>
- *   <li>PUT  /api/edge/admin/config/ttl      – TTL-Policy setzen</li>
- *   <li>DELETE /api/edge/admin/config/ttl    – TTL-Policy entfernen</li>
+ *   <li>GET  /api/edge/admin/configs          – aktuelle Konfiguration</li>
+ *   <li>PUT  /api/edge/admin/configs          – vollständiges Update</li>
+ *   <li>PATCH /api/edge/admin/configs         – partielles Update</li>
+ *   <li>GET  /api/edge/admin/configs/expirations      – TTL-Policies</li>
+ *   <li>PUT  /api/edge/admin/configs/expirations      – TTL-Policy setzen</li>
+ *   <li>DELETE /api/edge/admin/configs/expirations    – TTL-Policy entfernen</li>
  * </ul>
  */
 @RestController
-@RequestMapping("/api/edge/admin/config")
+@RequestMapping("/api/edge/admin/configs")
 @Profile("edge")
 public class EdgeAdminConfigController {
 
@@ -96,7 +96,7 @@ public class EdgeAdminConfigController {
     }
 
     /** @return alle TTL-Policies als Prefix → ms Map */
-    @GetMapping("/ttl")
+    @GetMapping("/expirations")
     public ResponseEntity<Map<String, Long>> getTtlPolicies() {
         return ResponseEntity.ok(ttlPolicyService.snapshot());
     }
@@ -107,7 +107,7 @@ public class EdgeAdminConfigController {
      * @param dto Prefix + TTL in ms
      * @return Bestätigung
      */
-    @PutMapping("/ttl")
+    @PutMapping("/expirations")
     public ResponseEntity<Map<String, Object>> setTtlPolicy(@RequestBody TtlPolicyDto dto) {
         ttlPolicyService.setPrefixTtlMs(dto.prefix(), dto.ttlMs());
         persistRuntimeState();
@@ -120,7 +120,7 @@ public class EdgeAdminConfigController {
      * @param prefix Pfad-Prefix (Query-Parameter)
      * @return Bestätigung
      */
-    @DeleteMapping("/ttl")
+    @DeleteMapping("/expirations")
     public ResponseEntity<Map<String, Object>> removeTtlPolicy(@RequestParam("prefix") String prefix) {
         boolean removed = ttlPolicyService.removePrefix(prefix);
         persistRuntimeState();

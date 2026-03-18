@@ -93,7 +93,7 @@ class AdminAuthFilterTest {
     @Test
     void shouldReturn401WhenTokenIsBlank() throws ServletException, IOException {
         MockHttpServletRequest req = new MockHttpServletRequest();
-        req.setRequestURI("/api/cdn/routing");
+        req.setRequestURI("/api/cdn/routings");
         req.addHeader("X-Admin-Token", "   ");
         MockHttpServletResponse res = new MockHttpServletResponse();
         MockFilterChain chain = new MockFilterChain();

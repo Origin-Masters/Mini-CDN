@@ -38,7 +38,7 @@ class AdminEdgeServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/edges/start",
+                "http://localhost:8082/api/cdn/admin/edges/activations",
                 transportClient.lastRequest.uri().toString());
         assertEquals(Duration.ofSeconds(13), transportClient.lastRequest.timeout());
     }
@@ -61,7 +61,7 @@ class AdminEdgeServiceTest {
         assertNotNull(transportClient.lastRequest);
         assertEquals("POST", transportClient.lastRequest.method());
         assertEquals(
-                "http://localhost:8082/api/cdn/admin/edges/start/auto",
+                "http://localhost:8082/api/cdn/admin/edges/activations/automations",
                 transportClient.lastRequest.uri().toString());
         assertEquals(Duration.ofSeconds(85), transportClient.lastRequest.timeout());
     }

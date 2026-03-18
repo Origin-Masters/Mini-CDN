@@ -46,12 +46,12 @@ class AuditLogServiceTest {
         Path db = Files.createTempFile("audit-export-test-", ".db");
         AuditLogService service = new AuditLogService("jdbc:sqlite:" + db.toAbsolutePath(), Clock.systemUTC());
 
-        service.append(3L, "POST /api/cdn/auth/login", "/api/cdn/auth/login", 200);
+        service.append(3L, "POST /api/cdn/auth/logins", "/api/cdn/auth/logins", 200);
 
         String csv = service.exportCsv(new AuditQueryFilter(3L, null, null, null, null));
 
         assertTrue(csv.startsWith("timestamp,userId,action,resource,result,httpStatus\n"));
-        assertTrue(csv.contains(",3,POST /api/cdn/auth/login,/api/cdn/auth/login,SUCCESS,200"));
+        assertTrue(csv.contains(",3,POST /api/cdn/auth/logins,/api/cdn/auth/logins,SUCCESS,200"));
     }
 
     /**

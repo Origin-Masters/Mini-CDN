@@ -1,6 +1,8 @@
 package de.htwsaar.minicdn.common.serialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -31,6 +33,22 @@ public final class JacksonCodec {
         } catch (JsonProcessingException e) {
             throw new MiniCdnSerializationException(
                     "Failed to deserialize JSON format to : [" + clazz.getSimpleName() + "]", e);
+        }
+    }
+
+    public static <T> T fromJson(String json, TypeReference<T> typeReference) {
+        try {
+            return MAPPER.readValue(json, typeReference);
+        } catch (JsonProcessingException e) {
+            throw new MiniCdnSerializationException("Failed to deserialize JSON format to typed target", e);
+        }
+    }
+
+    public static JsonNode toTree(String json) {
+        try {
+            return MAPPER.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new MiniCdnSerializationException("Failed to deserialize JSON format to tree", e);
         }
     }
 }

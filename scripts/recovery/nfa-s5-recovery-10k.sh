@@ -1,11 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-# Simple NFA-S5 recovery proof using the built exec JARs.
-# It keeps the 10k progress output, but avoids the old startup-service.sh flow.
+# Simple NFA-S5 recovery using the built exec JARs.
+# It keeps the 10k progress output,
 
 TOKEN="${MINICDN_ADMIN_TOKEN:-secret-token}"
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 ORIGIN_URL="http://localhost:8080"
 EDGE_URL="http://localhost:8081"
@@ -14,7 +15,7 @@ REGION="${RECOVERY_REGION:-EU}"
 FILE="recovery-10k.txt"
 
 # The 10k request phase can outlive the default 60s cache TTL.
-# We set a dedicated TTL for the test file so the post-restart HIT check is fair.
+# We set a dedicated TTL for the test file for post-restart HIT check
 FILE_TTL_MS="${RECOVERY_FILE_TTL_MS:-300000}"
 
 ORIGIN_JAR="$ROOT_DIR/origin/target/origin-1.0-SNAPSHOT-exec.jar"
@@ -151,9 +152,9 @@ echo "[2/7] Start origin, edge and router from exec JARs"
 start_stack
 
 echo "[3/7] Create persisted state"
-# Router needs the edge in its routing table before the CDN request path works.
+# Router needs the edge in its routing table
 curl -sf -X POST "${ADMIN_HEADER[@]}" \
-  "$ROUTER_URL/api/cdn/routing?region=$REGION&url=$EDGE_URL" >/dev/null
+  "$ROUTER_URL/api/cdn/routings?region=$REGION&url=$EDGE_URL" >/dev/null
 # Store one small file at the origin; this is the file we warm and recover later.
 curl -sf -X PUT "${ADMIN_HEADER[@]}" \
   -H "Content-Type: application/octet-stream" \
@@ -163,7 +164,7 @@ curl -sf -X PUT "${ADMIN_HEADER[@]}" \
 curl -sf -X PUT "${ADMIN_HEADER[@]}" \
   -H "Content-Type: application/json" \
   -d "{\"prefix\":\"$FILE\",\"ttlMs\":$FILE_TTL_MS}" \
-  "$EDGE_URL/api/edge/admin/config/ttl" >/dev/null
+  "$EDGE_URL/api/edge/admin/configs/expirations" >/dev/null
 
 echo "[4/7] Warm edge cache (MISS -> HIT)"
 # First request fills the cache, second request proves the cache is active.
@@ -207,4 +208,3 @@ recovery_ms="$(( $(now_ms) - start_ms ))"
 }
 
 echo "OK: ${recovery_ms}ms < 10000ms with 10000 clients"
-

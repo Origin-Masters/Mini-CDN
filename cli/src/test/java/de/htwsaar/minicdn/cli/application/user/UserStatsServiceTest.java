@@ -37,7 +37,7 @@ class UserStatsServiceTest {
         assertEquals("GET", transportClient.lastRequest.method());
         assertEquals("17", transportClient.lastRequest.headers().get("X-User-Id"));
         assertEquals(
-                "http://localhost:8082/api/cdn/stats/file/123",
+                "http://localhost:8082/api/cdn/stats/files/123",
                 transportClient.lastRequest.uri().toString());
     }
 

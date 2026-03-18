@@ -39,7 +39,8 @@ public class AdminAuthFilter extends OncePerRequestFilter {
 
         // Scope: Alle Admin- und Verwaltungs-Routen von Origin, Edge und Router
         boolean isAdminRoute = requestUri.contains("/admin/")
-                || requestUri.contains("/api/cdn/routing")
+                || requestUri.contains("/api/cdn/routings")
+                || requestUri.contains("/api/cdn/routes/batches")
                 || requestUri.contains("/api/edge/cache");
 
         if (isAdminRoute) {

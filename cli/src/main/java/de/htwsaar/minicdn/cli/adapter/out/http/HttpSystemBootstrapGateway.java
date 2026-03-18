@@ -43,7 +43,7 @@ public final class HttpSystemBootstrapGateway implements SystemBootstrapGateway 
     public ManagedEdgeStartResult startManagedEdge(
             URI routerBaseUrl, Duration timeout, String adminToken, String region, int port, String originBaseUrl) {
 
-        URI uri = base(routerBaseUrl).resolve("api/cdn/admin/edges/start");
+        URI uri = base(routerBaseUrl).resolve("api/cdn/admin/edges/activations");
         String jsonBody = "{"
                 + "\"region\":\"" + JsonUtils.escapeJson(region) + "\","
                 + "\"port\":" + port + ","
