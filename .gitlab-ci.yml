@@ -76,6 +76,19 @@ cli_bundle_job:
       - artifacts/mini-cdn-submission-cli.tar.gz
     expire_in: never
 
+site_job:
+  stage: docs
+  tags: ["maven"]
+  image: maven:3.9-jdk-21
+  script:
+    - mvn -B -DskipTests -Dminicdn.admin.token=secret-token site
+  artifacts:
+    when: always
+    paths:
+      - target/site/
+      - "*/target/site/"
+    expire_in: never
+
 wiki_update_job:
   stage: docs
   tags: ["maven"]
