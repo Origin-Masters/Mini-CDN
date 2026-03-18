@@ -44,6 +44,20 @@ public interface EdgeGateway {
     EdgeNodeStats fetchAdminStats(EdgeNode node, int windowSec, Duration timeout) throws Exception;
 
     /**
+     * Liest die auf der Edge selbst konfigurierte Region aus.
+     *
+     * <p>Default: {@code null}. Adapter können diese Information liefern, wenn der
+     * zugrundeliegende Transport einen passenden Info-Endpunkt bereitstellt.</p>
+     *
+     * @param node Edge-Knoten
+     * @param timeout Request-Timeout
+     * @return konfigurierte Region oder {@code null}, falls nicht verfügbar
+     */
+    default String fetchConfiguredRegion(EdgeNode node, Duration timeout) {
+        return null;
+    }
+
+    /**
      * Invalidiert genau eine Datei im Cache eines Edge-Knotens.
      *
      * @param node Edge-Knoten
