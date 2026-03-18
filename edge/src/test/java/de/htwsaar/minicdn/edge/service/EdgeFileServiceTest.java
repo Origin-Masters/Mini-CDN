@@ -68,6 +68,38 @@ class EdgeFileServiceTest {
     }
 
     @Test
+    void shouldReloadFileFromOriginAfterTtlExpires() throws Exception {
+        byte[] body = "ttl payload".getBytes(StandardCharsets.UTF_8);
+        String sha256 = Sha256Util.sha256Hex(body);
+
+        FakeOriginClient fakeOrigin = new FakeOriginClient(
+                new OriginContent(body, "text/plain", sha256), new OriginMetadata("text/plain", sha256));
+
+        EdgeConfigService configService = new EdgeConfigService(
+                new EdgeRuntimeConfig("eu-west", 1_000, 100, ReplacementStrategy.LRU, "http://localhost:8080"));
+
+        EdgeCacheStateStore stateStore = new EdgeCacheStateStore(
+                Files.createTempFile("edge-cache-ttl-test", ".properties").toString());
+
+        MutableClock clock = new MutableClock(Instant.parse("2026-01-01T00:00:00Z"));
+        EdgeFileService service = new EdgeFileService(
+                fakeOrigin, configService, new TtlPolicyService(), CACHE_FACTORY, stateStore, clock);
+
+        FilePayload first = service.getFile("docs/ttl.txt");
+        FilePayload second = service.getFile("docs/ttl.txt");
+
+        clock.advanceMillis(1_001);
+
+        FilePayload third = service.getFile("docs/ttl.txt");
+
+        assertEquals(CacheDecision.MISS, first.cache());
+        assertEquals(CacheDecision.HIT, second.cache());
+        assertEquals(CacheDecision.MISS, third.cache());
+        assertEquals(2, fakeOrigin.fetchCalls);
+        assertArrayEquals(body, third.body());
+    }
+
+    @Test
     void shouldRestoreCachedEntryAfterRestart() throws Exception {
 
         // adding extra test to verify that the cache recovery mechanism works correctly
@@ -156,6 +188,33 @@ class EdgeFileServiceTest {
         @Override
         public Instant instant() {
             return now;
+        }
+    }
+
+    private static final class MutableClock extends Clock {
+        private Instant now;
+
+        private MutableClock(Instant now) {
+            this.now = now;
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneId.of("UTC");
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return now;
+        }
+
+        private void advanceMillis(long millis) {
+            now = now.plusMillis(millis);
         }
     }
 }

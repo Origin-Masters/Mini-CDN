@@ -28,8 +28,8 @@ start_module_if_needed() {
 
     echo "Starting $label..."
     (
-        cd "$ROOT_DIR" &&
-        mvn -pl "$module_name" -am spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$profile"
+        cd "$ROOT_DIR/$module_name" &&
+        mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$profile"
     ) > "$log_file" 2>&1 &
 }
 
